@@ -1,0 +1,128 @@
+"use client";
+
+import { useState } from "react";
+import { Upload, Mic, Play, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+export default function LiveDemo() {
+  const [step, setStep] = useState(0);
+
+  const simulateProcessing = () => {
+    setStep(1);
+    setTimeout(() => setStep(2), 1500);
+    setTimeout(() => setStep(3), 3000);
+    setTimeout(() => setStep(4), 4500);
+  };
+
+  return (
+    <section className="py-32 w-full bg-transparent relative">
+      <div className="max-w-7xl mx-auto px-6">
+        <h2 className="text-4xl md:text-6xl font-heading font-bold mb-16 text-center">Live AI Demo</h2>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-auto lg:h-[600px]">
+          {/* Left: Input */}
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[350px] lg:min-h-0">
+            <h3 className="text-xl font-medium mb-6">1. Input</h3>
+
+            <div 
+              onClick={() => alert("File Upload Dialog Opened")}
+              className="flex-1 border-2 border-dashed border-white/20 rounded-2xl flex flex-col items-center justify-center text-muted-foreground hover:bg-white/5 transition-colors cursor-pointer mb-6 group min-h-[160px]"
+            >
+              <Upload className="w-10 h-10 mb-4 group-hover:text-primary transition-colors" />
+              <p>Upload Image</p>
+            </div>
+
+            <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10 mb-4">
+              <p className="text-sm text-muted-foreground mb-2">Or describe issue...</p>
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">"Massive pothole on Main St."</span>
+                <button 
+                  onClick={() => alert("Microphone Activated. Listening...")}
+                  className="p-3 rounded-full bg-primary/20 text-primary hover:bg-primary hover:text-white transition-colors"
+                >
+                  <Mic className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <button
+              onClick={simulateProcessing}
+              className="w-full py-4 bg-white text-black font-medium rounded-xl hover:bg-white/90 transition-colors flex items-center justify-center gap-2"
+            >
+              <Play className="w-4 h-4 fill-current" /> Process with AI
+            </button>
+          </div>
+
+          {/* Center: Processing */}
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[250px] lg:min-h-0 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+            <h3 className="text-xl font-medium mb-6 relative z-10">2. AI Pipeline</h3>
+
+            <div className="flex-1 flex flex-col justify-center gap-6 relative z-10 min-h-[150px]">
+              {[
+                { id: 1, text: "Analyzing Image (EfficientNetB0)..." },
+                { id: 2, text: "Understanding Context (MuRIL)..." },
+                { id: 3, text: "Predicting Department & Priority..." },
+              ].map((item, idx) => (
+                <div key={item.id} className="flex items-center gap-4">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 
+                    ${step > idx ? 'border-primary bg-primary text-white' :
+                      step === idx + 1 ? 'border-primary text-primary animate-pulse' : 'border-white/20 text-transparent'}`}
+                  >
+                    {step > idx && <CheckCircle2 className="w-4 h-4" />}
+                  </div>
+                  <span className={`${step >= idx + 1 ? 'text-white' : 'text-muted-foreground'} font-mono text-sm`}>
+                    {item.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Results */}
+          <div className="bg-white/5 border border-primary/30 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[300px] lg:min-h-0 shadow-[0_0_50px_rgba(var(--primary),0.1)]">
+            <h3 className="text-xl font-medium mb-6">3. Results</h3>
+
+            <AnimatePresence>
+              {step === 4 ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex-1 flex flex-col gap-4"
+                >
+                  <div className="bg-black/40 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                    <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Issue</div>
+                    <div className="text-lg font-medium">Road Damage (Pothole)</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-black/40 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Department</div>
+                      <div className="text-primary font-medium">Public Works</div>
+                    </div>
+                    <div className="bg-background rounded-xl p-4 border border-destructive/50">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Priority</div>
+                      <div className="text-destructive font-bold flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                        High
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-primary/10 rounded-xl p-4 border border-primary/20 flex-1">
+                    <div className="text-xs text-primary/80 uppercase tracking-wider mb-2">Generated Note</div>
+                    <p className="text-sm leading-relaxed text-white/90">
+                      "Severe road surface degradation observed on Main St coordinates. Immediate patch repair recommended to prevent vehicular damage. AI Confidence Score: 98.2%"
+                    </p>
+                  </div>
+                </motion.div>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-muted-foreground border-2 border-dashed border-white/10 rounded-2xl">
+                  Awaiting Input...
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
