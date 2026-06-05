@@ -32,8 +32,13 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto px-6 pb-12 grid grid-cols-1 md:grid-cols-2 gap-12">
         <div>
-          <div className="relative h-12 w-36 mb-6">
-            <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full" />
+          <div className="flex items-center gap-4 mb-6">
+            <div className="relative h-20 w-20 rounded-xl overflow-hidden flex items-center justify-center">
+              <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full" />
+            </div>
+            <span className="text-2xl font-bold font-heading text-white tracking-wider">
+              Civic Connect
+            </span>
           </div>
           <div className="flex items-center gap-3 text-sm font-medium border border-white/10 bg-white/5 w-fit px-4 py-2 rounded-full mb-8">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />

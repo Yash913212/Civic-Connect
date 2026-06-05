@@ -407,8 +407,8 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
   }, [isOpen]);
 
   const logoElement = (
-    <div className="relative h-6 w-20 sm:h-8 sm:w-24 group-hover:scale-105 transition-transform duration-300">
-      <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full" />
+    <div className="relative h-8 w-8 sm:h-10 sm:w-10 group-hover:scale-105 transition-transform duration-300 bg-white rounded-lg overflow-hidden flex items-center justify-center">
+      <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full p-0.5" />
     </div>
   );
 
@@ -642,7 +642,6 @@ export const SignInPage = ({ className }: SignInPageProps) => {
       
       {/* Content Layer */}
       <div className="relative z-10 flex flex-col flex-1">
-        <MiniNavbar isSignUp={isSignUp} setIsSignUp={setIsSignUp} />
         {/* Main content container */}
         <div className="flex flex-1 flex-col lg:flex-row ">
           {/* Left side (form) */}
@@ -659,8 +658,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     className="w-full max-w-[400px] flex flex-col"
                   >
                     <div className="space-y-4 text-center mb-8">
-                      <div className="mx-auto w-56 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center py-2 px-4 shadow-[0_0_15px_rgba(255,255,255,0.05)] overflow-hidden">
-                        <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full scale-[3.2] transition-transform duration-300" />
+                      <div className="mx-auto w-32 h-32 sm:w-40 sm:h-40 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.05)] overflow-hidden">
+                        <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full transition-transform duration-300" />
                       </div>
                       <div className="space-y-2">
                         <h1 className="text-2xl font-bold tracking-tight text-white">{isSignUp ? "Create an Account" : "Welcome Back"}</h1>

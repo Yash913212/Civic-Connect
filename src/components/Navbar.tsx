@@ -105,8 +105,8 @@ export default function Navbar() {
         <div className="container mx-auto px-6 flex items-center justify-between">
           {/* Logo */}
           <Link href="/home" className="flex items-center gap-3 group">
-            <div className="relative h-10 w-auto group-hover:scale-105 transition-transform duration-300 flex items-center">
-              <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-auto h-full max-h-10" />
+            <div className="relative h-10 w-10 rounded-md group-hover:scale-105 transition-transform duration-300 flex items-center justify-center overflow-hidden">
+              <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full" />
             </div>
             <span className="text-xl font-bold font-heading text-white tracking-wider group-hover:text-cyan-400 transition-colors">
               Civic Connect
