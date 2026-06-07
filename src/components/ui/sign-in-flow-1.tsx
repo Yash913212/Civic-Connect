@@ -9,7 +9,7 @@ import { authService } from "@/auth/authService";
 import { cn } from "@/lib/utils";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import WarpTransition from "./WarpTransition";
-import { Lock, Shield, Key, Activity, Loader2, Eye, EyeOff } from "lucide-react";
+import { Lock, Shield, Key, Activity, Loader2, Eye, EyeOff, User, Briefcase } from "lucide-react";
 
 import * as THREE from "three";
 
@@ -521,12 +521,228 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
 type Role = 'CITIZEN' | 'OFFICER' | 'ADMIN';
 
 const roleInfo = {
-  CITIZEN: { title: "Citizen Portal", desc: "Report and Track Civic Issues", canSignup: true, noSignupMsg: "", color: [[59, 130, 246]] },
-  OFFICER: { title: "Officer Portal", desc: "Manage Assigned Complaints", canSignup: false, noSignupMsg: "Officer accounts are created by Administrators.", color: [[34, 197, 94]] },
-  ADMIN: { title: "Administrative Console", desc: "Department Operations Management", canSignup: false, noSignupMsg: "Administrative accounts are managed by Admin.", color: [[168, 85, 247]] },
+  CITIZEN: {
+    title: "Citizen Portal",
+    desc: "Report and Track Civic Issues",
+    canSignup: true,
+    noSignupMsg: "",
+    color: [[59, 130, 246]],
+    icon: <User size={14} />,
+    accent: "rgba(59,130,246,",
+    badge: "🌐 Public Portal",
+    pillBg: "rgba(59,130,246,0.2)",
+    pillBorder: "rgba(59,130,246,0.45)",
+    pillGlow: "rgba(59,130,246,0.35)",
+    progressColor: "#3b82f6",
+    accentText: "text-blue-400",
+  },
+  OFFICER: {
+    title: "Officer Portal",
+    desc: "Manage Assigned Complaints",
+    canSignup: false,
+    noSignupMsg: "Officer accounts are created by Administrators.",
+    color: [[34, 197, 94]],
+    icon: <Briefcase size={14} />,
+    accent: "rgba(34,197,94,",
+    badge: "🛡️ Officer Gateway",
+    pillBg: "rgba(34,197,94,0.2)",
+    pillBorder: "rgba(34,197,94,0.45)",
+    pillGlow: "rgba(34,197,94,0.35)",
+    progressColor: "#22c55e",
+    accentText: "text-emerald-400",
+  },
+  ADMIN: {
+    title: "Admin Portal",
+    desc: "Manage Departments and Operations",
+    canSignup: false,
+    noSignupMsg: "Administrative accounts are managed by System.",
+    color: [[249, 115, 22]],
+    icon: <Shield size={14} />,
+    accent: "rgba(249,115,22,",
+    badge: "⚡ Admin Console",
+    pillBg: "rgba(249,115,22,0.2)",
+    pillBorder: "rgba(249,115,22,0.45)",
+    pillGlow: "rgba(249,115,22,0.35)",
+    progressColor: "#f97316",
+    accentText: "text-orange-400",
+  },
 };
 
 const roles: Role[] = ['CITIZEN', 'OFFICER', 'ADMIN'];
+
+const DashboardWidgets = ({ role }: { role: Role }) => {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 flex items-center justify-center">
+      <AnimatePresence mode="wait">
+        {role === 'CITIZEN' && (
+          <motion.div
+            key="citizen-widgets"
+            initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0 flex items-center justify-center max-w-7xl mx-auto w-full"
+          >
+            {/* Citizen Widget 1: Top Left */}
+            <motion.div 
+              initial={{ x: -50, y: -100, opacity: 0 }}
+              animate={{ x: -400, y: -150, opacity: 0.8 }}
+              transition={{ duration: 1.2, delay: 0.1, type: "spring", bounce: 0.4 }}
+              className="absolute hidden lg:flex w-64 h-32 bg-blue-900/20 border border-blue-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col justify-between shadow-[0_0_30px_rgba(59,130,246,0.15)]"
+            >
+              <div className="text-blue-300 text-xs font-semibold tracking-wide uppercase">Complaints Submitted</div>
+              <div className="text-3xl font-bold text-white flex items-center gap-3">
+                1,204 <span className="text-xs text-blue-400 bg-blue-500/20 px-2 py-1 rounded-full">+12%</span>
+              </div>
+              <div className="w-full h-1.5 bg-blue-950/50 rounded-full overflow-hidden mt-2">
+                <motion.div className="h-full bg-blue-400" initial={{ width: 0 }} animate={{ width: "70%" }} transition={{ duration: 1, delay: 0.5 }} />
+              </div>
+            </motion.div>
+
+            {/* Citizen Widget 2: Bottom Right */}
+            <motion.div 
+              initial={{ x: 50, y: 100, opacity: 0 }}
+              animate={{ x: 400, y: 150, opacity: 0.8 }}
+              transition={{ duration: 1.2, delay: 0.2, type: "spring", bounce: 0.4 }}
+              className="absolute hidden lg:flex w-64 h-48 bg-blue-900/20 border border-blue-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(59,130,246,0.15)]"
+            >
+              <div className="text-blue-300 text-xs font-semibold tracking-wide uppercase mb-4">Resolution Progress</div>
+              <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
+                 <div className="absolute inset-0 rounded-full border-4 border-blue-950/50" />
+                 <motion.div 
+                   className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-400 border-r-blue-400" 
+                   animate={{ rotate: 360 }} 
+                   transition={{ repeat: Infinity, duration: 3, ease: "linear" }} 
+                 />
+                 <div className="text-lg font-bold text-white">84%</div>
+              </div>
+            </motion.div>
+            
+            {/* Ambient Map Pins */}
+            <motion.div animate={{ y: [0, -15, 0], opacity: [0.3, 0.6, 0.3] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="absolute hidden lg:block left-[15%] top-[60%] text-blue-400">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {role === 'OFFICER' && (
+          <motion.div
+            key="officer-widgets"
+            initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0 flex items-center justify-center max-w-7xl mx-auto w-full"
+          >
+             {/* Officer Widget 1: Top Right */}
+             <motion.div 
+              initial={{ x: 50, y: -100, opacity: 0 }}
+              animate={{ x: 400, y: -150, opacity: 0.8 }}
+              transition={{ duration: 1.2, delay: 0.1, type: "spring", bounce: 0.4 }}
+              className="absolute hidden lg:flex w-64 h-36 bg-green-900/20 border border-green-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col justify-between shadow-[0_0_30px_rgba(34,197,94,0.15)]"
+            >
+              <div className="text-green-300 text-xs font-semibold tracking-wide uppercase">Assigned Cases</div>
+              <div className="text-4xl font-bold text-white">42</div>
+              <div className="flex gap-1.5 mt-2">
+                {[1,2,3,4,5].map((i) => (
+                  <motion.div 
+                    key={i} 
+                    initial={{ scaleY: 0 }} 
+                    animate={{ scaleY: 1 }} 
+                    transition={{ delay: 0.3 + i * 0.1, duration: 0.5 }}
+                    className={`h-2 flex-1 rounded-full origin-left ${i <= 3 ? 'bg-green-400' : 'bg-green-950/50'}`} 
+                  />
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Officer Widget 2: Bottom Left */}
+            <motion.div 
+              initial={{ x: -50, y: 100, opacity: 0 }}
+              animate={{ x: -400, y: 150, opacity: 0.8 }}
+              transition={{ duration: 1.2, delay: 0.2, type: "spring", bounce: 0.4 }}
+              className="absolute hidden lg:flex w-64 h-48 bg-green-900/20 border border-green-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(34,197,94,0.15)]"
+            >
+              <div className="text-green-300 text-xs font-semibold tracking-wide uppercase mb-4">Officer Performance</div>
+              <div className="w-full h-full flex items-end justify-between gap-2 pb-2">
+                {[40, 70, 45, 90, 65, 80].map((h, i) => (
+                  <motion.div 
+                    key={i} 
+                    className="w-6 bg-gradient-to-t from-green-500/20 to-green-400/80 rounded-t-md" 
+                    initial={{ height: 0 }} 
+                    animate={{ height: `${h}%` }} 
+                    transition={{ duration: 1, delay: 0.4 + i * 0.1, type: "spring" }} 
+                  />
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {role === 'ADMIN' && (
+          <motion.div
+            key="admin-widgets"
+            initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0 flex items-center justify-center max-w-7xl mx-auto w-full"
+          >
+             {/* Admin Widget 1: Top Left */}
+             <motion.div 
+              initial={{ x: -50, y: -100, opacity: 0 }}
+              animate={{ x: -420, y: -120, opacity: 0.8 }}
+              transition={{ duration: 1.2, delay: 0.1, type: "spring", bounce: 0.4 }}
+              className="absolute hidden lg:grid w-72 h-44 bg-orange-900/20 border border-orange-500/30 rounded-2xl backdrop-blur-xl p-5 grid-cols-2 gap-4 shadow-[0_0_30px_rgba(249,115,22,0.15)]"
+            >
+              <div>
+                <div className="text-orange-300 text-[10px] font-semibold uppercase tracking-wider">Total Departments</div>
+                <div className="text-2xl font-bold text-white mt-1">12</div>
+              </div>
+              <div>
+                <div className="text-orange-300 text-[10px] font-semibold uppercase tracking-wider">Active Officers</div>
+                <div className="text-2xl font-bold text-white mt-1">148</div>
+              </div>
+              <div className="col-span-2 mt-2">
+                <div className="text-orange-300 text-[10px] font-semibold uppercase tracking-wider mb-2 flex justify-between">
+                  <span>Resolution Rate</span>
+                  <span className="text-orange-100">88%</span>
+                </div>
+                <div className="w-full h-1.5 bg-orange-950/50 rounded-full overflow-hidden">
+                  <motion.div className="h-full bg-orange-400" initial={{ width: 0 }} animate={{ width: "88%" }} transition={{ duration: 1, delay: 0.5 }} />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Admin Widget 2: Bottom Right */}
+            <motion.div 
+              initial={{ x: 50, y: 100, opacity: 0 }}
+              animate={{ x: 420, y: 120, opacity: 0.8 }}
+              transition={{ duration: 1.2, delay: 0.2, type: "spring", bounce: 0.4 }}
+              className="absolute hidden lg:flex w-64 h-48 bg-orange-900/20 border border-orange-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(249,115,22,0.15)]"
+            >
+              <div className="text-orange-300 text-xs font-semibold tracking-wide uppercase mb-4">System Analytics</div>
+              <div className="flex gap-3 h-24">
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}
+                  className="flex-1 rounded-xl border border-orange-500/30 bg-orange-500/10 flex items-center justify-center text-orange-400 shadow-inner"
+                >
+                  <Activity size={24} />
+                </motion.div>
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}
+                  className="flex-1 rounded-xl border border-orange-500/30 bg-orange-500/10 flex items-center justify-center text-orange-400 shadow-inner"
+                >
+                  <Shield size={24} />
+                </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 export const SignInPage = ({ className }: SignInPageProps) => {
   const router = useRouter();
@@ -534,6 +750,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [role, setRole] = useState<Role>('CITIZEN');
+  const prevRoleIndexRef = useRef<number>(0);
   
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -642,6 +859,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
         
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--background)_0%,_transparent_100%)] opacity-0" />
         <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-background/50 to-transparent" />
+        
+        <DashboardWidgets role={role} />
       </div>
       
       {/* Content Layer */}
@@ -651,62 +870,128 @@ export const SignInPage = ({ className }: SignInPageProps) => {
             
             {/* Multi-Role Selector */}
             {step === "email" && (
-              <div className="w-full mb-8">
+              <div className="w-full mb-4">
+                {/* Tab strip */}
                 <div className="flex w-full p-1 bg-white/5 border border-white/10 rounded-xl backdrop-blur-md relative">
-                  {roles.map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => { setRole(r); setError(null); }}
-                      className={`flex-1 relative z-10 py-2.5 text-[10px] sm:text-xs font-bold tracking-wide transition-colors duration-300 ${role === r ? 'text-white' : 'text-white/50 hover:text-white/80'}`}
-                    >
-                      {r}
-                    </button>
-                  ))}
+                  {roles.map((r) => {
+                    const isActive = role === r;
+                    return (
+                      <motion.button
+                        whileHover={{ scale: 1.05, textShadow: "0px 0px 8px rgba(255,255,255,0.5)" }}
+                        whileTap={{ scale: 0.95 }}
+                        key={r}
+                        type="button"
+                        onClick={() => {
+                          prevRoleIndexRef.current = roles.indexOf(role);
+                          setRole(r);
+                          setError(null);
+                        }}
+                        className={`flex-1 relative z-10 flex items-center justify-center gap-1.5 py-2.5 text-[10px] sm:text-xs font-bold tracking-wide transition-colors duration-200
+                          ${isActive ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                      >
+                        {/* Icon with spring scale */}
+                        <motion.span
+                          animate={{ scale: isActive ? 1.2 : 1, opacity: isActive ? 1 : 0.4 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 22 }}
+                          className="flex-shrink-0"
+                        >
+                          {roleInfo[r].icon}
+                        </motion.span>
+                        {r}
+                      </motion.button>
+                    );
+                  })}
+                  {/* Spring-sliding active pill */}
                   <motion.div
                     className="absolute top-1 bottom-1 rounded-lg"
                     initial={false}
                     animate={{
                       left: `calc(${roles.indexOf(role) * (100 / roles.length)}% + 4px)`,
                       width: `calc(${100 / roles.length}% - 8px)`,
-                      backgroundColor: role === 'CITIZEN' ? 'rgba(59, 130, 246, 0.2)' :
-                                       role === 'OFFICER' ? 'rgba(34, 197, 94, 0.2)' :
-                                       role === 'ADMIN' ? 'rgba(168, 85, 247, 0.2)' :
-                                       'rgba(168, 85, 247, 0.2)',
-                      boxShadow: role === 'CITIZEN' ? '0 0 15px rgba(59, 130, 246, 0.3)' :
-                                 role === 'OFFICER' ? '0 0 15px rgba(34, 197, 94, 0.3)' :
-                                 role === 'ADMIN' ? '0 0 15px rgba(168, 85, 247, 0.3)' :
-                                 '0 0 15px rgba(168, 85, 247, 0.3)',
-                      border: `1px solid ${
-                        role === 'CITIZEN' ? 'rgba(59, 130, 246, 0.4)' :
-                        role === 'OFFICER' ? 'rgba(34, 197, 94, 0.4)' :
-                        role === 'ADMIN' ? 'rgba(168, 85, 247, 0.4)' :
-                        'rgba(168, 85, 247, 0.4)'
-                      }`
+                      backgroundColor: roleInfo[role].pillBg,
+                      boxShadow: `0 0 18px ${roleInfo[role].pillGlow}`,
+                      border: `1px solid ${roleInfo[role].pillBorder}`,
                     }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    transition={{ type: "spring", stiffness: 380, damping: 30, mass: 0.8 }}
                   />
                 </div>
+
+                {/* Progress bar */}
+                <div className="mt-2 h-[2px] bg-white/8 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full"
+                    animate={{
+                      width: `${((roles.indexOf(role) + 1) / roles.length) * 100}%`,
+                      backgroundColor: roleInfo[role].progressColor,
+                    }}
+                    transition={{ type: "spring", stiffness: 180, damping: 24 }}
+                  />
+                </div>
+
+                {/* Animated role badge */}
+                <div className="mt-2 flex items-center">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={`badge-${role}`}
+                      initial={{ opacity: 0, y: 4, filter: "blur(4px)" }}
+                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, y: -4, filter: "blur(4px)" }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-md bg-white/5 border border-white/10 ${roleInfo[role].accentText}`}
+                    >
+                      {roleInfo[role].badge}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
+
+                {/* Ring-pulse ripple on role change */}
+                <AnimatePresence>
+                  <motion.div
+                    key={`ring-${role}`}
+                    initial={{ scale: 0.5, opacity: 0.6 }}
+                    animate={{ scale: 3.5, opacity: 0 }}
+                    transition={{ duration: 0.65, ease: "easeOut" }}
+                    className="pointer-events-none absolute left-1/2 top-[50px] -translate-x-1/2 w-12 h-12 rounded-full z-0"
+                    style={{ border: `2px solid ${roleInfo[role].progressColor}` }}
+                  />
+                </AnimatePresence>
               </div>
             )}
 
             <AnimatePresence mode="wait">
               {step === "email" ? (
                 <motion.div 
-                  key="email-step"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  key={`email-step-${role}`}
+                  custom={roles.indexOf(role) >= prevRoleIndexRef.current ? 1 : -1}
+                  variants={{
+                    enter: (dir: number) => ({ opacity: 0, x: dir * 36, filter: "blur(5px)" }),
+                    center: { opacity: 1, x: 0, filter: "blur(0px)" },
+                    exit: (dir: number) => ({ opacity: 0, x: dir * -36, filter: "blur(5px)" }),
+                  }}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
                   className="w-full flex flex-col"
                 >
-                  <div className="space-y-4 text-center mb-8">
-                    <div className="mx-auto w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.05)] overflow-hidden">
+                  <div className="space-y-4 text-center mb-8 relative">
+                    <div className="mx-auto w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.05)] overflow-hidden relative z-10">
                       <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full transition-transform duration-300" />
                     </div>
-                    <div className="space-y-2">
-                      <h1 className="text-2xl font-bold tracking-tight text-white">{roleInfo[role].title}</h1>
-                      <p className="text-sm text-white/50">{roleInfo[role].desc}</p>
+                    <div className="space-y-2 relative h-[60px] w-full">
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={role}
+                          initial={{ opacity: 0, y: 15, filter: "blur(8px)", scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, filter: "blur(0px)", scale: 1 }}
+                          exit={{ opacity: 0, y: -15, filter: "blur(8px)", scale: 1.05 }}
+                          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                          className="absolute inset-0 flex flex-col items-center justify-start"
+                        >
+                          <h1 className="text-2xl font-bold tracking-tight text-white">{roleInfo[role].title}</h1>
+                          <p className="text-sm text-white/50 mt-1">{roleInfo[role].desc}</p>
+                        </motion.div>
+                      </AnimatePresence>
                     </div>
                   </div>
                   
@@ -714,12 +999,11 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     <motion.div 
                       className="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-[100px] opacity-20 pointer-events-none"
                       animate={{
-                        backgroundColor: role === 'CITIZEN' ? '#00f0ff' :
-                                         role === 'OFFICER' ? '#10b981' :
-                                         role === 'ADMIN' ? '#f59e0b' :
-                                         '#a855f7'
+                        backgroundColor: role === 'CITIZEN' ? '#3b82f6' :
+                                         role === 'OFFICER' ? '#22c55e' :
+                                         '#f97316'
                       }}
-                      transition={{ duration: 0.5 }}
+                      transition={{ duration: 0.8 }}
                     />
 
                     {error && (
@@ -839,11 +1123,18 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     )}
 
                     {/* Security Trust Indicators */}
-                    <div className="mt-8 flex flex-wrap justify-center gap-3 text-[10px] text-white/40 relative z-10">
-                      <span className="flex items-center gap-1"><Lock size={10} /> Secure Auth</span>
-                      <span className="flex items-center gap-1"><Shield size={10} /> RBAC</span>
-                      <span className="flex items-center gap-1"><Key size={10} /> Encrypted</span>
-                      <span className="flex items-center gap-1"><Activity size={10} /> Real-Time</span>
+                    <div className="mt-8 flex justify-center gap-3 text-[9px] sm:text-[10px] text-white/40 relative z-10 w-full overflow-hidden">
+                      <motion.div 
+                         className="flex gap-4 sm:gap-6 justify-center w-full flex-wrap"
+                         initial={{ opacity: 0, y: 10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         transition={{ delay: 0.2 }}
+                      >
+                        <span className="flex items-center gap-1.5 whitespace-nowrap"><Lock size={12} className={roleInfo[role].accentText} /> Secure Auth</span>
+                        <span className="flex items-center gap-1.5 whitespace-nowrap"><Shield size={12} className={roleInfo[role].accentText} /> RBAC Access</span>
+                        <span className="flex items-center gap-1.5 whitespace-nowrap"><Key size={12} className={roleInfo[role].accentText} /> Encrypted Sessions</span>
+                        <span className="flex items-center gap-1.5 whitespace-nowrap"><Activity size={12} className={roleInfo[role].accentText} /> Real-Time Monitoring</span>
+                      </motion.div>
                     </div>
                   </div>
 

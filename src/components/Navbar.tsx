@@ -214,7 +214,7 @@ export default function Navbar() {
               </div>
             ) : (
               <Link 
-                href="/auth"
+                href="/"
                 className="px-6 py-2.5 bg-white text-black rounded-full font-bold text-sm hover:scale-105 transition-transform duration-300 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
               >
                 Sign In
@@ -309,11 +309,11 @@ export default function Navbar() {
                 </div>
               ) : (
                 <Link 
-                  href="/citizen/dashboard"
+                  href="/"
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full py-4 bg-white text-black rounded-full font-bold text-lg inline-block text-center"
                 >
-                  Citizen Portal
+                  Sign In
                 </Link>
               )}
             </div>

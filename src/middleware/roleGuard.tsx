@@ -13,7 +13,7 @@ export const withRoleGuard = (WrappedComponent: any, allowedRoles: User['role'][
     useEffect(() => {
       if (!loading) {
         if (!isAuthenticated) {
-          router.push('/auth');
+          router.push('/');
         } else if (user && !allowedRoles.includes(user.role)) {
           // If logged in but wrong role, redirect to their respective dashboard
           if (user.role === 'CITIZEN') router.push('/citizen/dashboard');
