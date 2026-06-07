@@ -88,6 +88,8 @@ export default function Navbar() {
     { name: "Roadmap", href: "#roadmap" },
   ];
 
+  const showNavLinks = !pathname.includes('/admin/dashboard') && !pathname.includes('/officer/dashboard');
+
   if (pathname === "/") return null;
 
   return (
@@ -115,18 +117,20 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
-            <div className="flex items-center gap-6 bg-white/5 border border-white/10 rounded-full px-6 py-2 backdrop-blur-md">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={(e) => handleScrollTo(e, link.href)}
-                  className="text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer"
-                >
-                  {link.name}
-                </a>
-              ))}
-            </div>
+            {showNavLinks && (
+              <div className="flex items-center gap-6 bg-white/5 border border-white/10 rounded-full px-6 py-2 backdrop-blur-md">
+                {navLinks.map((link) => (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    onClick={(e) => handleScrollTo(e, link.href)}
+                    className="text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer"
+                  >
+                    {link.name}
+                  </a>
+                ))}
+              </div>
+            )}
 
             {/* Profile Dropdown trigger or Launch App button */}
             {user ? (
@@ -267,18 +271,20 @@ export default function Navbar() {
               <X className="w-6 h-6" />
             </button>
             
-            <div className="flex flex-col gap-6 text-center">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-2xl font-heading font-medium text-white/80 hover:text-white cursor-pointer"
-                  onClick={(e) => handleScrollTo(e, link.href)}
-                >
-                  {link.name}
-                </a>
-              ))}
-            </div>
+            {showNavLinks && (
+              <div className="flex flex-col gap-6 text-center">
+                {navLinks.map((link) => (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    className="text-2xl font-heading font-medium text-white/80 hover:text-white cursor-pointer"
+                    onClick={(e) => handleScrollTo(e, link.href)}
+                  >
+                    {link.name}
+                  </a>
+                ))}
+              </div>
+            )}
 
             {/* Mobile User Profile Section */}
             <div>
