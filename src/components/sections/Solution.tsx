@@ -270,7 +270,7 @@ const EngineScene = () => {
 export default function Solution() {
   return (
     <section 
-      id="engine" 
+      id="platform" 
       className="relative w-full h-[120vh] min-h-[900px] flex flex-col items-center overflow-hidden bg-transparent font-sans"
     >
       {/* Background Ambience */}

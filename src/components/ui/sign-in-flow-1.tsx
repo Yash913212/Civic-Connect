@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import WarpTransition from "./WarpTransition";
+import { Lock, Shield, Key, Activity, Loader2, Eye, EyeOff } from "lucide-react";
 
 import * as THREE from "three";
 
@@ -515,121 +516,113 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
   );
 }
 
+type Role = 'CITIZEN' | 'OFFICER' | 'ADMIN';
+
+const roleInfo = {
+  CITIZEN: { title: "Citizen Portal", desc: "Report and Track Civic Issues", canSignup: true, noSignupMsg: "", color: [[0, 240, 255]] },
+  OFFICER: { title: "Officer Portal", desc: "Manage Assigned Complaints", canSignup: false, noSignupMsg: "Officer accounts are created by Administrators.", color: [[16, 185, 129]] },
+  ADMIN: { title: "Administrative Console", desc: "Department Operations Management", canSignup: false, noSignupMsg: "Administrative accounts are managed by Admin.", color: [[245, 158, 11]] },
+};
+
+const roles: Role[] = ['CITIZEN', 'OFFICER', 'ADMIN'];
+
 export const SignInPage = ({ className }: SignInPageProps) => {
   const router = useRouter();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [role, setRole] = useState<Role>('CITIZEN');
+  
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [step, setStep] = useState<"email" | "code" | "success">("email");
-  const [code, setCode] = useState(["", "", "", "", "", ""]);
-  const codeInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const [step, setStep] = useState<"email" | "success">("email");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [initialCanvasVisible, setInitialCanvasVisible] = useState(true);
   const [reverseCanvasVisible, setReverseCanvasVisible] = useState(false);
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!roleInfo[role].canSignup && isSignUp) {
+      setIsSignUp(false);
+    }
+  }, [role, isSignUp]);
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && password) {
-      // First show the new reverse canvas
-      setReverseCanvasVisible(true);
+    if (!email || !password) return;
+    if (isSignUp && (!name || !phone)) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Mocking backend connection since frontend isn't fully connected yet
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Then hide the original canvas after a small delay
+      if (isSignUp) {
+         setIsSignUp(false);
+         setError(null);
+         setPassword("");
+         setIsLoading(false);
+         return;
+      }
+      
+      // Mock setting cookie
+      document.cookie = `token=mock_jwt_token; path=/;`;
+      
+      setReverseCanvasVisible(true);
       setTimeout(() => {
         setInitialCanvasVisible(false);
       }, 50);
       
-      // Transition to success screen after animation
       setTimeout(() => {
         setStep("success");
       }, 2000);
-    }
-  };
-
-  // Focus first input when code screen appears
-  useEffect(() => {
-    if (step === "code") {
-      setTimeout(() => {
-        codeInputRefs.current[0]?.focus();
-      }, 500);
-    }
-  }, [step]);
-
-  const handleCodeChange = (index: number, value: string) => {
-    if (value.length <= 1) {
-      const newCode = [...code];
-      newCode[index] = value;
-      setCode(newCode);
       
-      // Focus next input if value is entered
-      if (value && index < 5) {
-        codeInputRefs.current[index + 1]?.focus();
-      }
-      
-      // Check if code is complete
-      if (index === 5 && value) {
-        const isComplete = newCode.every(digit => digit.length === 1);
-        if (isComplete) {
-          // First show the new reverse canvas
-          setReverseCanvasVisible(true);
-          
-          // Then hide the original canvas after a small delay
-          setTimeout(() => {
-            setInitialCanvasVisible(false);
-          }, 50);
-          
-          // Transition to success screen after animation
-          setTimeout(() => {
-            setStep("success");
-          }, 2000);
-        }
-      }
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !code[index] && index > 0) {
-      codeInputRefs.current[index - 1]?.focus();
+    } catch (err: any) {
+      setError(err.message || "Authentication failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleBackClick = () => {
     setStep("email");
-    setCode(["", "", "", "", "", ""]);
-    // Reset animations if going back
     setReverseCanvasVisible(false);
     setInitialCanvasVisible(true);
   };
 
+  const currentRoutes = {
+    CITIZEN: "/citizen/dashboard",
+    OFFICER: "/officer/dashboard",
+    ADMIN: "/admin/dashboard",
+  };
+
   return (
-    <div className={cn("flex w-[100%] flex-col min-h-screen bg-transparent relative", className)}>
+    <div className={cn("flex w-[100%] flex-col min-h-screen bg-transparent relative overflow-hidden", className)}>
       <div className="absolute inset-0 z-0 pointer-events-none">
-        {/* Initial canvas (forward animation) */}
         {initialCanvasVisible && (
           <div className="absolute inset-0">
             <CanvasRevealEffect
               animationSpeed={3}
               containerClassName="bg-transparent"
-              colors={[
-                [0, 240, 255],
-                [0, 240, 255],
-              ]}
+              colors={roleInfo[role].color as any}
               dotSize={6}
               reverse={false}
             />
           </div>
         )}
         
-        {/* Reverse canvas (appears when code is complete) */}
         {reverseCanvasVisible && (
           <div className="absolute inset-0">
             <CanvasRevealEffect
               animationSpeed={4}
               containerClassName="bg-transparent"
-              colors={[
-                [0, 240, 255],
-                [0, 240, 255],
-              ]}
+              colors={roleInfo[role].color as any}
               dotSize={6}
               reverse={true}
             />
@@ -641,52 +634,134 @@ export const SignInPage = ({ className }: SignInPageProps) => {
       </div>
       
       {/* Content Layer */}
-      <div className="relative z-10 flex flex-col flex-1">
-        {/* Main content container */}
-        <div className="flex flex-1 flex-col lg:flex-row ">
-          {/* Left side (form) */}
-          <div className="flex-1 flex flex-col justify-center items-center">
-            <div className="w-full max-w-sm">
-              <AnimatePresence mode="wait">
-                {step === "email" ? (
-                  <motion.div 
-                    key="email-step"
-                    initial={{ opacity: 0, x: -100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="w-full max-w-[400px] flex flex-col"
-                  >
-                    <div className="space-y-4 text-center mb-8">
-                      <div className="mx-auto w-32 h-32 sm:w-40 sm:h-40 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.05)] overflow-hidden">
-                        <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full transition-transform duration-300" />
-                      </div>
-                      <div className="space-y-2">
-                        <h1 className="text-2xl font-bold tracking-tight text-white">{isSignUp ? "Create an Account" : "Welcome Back"}</h1>
-                        <p className="text-sm text-white/50">{isSignUp ? "Enter your details to get started." : "Enter your credentials to access your account."}</p>
-                      </div>
+      <div className="relative z-10 flex flex-col flex-1 py-12 overflow-y-auto">
+        <div className="flex flex-1 flex-col lg:flex-row justify-center items-center">
+          <div className="w-full max-w-[420px] flex flex-col items-center px-4 sm:px-0">
+            
+            {/* Multi-Role Selector */}
+            {step === "email" && (
+              <div className="w-full mb-8">
+                <div className="flex w-full p-1 bg-white/5 border border-white/10 rounded-xl backdrop-blur-md relative">
+                  {roles.map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => { setRole(r); setError(null); }}
+                      className={`flex-1 relative z-10 py-2.5 text-[10px] sm:text-xs font-bold tracking-wide transition-colors duration-300 ${role === r ? 'text-white' : 'text-white/50 hover:text-white/80'}`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                  <motion.div
+                    className="absolute top-1 bottom-1 rounded-lg"
+                    initial={false}
+                    animate={{
+                      left: `calc(${roles.indexOf(role) * (100 / roles.length)}% + 4px)`,
+                      width: `calc(${100 / roles.length}% - 8px)`,
+                      backgroundColor: role === 'CITIZEN' ? 'rgba(0, 240, 255, 0.2)' :
+                                       role === 'OFFICER' ? 'rgba(16, 185, 129, 0.2)' :
+                                       role === 'ADMIN' ? 'rgba(245, 158, 11, 0.2)' :
+                                       'rgba(168, 85, 247, 0.2)',
+                      boxShadow: role === 'CITIZEN' ? '0 0 15px rgba(0, 240, 255, 0.3)' :
+                                 role === 'OFFICER' ? '0 0 15px rgba(16, 185, 129, 0.3)' :
+                                 role === 'ADMIN' ? '0 0 15px rgba(245, 158, 11, 0.3)' :
+                                 '0 0 15px rgba(168, 85, 247, 0.3)',
+                      border: `1px solid ${
+                        role === 'CITIZEN' ? 'rgba(0, 240, 255, 0.4)' :
+                        role === 'OFFICER' ? 'rgba(16, 185, 129, 0.4)' :
+                        role === 'ADMIN' ? 'rgba(245, 158, 11, 0.4)' :
+                        'rgba(168, 85, 247, 0.4)'
+                      }`
+                    }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <AnimatePresence mode="wait">
+              {step === "email" ? (
+                <motion.div 
+                  key="email-step"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="w-full flex flex-col"
+                >
+                  <div className="space-y-4 text-center mb-8">
+                    <div className="mx-auto w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.05)] overflow-hidden">
+                      <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full transition-transform duration-300" />
                     </div>
-                    
-                    <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-2xl">
-                      <form onSubmit={handleEmailSubmit} className="space-y-5 w-full">
+                    <div className="space-y-2">
+                      <h1 className="text-2xl font-bold tracking-tight text-white">{roleInfo[role].title}</h1>
+                      <p className="text-sm text-white/50">{roleInfo[role].desc}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-2xl relative overflow-hidden">
+                    <motion.div 
+                      className="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-[100px] opacity-20 pointer-events-none"
+                      animate={{
+                        backgroundColor: role === 'CITIZEN' ? '#00f0ff' :
+                                         role === 'OFFICER' ? '#10b981' :
+                                         role === 'ADMIN' ? '#f59e0b' :
+                                         '#a855f7'
+                      }}
+                      transition={{ duration: 0.5 }}
+                    />
+
+                    {error && (
+                      <div className="mb-6 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm flex items-center justify-center relative z-10">
+                        {error}
+                      </div>
+                    )}
+
+                    {!roleInfo[role].canSignup && isSignUp ? (
+                      <div className="text-center py-6 relative z-10">
+                        <Shield className="w-12 h-12 text-white/20 mx-auto mb-4" />
+                        <p className="text-white/80 font-medium mb-2">Registration Restricted</p>
+                        <p className="text-sm text-white/50 mb-6">{roleInfo[role].noSignupMsg}</p>
+                        <button 
+                          onClick={() => setIsSignUp(false)}
+                          className="w-full bg-white/10 text-white font-semibold rounded-lg py-2.5 hover:bg-white/20 transition-colors"
+                        >
+                          Return to Login
+                        </button>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleAuthSubmit} className="space-y-5 w-full relative z-10">
                         {isSignUp && (
-                          <div className="space-y-1.5 text-left">
-                            <label className="text-sm font-medium text-white/80">Full Name</label>
-                            <input 
-                              type="text" 
-                              placeholder="Jane Doe"
-                              value={name}
-                              onChange={(e) => setName(e.target.value)}
-                              className="w-full bg-black/20 text-white border border-white/10 rounded-lg py-2.5 px-4 focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-colors"
-                              required={isSignUp}
-                            />
-                          </div>
+                          <>
+                            <div className="space-y-1.5 text-left">
+                              <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Full Name</label>
+                              <input 
+                                type="text" 
+                                placeholder="Jane Doe"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="w-full bg-black/20 text-white border border-white/10 rounded-lg py-2.5 px-4 focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-colors"
+                                required={isSignUp}
+                              />
+                            </div>
+                            <div className="space-y-1.5 text-left">
+                              <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Phone Number</label>
+                              <input 
+                                type="text" 
+                                placeholder="+1 (555) 000-0000"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                className="w-full bg-black/20 text-white border border-white/10 rounded-lg py-2.5 px-4 focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-colors"
+                                required={isSignUp}
+                              />
+                            </div>
+                          </>
                         )}
                         <div className="space-y-1.5 text-left">
-                          <label className="text-sm font-medium text-white/80">Email</label>
+                          <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Email</label>
                           <input 
                             type="email" 
-                            placeholder="ephraim@blocks.so"
+                            placeholder="user@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full bg-black/20 text-white border border-white/10 rounded-lg py-2.5 px-4 focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-colors"
@@ -695,178 +770,126 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         </div>
 
                         <div className="space-y-1.5 text-left">
-                          <label className="text-sm font-medium text-white/80">Password</label>
-                          <input 
-                            type="password" 
-                            placeholder="****************"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-black/20 text-white border border-white/10 rounded-lg py-2.5 px-4 focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-colors tracking-widest"
-                            required
-                          />
+                          <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Password</label>
+                          <div className="relative">
+                            <input 
+                              type={showPassword ? "text" : "password"}
+                              placeholder="****************"
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              className="w-full bg-black/20 text-white border border-white/10 rounded-lg py-2.5 pl-4 pr-10 focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-colors tracking-widest"
+                              required
+                            />
+                            <button 
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors focus:outline-none"
+                            >
+                              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                          </div>
                         </div>
+
+                        {!isSignUp && (
+                          <div className="flex items-center justify-between pt-1">
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                              <input type="checkbox" className="hidden" />
+                              <div className="w-4 h-4 rounded border border-white/20 bg-black/20 group-hover:border-white/40 flex items-center justify-center">
+                              </div>
+                              <span className="text-xs text-white/60 group-hover:text-white transition-colors">Remember me</span>
+                            </label>
+                            <button type="button" className="text-xs text-white/60 hover:text-white transition-colors focus:outline-none">Forgot password?</button>
+                          </div>
+                        )}
 
                         <div className="pt-2">
                           <button 
                             type="submit"
-                            className="w-full bg-[#e5e5e5] text-black font-semibold rounded-lg py-2.5 hover:bg-white transition-colors"
+                            disabled={isLoading}
+                            className="w-full bg-[#e5e5e5] text-black font-semibold rounded-lg py-2.5 hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {isSignUp ? "Sign Up" : "Sign In"}
+                            {isLoading ? <Loader2 size={18} className="animate-spin" /> : (isSignUp ? "Sign Up" : "Sign In")}
                           </button>
                         </div>
                       </form>
-                      
-                      <p className="text-sm text-white/50 mt-6 text-center">
+                    )}
+                    
+                    {roleInfo[role].canSignup && (
+                      <p className="text-xs text-white/50 mt-6 text-center relative z-10">
                         {isSignUp ? "Already have an account? " : "Don't have an account? "}
                         <button 
                           type="button" 
                           onClick={() => setIsSignUp(!isSignUp)}
-                          className="text-white hover:underline transition-colors focus:outline-none"
+                          className="text-white hover:underline transition-colors focus:outline-none font-medium"
                         >
                           {isSignUp ? "Sign In" : "Sign Up"}
                         </button>
                       </p>
-                      {!isSignUp && (
-                        <p className="text-sm text-white/50 mt-4 text-center">
-                          Forgot your password? <Link href="#" className="text-white hover:underline transition-colors">Reset password</Link>
-                        </p>
-                      )}
+                    )}
+
+                    {/* Security Trust Indicators */}
+                    <div className="mt-8 flex flex-wrap justify-center gap-3 text-[10px] text-white/40 relative z-10">
+                      <span className="flex items-center gap-1"><Lock size={10} /> Secure Auth</span>
+                      <span className="flex items-center gap-1"><Shield size={10} /> RBAC</span>
+                      <span className="flex items-center gap-1"><Key size={10} /> Encrypted</span>
+                      <span className="flex items-center gap-1"><Activity size={10} /> Real-Time</span>
                     </div>
-                  </motion.div>
-                ) : step === "code" ? (
+                  </div>
+
+                  {/* Status Bar */}
+                  <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[10px] text-white/40">
+                    <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Platform Online</span>
+                    <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Database Connected</span>
+                    <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Services Active</span>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div 
+                  key="success-step"
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: "easeOut", delay: 0.3 }}
+                  className="space-y-6 text-center"
+                >
+                  <div className="space-y-1">
+                    <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">Access Granted</h1>
+                    <p className="text-[1.25rem] text-white/50 font-light">Redirecting to {roleInfo[role].title}</p>
+                  </div>
+                  
                   <motion.div 
-                    key="code-step"
-                    initial={{ opacity: 0, x: 100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 100 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="space-y-6 text-center"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.5 }}
+                    className="py-10"
                   >
-                    <div className="space-y-1">
-                      <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">We sent you a code</h1>
-                      <p className="text-[1.25rem] text-white/50 font-light">Please enter it</p>
-                    </div>
-                    
-                    <div className="w-full">
-                      <div className="relative rounded-full py-4 px-5 border border-white/10 bg-transparent">
-                        <div className="flex items-center justify-center">
-                          {code.map((digit, i) => (
-                            <div key={i} className="flex items-center">
-                              <div className="relative">
-                                <input
-                                  ref={(el) => {
-                                    codeInputRefs.current[i] = el;
-                                  }}
-                                  type="text"
-                                  inputMode="numeric"
-                                  pattern="[0-9]*"
-                                  maxLength={1}
-                                  value={digit}
-                                  onChange={e => handleCodeChange(i, e.target.value)}
-                                  onKeyDown={e => handleKeyDown(i, e)}
-                                  className="w-8 text-center text-xl bg-transparent text-white border-none focus:outline-none focus:ring-0 appearance-none"
-                                  style={{ caretColor: 'transparent' }}
-                                />
-                                {!digit && (
-                                  <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none">
-                                    <span className="text-xl text-white">0</span>
-                                  </div>
-                                )}
-                              </div>
-                              {i < 5 && <span className="text-white/20 text-xl">|</span>}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <motion.p 
-                        className="text-white/50 hover:text-white/70 transition-colors cursor-pointer text-sm"
-                        whileHover={{ scale: 1.02 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        Resend code
-                      </motion.p>
-                    </div>
-                    
-                    <div className="flex w-full gap-3">
-                      <motion.button 
-                        onClick={handleBackClick}
-                        className="rounded-full bg-white text-black font-medium px-8 py-3 hover:bg-white/90 transition-colors w-[30%]"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        Back
-                      </motion.button>
-                      <motion.button 
-                        className={`flex-1 rounded-full font-medium py-3 border transition-all duration-300 ${
-                          code.every(d => d !== "") 
-                          ? "bg-white text-black border-transparent hover:bg-white/90 cursor-pointer" 
-                          : "bg-[#111] text-white/50 border-white/10 cursor-not-allowed"
-                        }`}
-                        disabled={!code.every(d => d !== "")}
-                      >
-                        Continue
-                      </motion.button>
-                    </div>
-                    
-                    <div className="pt-16">
-                      <p className="text-xs text-white/40">
-                        By signing up, you agree to the <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">MSA</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Product Terms</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Policies</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Privacy Notice</Link>, and <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Cookie Notice</Link>.
-                      </p>
+                    <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-white to-white/70 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-black" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
                     </div>
                   </motion.div>
-                ) : (
-                  <motion.div 
-                    key="success-step"
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, ease: "easeOut", delay: 0.3 }}
-                    className="space-y-6 text-center"
+                  
+                  <motion.button 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1 }}
+                    className="w-full rounded-full bg-white text-black font-medium py-3 hover:bg-white/90 transition-colors"
+                    onClick={() => {
+                      sessionStorage.setItem("transition-from-login", "true");
+                      sessionStorage.setItem("user-name", name || email.split("@")[0] || "User");
+                      sessionStorage.setItem("user-email", email);
+                      setIsTransitioning(true);
+                      setTimeout(() => {
+                        window.location.href = currentRoutes[role];
+                      }, 1800);
+                    }}
                   >
-                    <div className="space-y-1">
-                      <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">You're in!</h1>
-                      <p className="text-[1.25rem] text-white/50 font-light">Welcome</p>
-                    </div>
-                    
-                    <motion.div 
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.5 }}
-                      className="py-10"
-                    >
-                      <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-white to-white/70 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-black" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    </motion.div>
-                    
-                    <motion.button 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 1 }}
-                      className="w-full rounded-full bg-white text-black font-medium py-3 hover:bg-white/90 transition-colors"
-                      onClick={() => {
-                        sessionStorage.setItem("transition-from-login", "true");
-                        sessionStorage.setItem("user-name", name || email.split("@")[0] || "Amjuri Yaswanth");
-                        sessionStorage.setItem("user-email", email || "yash@civicai.org");
-                        setIsTransitioning(true);
-                        setTimeout(() => {
-                          router.push('/home');
-                        }, 1800);
-                      }}
-                    >
-                      Continue to Dashboard
-                    </motion.button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                    Enter Dashboard
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          
         </div>
       </div>
       {isTransitioning && <WarpTransition />}

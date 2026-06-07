@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-
+import Link from "next/link";
 export default function Hero() {
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -44,12 +44,12 @@ export default function Hero() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-          <button 
-            onClick={() => document.getElementById('platform')?.scrollIntoView({ behavior: 'smooth' })}
+          <Link 
+            href="/citizen/dashboard"
             className="px-8 py-4 bg-primary text-primary-foreground rounded-full font-medium hover:scale-105 transition-transform duration-300 shadow-[0_0_30px_rgba(var(--primary),0.3)] w-full sm:w-auto text-center"
           >
-            Explore Platform
-          </button>
+            Citizen Portal
+          </Link>
           <button 
             onClick={() => document.getElementById('use-cases')?.scrollIntoView({ behavior: 'smooth' })}
             className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-full font-medium backdrop-blur-md hover:bg-white/10 transition-colors duration-300 w-full sm:w-auto text-center"

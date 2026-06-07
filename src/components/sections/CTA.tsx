@@ -14,10 +14,10 @@ export default function CTA() {
 
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto">
           <Link 
-            href="/"
+            href="/citizen/dashboard"
             className="px-10 py-5 bg-white text-black rounded-full font-bold text-base md:text-lg hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)] inline-block text-center"
           >
-            Launch Civic Connect
+            Enter Citizen Portal
           </Link>
           <button 
             onClick={() => document.getElementById('use-cases')?.scrollIntoView({ behavior: 'smooth' })}

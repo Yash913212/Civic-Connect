@@ -202,12 +202,20 @@ export default function Navbar() {
                       {/* Dropdown Actions */}
                       <div className="space-y-1.5">
                         <Link
-                          href="/profile"
+                          href="/citizen/dashboard"
                           onClick={() => setDropdownOpen(false)}
                           className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-all text-left"
                         >
-                          <User className="w-4 h-4 text-cyan-400" />
-                          <span>View Profile Settings</span>
+                          <Activity className="w-4 h-4 text-cyan-400" />
+                          <span>Citizen Portal</span>
+                        </Link>
+                        <Link
+                          href="/citizen/profile"
+                          onClick={() => setDropdownOpen(false)}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-all text-left"
+                        >
+                          <Settings className="w-4 h-4 text-emerald-400" />
+                          <span>User Profile</span>
                         </Link>
                         <button
                           onClick={handleSignOut}
@@ -223,10 +231,10 @@ export default function Navbar() {
               </div>
             ) : (
               <Link 
-                href="/"
+                href="/citizen/dashboard"
                 className="px-6 py-2.5 bg-white text-black rounded-full font-bold text-sm hover:scale-105 transition-transform duration-300 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
               >
-                Launch App
+                Citizen Portal
               </Link>
             )}
           </div>
@@ -290,12 +298,20 @@ export default function Navbar() {
                   </div>
 
                   <Link
-                    href="/profile"
+                    href="/citizen/dashboard"
                     onClick={() => setMobileMenuOpen(false)}
                     className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
                   >
-                    <User className="w-4 h-4 text-cyan-400" />
-                    View Profile Settings
+                    <Activity className="w-4 h-4 text-cyan-400" />
+                    Citizen Portal
+                  </Link>
+                  <Link
+                    href="/citizen/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+                  >
+                    <Settings className="w-4 h-4 text-emerald-400" />
+                    User Profile
                   </Link>
 
                   <button
@@ -308,11 +324,11 @@ export default function Navbar() {
                 </div>
               ) : (
                 <Link 
-                  href="/"
+                  href="/citizen/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full py-4 bg-white text-black rounded-full font-bold text-lg inline-block text-center"
                 >
-                  Launch App
+                  Citizen Portal
                 </Link>
               )}
             </div>
