@@ -520,8 +520,8 @@ type Role = 'CITIZEN' | 'OFFICER' | 'ADMIN';
 
 const roleInfo = {
   CITIZEN: { title: "Citizen Portal", desc: "Report and Track Civic Issues", canSignup: true, noSignupMsg: "", color: [[0, 240, 255]] },
-  OFFICER: { title: "Officer Portal", desc: "Manage Assigned Complaints", canSignup: false, noSignupMsg: "Officer accounts are created by Administrators.", color: [[16, 185, 129]] },
-  ADMIN: { title: "Administrative Console", desc: "Department Operations Management", canSignup: false, noSignupMsg: "Administrative accounts are managed by Admin.", color: [[245, 158, 11]] },
+  OFFICER: { title: "Officer Portal", desc: "Manage Assigned Complaints", canSignup: false, noSignupMsg: "Officer accounts are created by Administrators.", color: [[0, 240, 255]] },
+  ADMIN: { title: "Administrative Console", desc: "Department Operations Management", canSignup: false, noSignupMsg: "Administrative accounts are managed by Admin.", color: [[0, 240, 255]] },
 };
 
 const roles: Role[] = ['CITIZEN', 'OFFICER', 'ADMIN'];
@@ -658,20 +658,9 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     animate={{
                       left: `calc(${roles.indexOf(role) * (100 / roles.length)}% + 4px)`,
                       width: `calc(${100 / roles.length}% - 8px)`,
-                      backgroundColor: role === 'CITIZEN' ? 'rgba(0, 240, 255, 0.2)' :
-                                       role === 'OFFICER' ? 'rgba(16, 185, 129, 0.2)' :
-                                       role === 'ADMIN' ? 'rgba(245, 158, 11, 0.2)' :
-                                       'rgba(168, 85, 247, 0.2)',
-                      boxShadow: role === 'CITIZEN' ? '0 0 15px rgba(0, 240, 255, 0.3)' :
-                                 role === 'OFFICER' ? '0 0 15px rgba(16, 185, 129, 0.3)' :
-                                 role === 'ADMIN' ? '0 0 15px rgba(245, 158, 11, 0.3)' :
-                                 '0 0 15px rgba(168, 85, 247, 0.3)',
-                      border: `1px solid ${
-                        role === 'CITIZEN' ? 'rgba(0, 240, 255, 0.4)' :
-                        role === 'OFFICER' ? 'rgba(16, 185, 129, 0.4)' :
-                        role === 'ADMIN' ? 'rgba(245, 158, 11, 0.4)' :
-                        'rgba(168, 85, 247, 0.4)'
-                      }`
+                      backgroundColor: 'rgba(0, 240, 255, 0.2)',
+                      boxShadow: '0 0 15px rgba(0, 240, 255, 0.3)',
+                      border: '1px solid rgba(0, 240, 255, 0.4)'
                     }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   />
