@@ -780,23 +780,29 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     setError(null);
     
     try {
+      // Simulate network delay for mock authentication
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       if (isSignUp) {
-        await authService.register({
-          full_name: name,
-          email,
-          phone_number: phone,
-          password
-        });
         setIsSignUp(false);
         setPassword("");
         setIsLoading(false);
         return;
       }
       
-      const response = await authService.login({ email, password });
+      const mockUser = {
+        id: "mock-id",
+        full_name: name || "Demo User",
+        email: email,
+        role: role
+      };
       
       // Store in context
-      setAuthUser(response.user, response.access_token, response.refresh_token);
+      setAuthUser(mockUser as any, `mock_access_${role}`, `mock_refresh_${role}`);
+      
+      // Store in cookies for middleware routing compatibility
+      document.cookie = `token=mock_${role}_token; path=/;`;
+      document.cookie = `role=${role}; path=/;`;
       
       setReverseCanvasVisible(true);
       setTimeout(() => {
