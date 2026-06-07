@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 import { User, Shield, Briefcase, Activity } from "lucide-react";
 
@@ -66,7 +66,7 @@ export function DashboardPreview({ role }: DashboardPreviewProps) {
   );
 }
 
-const getVariants = (role: Role) => {
+const getVariants = (role: Role): Variants => {
   switch (role) {
     case 'CITIZEN':
       return {
