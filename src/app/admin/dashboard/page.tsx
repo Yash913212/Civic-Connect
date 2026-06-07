@@ -49,7 +49,7 @@ export default function AdminDashboard() {
         <CanvasRevealEffect
           animationSpeed={3}
           containerClassName="bg-transparent"
-          colors={[[245, 158, 11], [168, 85, 247]]}
+          colors={[[168, 85, 247]]}
           dotSize={6}
           reverse={false}
         />

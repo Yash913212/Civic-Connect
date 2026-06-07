@@ -50,7 +50,7 @@ export default function OfficerDashboard() {
         <CanvasRevealEffect
           animationSpeed={3}
           containerClassName="bg-transparent"
-          colors={[[16, 185, 129]]}
+          colors={[[34, 197, 94]]}
           dotSize={6}
           reverse={false}
         />

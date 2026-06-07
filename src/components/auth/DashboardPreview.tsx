@@ -92,7 +92,7 @@ const getVariants = (role: Role): Variants => {
 const roleColors = {
   CITIZEN: { bg: 'bg-blue-500/20 text-blue-500', hex: '#3B82F6' },
   OFFICER: { bg: 'bg-green-500/20 text-green-500', hex: '#22C55E' },
-  ADMIN: { bg: 'bg-orange-500/20 text-orange-500', hex: '#F59E0B' },
+  ADMIN: { bg: 'bg-purple-500/20 text-purple-500', hex: '#A855F7' },
 };
 
 const roleIcons = {
