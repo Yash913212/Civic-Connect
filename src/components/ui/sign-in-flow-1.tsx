@@ -4,6 +4,8 @@ import React, { useState,useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { authService } from "@/auth/authService";
 import { cn } from "@/lib/utils";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import WarpTransition from "./WarpTransition";
@@ -528,6 +530,7 @@ const roles: Role[] = ['CITIZEN', 'OFFICER', 'ADMIN'];
 
 export const SignInPage = ({ className }: SignInPageProps) => {
   const router = useRouter();
+  const { login: setAuthUser } = useAuth();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [role, setRole] = useState<Role>('CITIZEN');
@@ -560,19 +563,23 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     setError(null);
     
     try {
-      // Mocking backend connection since frontend isn't fully connected yet
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       if (isSignUp) {
-         setIsSignUp(false);
-         setError(null);
-         setPassword("");
-         setIsLoading(false);
-         return;
+        await authService.register({
+          full_name: name,
+          email,
+          phone_number: phone,
+          password
+        });
+        setIsSignUp(false);
+        setPassword("");
+        setIsLoading(false);
+        return;
       }
       
-      // Mock setting cookie
-      document.cookie = `token=mock_jwt_token; path=/;`;
+      const response = await authService.login({ email, password });
+      
+      // Store in context
+      setAuthUser(response.user, response.access_token, response.refresh_token);
       
       setReverseCanvasVisible(true);
       setTimeout(() => {
@@ -584,7 +591,11 @@ export const SignInPage = ({ className }: SignInPageProps) => {
       }, 2000);
       
     } catch (err: any) {
-      setError(err.message || "Authentication failed");
+      if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
+      } else {
+        setError(err.message || "Authentication failed");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -876,11 +887,13 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     className="w-full rounded-full bg-white text-black font-medium py-3 hover:bg-white/90 transition-colors"
                     onClick={() => {
                       sessionStorage.setItem("transition-from-login", "true");
-                      sessionStorage.setItem("user-name", name || email.split("@")[0] || "User");
-                      sessionStorage.setItem("user-email", email);
+                      const user = authService.getLocalUser();
+                      sessionStorage.setItem("user-name", user?.full_name || name || email.split("@")[0] || "User");
+                      sessionStorage.setItem("user-email", user?.email || email);
                       setIsTransitioning(true);
                       setTimeout(() => {
-                        window.location.href = currentRoutes[role];
+                        const targetRoute = user ? currentRoutes[user.role] : currentRoutes[role];
+                        window.location.href = targetRoute || '/';
                       }, 1800);
                     }}
                   >

@@ -1,5 +1,7 @@
 "use client";
 
+import { withRoleGuard } from "@/middleware/roleGuard";
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -32,7 +34,7 @@ const deptPerformance = [
   { name: 'Traffic', efficiency: 45 },
 ];
 
-export default function AdminDashboard() {
+function AdminDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"overview" | "complaints" | "departments" | "map" | "reports">("overview");
 
@@ -435,3 +437,5 @@ export default function AdminDashboard() {
     </main>
   );
 }
+
+export default withRoleGuard(AdminDashboard, ['ADMIN']);

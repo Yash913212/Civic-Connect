@@ -4,6 +4,7 @@ import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import Navbar from "@/components/Navbar";
 import GlobalBackground from "@/components/GlobalBackground";
+import { AuthProvider } from "@/auth/AuthProvider";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -31,11 +32,13 @@ export default function RootLayout({
       className={`${inter.variable} ${sora.variable} dark antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans overflow-x-hidden">
-        <SmoothScroll>
-          <GlobalBackground />
-          <Navbar />
-          {children}
-        </SmoothScroll>
+        <AuthProvider>
+          <SmoothScroll>
+            <GlobalBackground />
+            <Navbar />
+            {children}
+          </SmoothScroll>
+        </AuthProvider>
       </body>
     </html>
   );

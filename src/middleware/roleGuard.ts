@@ -1,0 +1,40 @@
+"use client";
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../hooks/useAuth';
+import { User } from '../auth/authService';
+
+export const withRoleGuard = (WrappedComponent: any, allowedRoles: User['role'][]) => {
+  return function RoleProtectedRoute(props: any) {
+    const { user, loading, isAuthenticated } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+      if (!loading) {
+        if (!isAuthenticated) {
+          router.push('/auth');
+        } else if (user && !allowedRoles.includes(user.role)) {
+          // If logged in but wrong role, redirect to their respective dashboard
+          if (user.role === 'CITIZEN') router.push('/citizen/dashboard');
+          else if (user.role === 'OFFICER') router.push('/officer/dashboard');
+          else if (user.role === 'ADMIN') router.push('/admin/dashboard');
+          else router.push('/');
+        }
+      }
+    }, [loading, isAuthenticated, user, router]);
+
+    if (loading || !isAuthenticated || !user || !allowedRoles.includes(user.role)) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-black">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mb-4"></div>
+            <p className="text-white/70 animate-pulse">Loading Dashboard...</p>
+          </div>
+        </div>
+      );
+    }
+
+    return <WrappedComponent {...props} />;
+  };
+};

@@ -1,5 +1,7 @@
 "use client";
 
+import { withRoleGuard } from "@/middleware/roleGuard";
+
 import Footer from "@/components/sections/Footer";
 import Hero from "@/components/sections/Hero";
 import TheProblem from "@/components/sections/TheProblem";
@@ -14,7 +16,7 @@ import Team from "@/components/sections/Team";
 import CTA from "@/components/sections/CTA";
 import Navbar from "@/components/Navbar";
 
-export default function CitizenDashboard() {
+function CitizenDashboard() {
   return (
     <main className="bg-transparent text-foreground relative w-full min-h-screen select-none">
       <Navbar />
@@ -35,3 +37,5 @@ export default function CitizenDashboard() {
     </main>
   );
 }
+
+export default withRoleGuard(CitizenDashboard, ['CITIZEN']);

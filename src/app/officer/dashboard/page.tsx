@@ -1,5 +1,7 @@
 "use client";
 
+import { withRoleGuard } from "@/middleware/roleGuard";
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -32,7 +34,7 @@ const performanceData = [
   { name: 'Week 4', resolved: 22, target: 18 },
 ];
 
-export default function OfficerDashboard() {
+function OfficerDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"tasks" | "map" | "performance">("tasks");
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
@@ -415,3 +417,5 @@ export default function OfficerDashboard() {
     </main>
   );
 }
+
+export default withRoleGuard(OfficerDashboard, ['OFFICER']);

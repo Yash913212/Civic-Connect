@@ -5,12 +5,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Menu, X, User, LogOut, ShieldCheck, Award, Settings, Terminal, Activity } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null);
+  
+  const { user, logout, isAuthenticated } = useAuth();
+
   const pathname = usePathname();
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -20,33 +23,9 @@ export default function Navbar() {
       setScrolled(window.scrollY > 50);
     };
 
-    // Load active session from sessionStorage with fallback
-    const loadSession = () => {
-      const storedName = sessionStorage.getItem("user-name");
-      const storedEmail = sessionStorage.getItem("user-email");
-      if (storedName && storedEmail) {
-        setUser({
-          name: storedName,
-          email: storedEmail,
-          role: storedEmail.includes("admin") || storedName.toLowerCase().includes("yash") || storedName.toLowerCase().includes("yaswanth") ? "Smart City Lead" : "Validated Citizen",
-        });
-      } else {
-        // Fallback developer session
-        setUser({
-          name: "Amjuri Yaswanth",
-          email: "yash@civicai.org",
-          role: "Smart City Lead",
-        });
-      }
-    };
-
-    loadSession();
-    
     window.addEventListener("scroll", handleScroll);
-    window.addEventListener("storage", loadSession);
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("storage", loadSession);
     };
   }, []);
 
@@ -75,7 +54,7 @@ export default function Navbar() {
     sessionStorage.removeItem("user-name");
     sessionStorage.removeItem("user-email");
     sessionStorage.removeItem("transition-from-login");
-    setUser(null);
+    logout();
     setDropdownOpen(false);
     setMobileMenuOpen(false);
     router.push("/");
@@ -143,11 +122,11 @@ export default function Navbar() {
                 >
                   {/* Dynamic Glowing Avatar */}
                   <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold font-heading shadow-[0_0_10px_rgba(6,182,212,0.3)] group-hover:shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all">
-                    {user.name.charAt(0).toUpperCase()}
+                    {user.full_name?.charAt(0).toUpperCase()}
                     <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border border-black rounded-full" />
                   </div>
                   <div className="text-left">
-                    <p className="text-xs font-bold text-white leading-none mb-0.5">{user.name}</p>
+                    <p className="text-xs font-bold text-white leading-none mb-0.5">{user.full_name}</p>
                     <p className="text-[10px] text-cyan-400 font-semibold leading-none">{user.role}</p>
                   </div>
                 </button>
@@ -165,10 +144,10 @@ export default function Navbar() {
                       {/* User Header */}
                       <div className="flex items-center gap-3 pb-3 border-b border-white/10 mb-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
-                          {user.name.charAt(0).toUpperCase()}
+                          {user.full_name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="overflow-hidden">
-                          <h5 className="text-sm font-bold text-white truncate">{user.name}</h5>
+                          <h5 className="text-sm font-bold text-white truncate">{user.full_name}</h5>
                           <p className="text-xs text-white/50 truncate mb-1">{user.email}</p>
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-semibold bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
                             {user.role}
@@ -235,10 +214,10 @@ export default function Navbar() {
               </div>
             ) : (
               <Link 
-                href="/citizen/dashboard"
+                href="/auth"
                 className="px-6 py-2.5 bg-white text-black rounded-full font-bold text-sm hover:scale-105 transition-transform duration-300 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
               >
-                Citizen Portal
+                Sign In
               </Link>
             )}
           </div>
@@ -292,10 +271,10 @@ export default function Navbar() {
                 <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-left backdrop-blur-md space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
-                      {user.name.charAt(0).toUpperCase()}
+                      {user.full_name?.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h5 className="text-white font-bold text-base">{user.name}</h5>
+                      <h5 className="text-white font-bold text-base">{user.full_name}</h5>
                       <p className="text-xs text-white/50">{user.email}</p>
                       <span className="inline-block mt-1.5 px-2 py-0.5 rounded text-[9px] font-semibold bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
                         {user.role}
