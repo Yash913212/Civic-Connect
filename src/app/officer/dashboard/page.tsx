@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/sections/Footer";
+import { CanvasRevealEffect } from "@/components/ui/sign-in-flow-1";
 
 const workloadData = [
   { name: 'Mon', tasks: 4 },
@@ -44,10 +45,21 @@ export default function OfficerDashboard() {
   };
 
   return (
-    <main className="bg-black text-white min-h-screen pt-32 pb-24 relative overflow-hidden flex flex-col justify-between selection:bg-white/20">
+    <main className="bg-transparent text-white min-h-screen pt-32 pb-24 relative overflow-hidden flex flex-col justify-between selection:bg-white/20">
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <CanvasRevealEffect
+          animationSpeed={3}
+          containerClassName="bg-transparent"
+          colors={[[16, 185, 129]]}
+          dotSize={6}
+          reverse={false}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--background)_0%,_transparent_100%)] opacity-20" />
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
+      </div>
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none z-0" />
       <div className="absolute w-[50vw] h-[50vw] rounded-full bg-cyan-500/10 blur-[150px] left-[-10%] top-[20%] pointer-events-none z-0" />
-      <div className="absolute w-[40vw] h-[40vw] rounded-full bg-blue-500/10 blur-[150px] right-[5%] bottom-[-10%] pointer-events-none z-0" />
+      <div className="absolute w-[40vw] h-[40vw] rounded-full bg-emerald-500/10 blur-[150px] right-[5%] bottom-[-10%] pointer-events-none z-0" />
 
       <div className="container mx-auto px-6 relative z-10 flex-grow w-full max-w-7xl">
         
