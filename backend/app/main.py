@@ -18,5 +18,6 @@ app.add_middleware(
 app.include_router(auth_router)
 
 @app.get("/")
+@app.head("/")
 def root():
     return {"message": "Welcome to CivicConnect API"}
