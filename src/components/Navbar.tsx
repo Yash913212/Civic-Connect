@@ -185,12 +185,12 @@ export default function Navbar() {
                       {/* Dropdown Actions */}
                       <div className="space-y-1.5">
                         <Link
-                          href="/citizen/dashboard"
+                          href={user.role === 'ADMIN' ? '/admin/dashboard' : user.role === 'OFFICER' ? '/officer/dashboard' : '/citizen/dashboard'}
                           onClick={() => setDropdownOpen(false)}
                           className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-all text-left"
                         >
                           <Activity className="w-4 h-4 text-cyan-400" />
-                          <span>Citizen Portal</span>
+                          <span>{user.role === 'ADMIN' ? 'Admin Portal' : user.role === 'OFFICER' ? 'Officer Portal' : 'Citizen Portal'}</span>
                         </Link>
                         <Link
                           href="/citizen/profile"
@@ -283,12 +283,12 @@ export default function Navbar() {
                   </div>
 
                   <Link
-                    href="/citizen/dashboard"
+                    href={user.role === 'ADMIN' ? '/admin/dashboard' : user.role === 'OFFICER' ? '/officer/dashboard' : '/citizen/dashboard'}
                     onClick={() => setMobileMenuOpen(false)}
                     className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
                   >
                     <Activity className="w-4 h-4 text-cyan-400" />
-                    Citizen Portal
+                    {user.role === 'ADMIN' ? 'Admin Portal' : user.role === 'OFFICER' ? 'Officer Portal' : 'Citizen Portal'}
                   </Link>
                   <Link
                     href="/citizen/profile"

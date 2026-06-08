@@ -34,6 +34,8 @@ export const authService = {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+    document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
   },
 
   getCurrentUser: async (): Promise<User> => {
@@ -45,6 +47,9 @@ export const authService = {
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('refresh_token', refreshToken);
     localStorage.setItem('user', JSON.stringify(user));
+    // Set cookies for Next.js middleware
+    document.cookie = `token=${accessToken}; path=/; max-age=86400`;
+    document.cookie = `role=${user.role}; path=/; max-age=86400`;
   },
 
   getLocalUser: (): User | null => {

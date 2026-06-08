@@ -418,4 +418,4 @@ function OfficerDashboard() {
   );
 }
 
-export default withRoleGuard(OfficerDashboard, ['OFFICER']);
+export default withRoleGuard(OfficerDashboard, ['OFFICER', 'ADMIN']);

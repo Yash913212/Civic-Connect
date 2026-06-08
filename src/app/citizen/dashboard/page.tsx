@@ -38,4 +38,4 @@ function CitizenDashboard() {
   );
 }
 
-export default withRoleGuard(CitizenDashboard, ['CITIZEN']);
+export default withRoleGuard(CitizenDashboard, ['CITIZEN', 'ADMIN']);

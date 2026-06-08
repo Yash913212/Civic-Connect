@@ -5,20 +5,21 @@ export default function proxy(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const role = request.cookies.get('role')?.value;
 
-  const isAuthPage = request.nextUrl.pathname.startsWith('/auth');
+  // The login page is located at the root '/'
+  const isAuthPage = request.nextUrl.pathname === '/';
 
-  if (!token && !isAuthPage && request.nextUrl.pathname !== '/' && !request.nextUrl.pathname.startsWith('/_next') && !request.nextUrl.pathname.startsWith('/api') && !request.nextUrl.pathname.includes('.')) {
-    return NextResponse.redirect(new URL('/auth', request.url));
+  if (!token && !isAuthPage && !request.nextUrl.pathname.startsWith('/_next') && !request.nextUrl.pathname.startsWith('/api') && !request.nextUrl.pathname.includes('.')) {
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   if (isAuthPage && token && role) {
-    const dashRoutes: Record<string, string> = {
-      CITIZEN: '/citizen/dashboard',
-      OFFICER: '/officer/dashboard',
-      ADMIN: '/admin/dashboard',
-    };
-    const target = dashRoutes[role] || '/citizen/dashboard';
-    return NextResponse.redirect(new URL(target, request.url));
+    // const dashRoutes: Record<string, string> = {
+    //   CITIZEN: '/citizen/dashboard',
+    //   OFFICER: '/officer/dashboard',
+    //   ADMIN: '/admin/dashboard',
+    // };
+    // const target = dashRoutes[role] || '/citizen/dashboard';
+    // return NextResponse.redirect(new URL(target, request.url));
   }
 
   if (token && role) {
@@ -28,13 +29,13 @@ export default function proxy(request: NextRequest) {
     const isAdminRoute = pathname.startsWith('/admin');
 
     if (isCitizenRoute && role !== 'CITIZEN') {
-      return NextResponse.redirect(new URL('/auth', request.url));
+      return NextResponse.redirect(new URL('/', request.url));
     }
     if (isOfficerRoute && role !== 'OFFICER') {
-      return NextResponse.redirect(new URL('/auth', request.url));
+      return NextResponse.redirect(new URL('/', request.url));
     }
     if (isAdminRoute && role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/auth', request.url));
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 

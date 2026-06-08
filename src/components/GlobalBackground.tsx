@@ -19,7 +19,7 @@ export default function GlobalBackground() {
       // Create a master timeline linked to the full page scroll
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: "body",
+          trigger: document.body,
           start: "top top",
           end: "bottom bottom",
           scrub: 1,

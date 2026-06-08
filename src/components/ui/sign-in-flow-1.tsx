@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState,useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -34,7 +34,7 @@ interface ShaderProps {
 interface SignInPageProps {
   className?: string;
 }
-      
+
 export const CanvasRevealEffect = ({
   animationSpeed = 10,
   opacities = [0.3, 0.3, 0.3, 0.5, 0.5, 0.5, 0.8, 0.8, 0.8, 1],
@@ -76,7 +76,7 @@ export const CanvasRevealEffect = ({
   );
 };
 
-    
+
 interface DotMatrixProps {
   colors?: number[][];
   opacities?: number[];
@@ -178,16 +178,14 @@ const DotMatrix: React.FC<DotMatrixProps> = ({
 
         void main() {
             vec2 st = fragCoord.xy;
-            ${
-              center.includes("x")
-                ? "st.x -= abs(floor((mod(u_resolution.x, u_total_size) - u_dot_size) * 0.5));"
-                : ""
-            }
-            ${
-              center.includes("y")
-                ? "st.y -= abs(floor((mod(u_resolution.y, u_total_size) - u_dot_size) * 0.5));"
-                : ""
-            }
+            ${center.includes("x")
+          ? "st.x -= abs(floor((mod(u_resolution.x, u_total_size) - u_dot_size) * 0.5));"
+          : ""
+        }
+            ${center.includes("y")
+          ? "st.y -= abs(floor((mod(u_resolution.y, u_total_size) - u_dot_size) * 0.5));"
+          : ""
+        }
 
             float opacity = step(0.0, st.x);
             opacity *= step(0.0, st.y);
@@ -422,16 +420,15 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
   ];
 
   const loginButtonElement = (
-    <button 
+    <button
       onClick={() => {
         setIsSignUp(false);
         setIsOpen(false);
       }}
-      className={`px-4 py-2 sm:px-3 text-xs sm:text-sm border rounded-full transition-all duration-300 w-full sm:w-auto ${
-        !isSignUp 
-        ? "border-cyan-500 bg-cyan-500/10 text-cyan-400 font-bold shadow-[0_0_15px_rgba(6,182,212,0.2)]" 
-        : "border-white/10 bg-white/5 text-gray-300 hover:border-white/30 hover:text-white"
-      }`}
+      className={`px-4 py-2 sm:px-3 text-xs sm:text-sm border rounded-full transition-all duration-300 w-full sm:w-auto ${!isSignUp
+          ? "border-cyan-500 bg-cyan-500/10 text-cyan-400 font-bold shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+          : "border-white/10 bg-white/5 text-gray-300 hover:border-white/30 hover:text-white"
+        }`}
     >
       LogIn
     </button>
@@ -439,25 +436,24 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
 
   const signupButtonElement = (
     <div className="relative group w-full sm:w-auto">
-       {isSignUp && (
-         <div className="absolute inset-0 -m-1 rounded-full
+      {isSignUp && (
+        <div className="absolute inset-0 -m-1 rounded-full
                        hidden sm:block
                        bg-cyan-500
                        opacity-20 filter blur-md pointer-events-none"></div>
-       )}
-       <button 
-         onClick={() => {
-           setIsSignUp(true);
-           setIsOpen(false);
-         }}
-         className={`relative z-10 px-4 py-2 sm:px-3 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 w-full sm:w-auto ${
-           isSignUp 
-           ? "text-black bg-gradient-to-br from-cyan-400 to-cyan-200 shadow-[0_0_15px_rgba(6,182,212,0.3)]" 
-           : "text-black bg-gradient-to-br from-gray-100 to-gray-300 hover:from-gray-200 hover:to-gray-400"
-         }`}
-       >
-         Signup
-       </button>
+      )}
+      <button
+        onClick={() => {
+          setIsSignUp(true);
+          setIsOpen(false);
+        }}
+        className={`relative z-10 px-4 py-2 sm:px-3 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 w-full sm:w-auto ${isSignUp
+            ? "text-black bg-gradient-to-br from-cyan-400 to-cyan-200 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+            : "text-black bg-gradient-to-br from-gray-100 to-gray-300 hover:from-gray-200 hover:to-gray-400"
+          }`}
+      >
+        Signup
+      </button>
     </div>
   );
 
@@ -472,10 +468,10 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
 
       <div className="flex items-center justify-between w-full gap-x-6 sm:gap-x-8">
         <Link href="/" className="flex items-center gap-2.5 group">
-           {logoElement}
-           <span className="text-base font-bold font-heading text-white tracking-wider group-hover:text-cyan-400 transition-colors">
-             Civic Connect
-           </span>
+          {logoElement}
+          <span className="text-base font-bold font-heading text-white tracking-wider group-hover:text-cyan-400 transition-colors">
+            Civic Connect
+          </span>
         </Link>
 
         <nav className="hidden sm:flex items-center space-x-4 sm:space-x-6 text-sm">
@@ -493,9 +489,9 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
 
         <button className="sm:hidden flex items-center justify-center w-8 h-8 text-gray-300 focus:outline-none" onClick={toggleMenu} aria-label={isOpen ? 'Close Menu' : 'Open Menu'}>
           {isOpen ? (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           ) : (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
           )}
         </button>
       </div>
@@ -584,7 +580,7 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
             className="absolute inset-0 flex items-center justify-center max-w-7xl mx-auto w-full"
           >
             {/* Citizen Widget 1: Top Left */}
-            <motion.div 
+            <motion.div
               initial={{ x: -50, y: -100, opacity: 0 }}
               animate={{ x: -400, y: -150, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.1, type: "spring", bounce: 0.4 }}
@@ -600,7 +596,7 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
             </motion.div>
 
             {/* Citizen Widget 2: Bottom Right */}
-            <motion.div 
+            <motion.div
               initial={{ x: 50, y: 100, opacity: 0 }}
               animate={{ x: 400, y: 150, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.2, type: "spring", bounce: 0.4 }}
@@ -608,16 +604,16 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
             >
               <div className="text-blue-300 text-xs font-semibold tracking-wide uppercase mb-4">Resolution Progress</div>
               <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
-                 <div className="absolute inset-0 rounded-full border-4 border-blue-950/50" />
-                 <motion.div 
-                   className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-400 border-r-blue-400" 
-                   animate={{ rotate: 360 }} 
-                   transition={{ repeat: Infinity, duration: 3, ease: "linear" }} 
-                 />
-                 <div className="text-lg font-bold text-white">84%</div>
+                <div className="absolute inset-0 rounded-full border-4 border-blue-950/50" />
+                <motion.div
+                  className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-400 border-r-blue-400"
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+                />
+                <div className="text-lg font-bold text-white">84%</div>
               </div>
             </motion.div>
-            
+
             {/* Ambient Map Pins */}
             <motion.div animate={{ y: [0, -15, 0], opacity: [0.3, 0.6, 0.3] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="absolute hidden lg:block left-[15%] top-[60%] text-blue-400">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
@@ -634,8 +630,8 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="absolute inset-0 flex items-center justify-center max-w-7xl mx-auto w-full"
           >
-             {/* Officer Widget 1: Top Right */}
-             <motion.div 
+            {/* Officer Widget 1: Top Right */}
+            <motion.div
               initial={{ x: 50, y: -100, opacity: 0 }}
               animate={{ x: 400, y: -150, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.1, type: "spring", bounce: 0.4 }}
@@ -644,20 +640,20 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
               <div className="text-green-300 text-xs font-semibold tracking-wide uppercase">Assigned Cases</div>
               <div className="text-4xl font-bold text-white">42</div>
               <div className="flex gap-1.5 mt-2">
-                {[1,2,3,4,5].map((i) => (
-                  <motion.div 
-                    key={i} 
-                    initial={{ scaleY: 0 }} 
-                    animate={{ scaleY: 1 }} 
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: 1 }}
                     transition={{ delay: 0.3 + i * 0.1, duration: 0.5 }}
-                    className={`h-2 flex-1 rounded-full origin-left ${i <= 3 ? 'bg-green-400' : 'bg-green-950/50'}`} 
+                    className={`h-2 flex-1 rounded-full origin-left ${i <= 3 ? 'bg-green-400' : 'bg-green-950/50'}`}
                   />
                 ))}
               </div>
             </motion.div>
 
             {/* Officer Widget 2: Bottom Left */}
-            <motion.div 
+            <motion.div
               initial={{ x: -50, y: 100, opacity: 0 }}
               animate={{ x: -400, y: 150, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.2, type: "spring", bounce: 0.4 }}
@@ -666,12 +662,12 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
               <div className="text-green-300 text-xs font-semibold tracking-wide uppercase mb-4">Officer Performance</div>
               <div className="w-full h-full flex items-end justify-between gap-2 pb-2">
                 {[40, 70, 45, 90, 65, 80].map((h, i) => (
-                  <motion.div 
-                    key={i} 
-                    className="w-6 bg-gradient-to-t from-green-500/20 to-green-400/80 rounded-t-md" 
-                    initial={{ height: 0 }} 
-                    animate={{ height: `${h}%` }} 
-                    transition={{ duration: 1, delay: 0.4 + i * 0.1, type: "spring" }} 
+                  <motion.div
+                    key={i}
+                    className="w-6 bg-gradient-to-t from-green-500/20 to-green-400/80 rounded-t-md"
+                    initial={{ height: 0 }}
+                    animate={{ height: `${h}%` }}
+                    transition={{ duration: 1, delay: 0.4 + i * 0.1, type: "spring" }}
                   />
                 ))}
               </div>
@@ -688,8 +684,8 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="absolute inset-0 flex items-center justify-center max-w-7xl mx-auto w-full"
           >
-             {/* Admin Widget 1: Top Left */}
-             <motion.div 
+            {/* Admin Widget 1: Top Left */}
+            <motion.div
               initial={{ x: -50, y: -100, opacity: 0 }}
               animate={{ x: -420, y: -120, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.1, type: "spring", bounce: 0.4 }}
@@ -715,7 +711,7 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
             </motion.div>
 
             {/* Admin Widget 2: Bottom Right */}
-            <motion.div 
+            <motion.div
               initial={{ x: 50, y: 100, opacity: 0 }}
               animate={{ x: 420, y: 120, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.2, type: "spring", bounce: 0.4 }}
@@ -723,13 +719,13 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
             >
               <div className="text-orange-300 text-xs font-semibold tracking-wide uppercase mb-4">System Analytics</div>
               <div className="flex gap-3 h-24">
-                <motion.div 
+                <motion.div
                   initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}
                   className="flex-1 rounded-xl border border-orange-500/30 bg-orange-500/10 flex items-center justify-center text-orange-400 shadow-inner"
                 >
                   <Activity size={24} />
                 </motion.div>
-                <motion.div 
+                <motion.div
                   initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}
                   className="flex-1 rounded-xl border border-orange-500/30 bg-orange-500/10 flex items-center justify-center text-orange-400 shadow-inner"
                 >
@@ -751,13 +747,13 @@ export const SignInPage = ({ className }: SignInPageProps) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [role, setRole] = useState<Role>('CITIZEN');
   const prevRoleIndexRef = useRef<number>(0);
-  
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  
+
   const [step, setStep] = useState<"email" | "success">("email");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -775,44 +771,42 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     e.preventDefault();
     if (!email || !password) return;
     if (isSignUp && (!name || !phone)) return;
-    
+
     setIsLoading(true);
     setError(null);
-    
-    try {
-      // Simulate network delay for mock authentication
-      await new Promise((resolve) => setTimeout(resolve, 1000));
 
+    try {
       if (isSignUp) {
+        await authService.register({
+          full_name: name,
+          email,
+          phone_number: phone,
+          password
+        });
         setIsSignUp(false);
         setPassword("");
         setIsLoading(false);
         return;
       }
-      
-      const mockUser = {
-        id: "mock-id",
-        full_name: name || "Demo User",
-        email: email,
-        role: role
-      };
-      
+
+      const response = await authService.login({ email, password });
+
+      if (response.user.role !== role) {
+        throw new Error(`Access denied. Please use the ${response.user.role === 'ADMIN' ? 'Admin' : response.user.role === 'OFFICER' ? 'Officer' : 'Citizen'} Portal to login.`);
+      }
+
       // Store in context
-      setAuthUser(mockUser as any, `mock_access_${role}`, `mock_refresh_${role}`);
-      
-      // Store in cookies for middleware routing compatibility
-      document.cookie = `token=mock_${role}_token; path=/;`;
-      document.cookie = `role=${role}; path=/;`;
-      
+      setAuthUser(response.user, response.access_token, response.refresh_token);
+
       setReverseCanvasVisible(true);
       setTimeout(() => {
         setInitialCanvasVisible(false);
       }, 50);
-      
+
       setTimeout(() => {
         setStep("success");
       }, 2000);
-      
+
     } catch (err: any) {
       if (err.response?.data?.detail) {
         setError(err.response.data.detail);
@@ -850,7 +844,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
             />
           </div>
         )}
-        
+
         {reverseCanvasVisible && (
           <div className="absolute inset-0">
             <CanvasRevealEffect
@@ -862,18 +856,18 @@ export const SignInPage = ({ className }: SignInPageProps) => {
             />
           </div>
         )}
-        
+
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--background)_0%,_transparent_100%)] opacity-0" />
         <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-background/50 to-transparent" />
-        
+
         <DashboardWidgets role={role} />
       </div>
-      
+
       {/* Content Layer */}
       <div className="relative z-10 flex flex-col flex-1 py-12 overflow-y-auto">
         <div className="flex flex-1 flex-col lg:flex-row justify-center items-center">
           <div className="w-full max-w-[420px] flex flex-col items-center px-4 sm:px-0">
-            
+
             {/* Multi-Role Selector */}
             {step === "email" && (
               <div className="w-full mb-4">
@@ -966,7 +960,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
 
             <AnimatePresence mode="wait">
               {step === "email" ? (
-                <motion.div 
+                <motion.div
                   key={`email-step-${role}`}
                   custom={roles.indexOf(role) >= prevRoleIndexRef.current ? 1 : -1}
                   variants={{
@@ -1000,14 +994,14 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                       </AnimatePresence>
                     </div>
                   </div>
-                  
+
                   <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-2xl relative overflow-hidden">
-                    <motion.div 
+                    <motion.div
                       className="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-[100px] opacity-20 pointer-events-none"
                       animate={{
                         backgroundColor: role === 'CITIZEN' ? '#3b82f6' :
-                                         role === 'OFFICER' ? '#22c55e' :
-                                         '#f97316'
+                          role === 'OFFICER' ? '#22c55e' :
+                            '#f97316'
                       }}
                       transition={{ duration: 0.8 }}
                     />
@@ -1023,7 +1017,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         <Shield className="w-12 h-12 text-white/20 mx-auto mb-4" />
                         <p className="text-white/80 font-medium mb-2">Registration Restricted</p>
                         <p className="text-sm text-white/50 mb-6">{roleInfo[role].noSignupMsg}</p>
-                        <button 
+                        <button
                           onClick={() => setIsSignUp(false)}
                           className="w-full bg-white/10 text-white font-semibold rounded-lg py-2.5 hover:bg-white/20 transition-colors"
                         >
@@ -1036,8 +1030,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                           <>
                             <div className="space-y-1.5 text-left">
                               <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Full Name</label>
-                              <input 
-                                type="text" 
+                              <input
+                                type="text"
                                 placeholder="Jane Doe"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
@@ -1047,8 +1041,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                             </div>
                             <div className="space-y-1.5 text-left">
                               <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Phone Number</label>
-                              <input 
-                                type="text" 
+                              <input
+                                type="text"
                                 placeholder="+1 (555) 000-0000"
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
@@ -1060,8 +1054,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         )}
                         <div className="space-y-1.5 text-left">
                           <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Email</label>
-                          <input 
-                            type="email" 
+                          <input
+                            type="email"
                             placeholder="user@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -1073,7 +1067,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         <div className="space-y-1.5 text-left">
                           <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Password</label>
                           <div className="relative">
-                            <input 
+                            <input
                               type={showPassword ? "text" : "password"}
                               placeholder="****************"
                               value={password}
@@ -1081,7 +1075,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                               className="w-full bg-black/20 text-white border border-white/10 rounded-lg py-2.5 pl-4 pr-10 focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-colors tracking-widest"
                               required
                             />
-                            <button 
+                            <button
                               type="button"
                               onClick={() => setShowPassword(!showPassword)}
                               className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors focus:outline-none"
@@ -1104,7 +1098,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         )}
 
                         <div className="pt-2">
-                          <button 
+                          <button
                             type="submit"
                             disabled={isLoading}
                             className="w-full bg-[#e5e5e5] text-black font-semibold rounded-lg py-2.5 hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1114,12 +1108,12 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         </div>
                       </form>
                     )}
-                    
+
                     {roleInfo[role].canSignup && (
                       <p className="text-xs text-white/50 mt-6 text-center relative z-10">
                         {isSignUp ? "Already have an account? " : "Don't have an account? "}
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           onClick={() => setIsSignUp(!isSignUp)}
                           className="text-white hover:underline transition-colors focus:outline-none font-medium"
                         >
@@ -1130,11 +1124,11 @@ export const SignInPage = ({ className }: SignInPageProps) => {
 
                     {/* Security Trust Indicators */}
                     <div className="mt-8 flex justify-center gap-3 text-[9px] sm:text-[10px] text-white/40 relative z-10 w-full overflow-hidden">
-                      <motion.div 
-                         className="flex gap-4 sm:gap-6 justify-center w-full flex-wrap"
-                         initial={{ opacity: 0, y: 10 }}
-                         animate={{ opacity: 1, y: 0 }}
-                         transition={{ delay: 0.2 }}
+                      <motion.div
+                        className="flex gap-4 sm:gap-6 justify-center w-full flex-wrap"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
                       >
                         <span className="flex items-center gap-1.5 whitespace-nowrap"><Lock size={12} className={roleInfo[role].accentText} /> Secure Auth</span>
                         <span className="flex items-center gap-1.5 whitespace-nowrap"><Shield size={12} className={roleInfo[role].accentText} /> RBAC Access</span>
@@ -1152,7 +1146,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                   </div>
                 </motion.div>
               ) : (
-                <motion.div 
+                <motion.div
                   key="success-step"
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1163,8 +1157,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">Access Granted</h1>
                     <p className="text-[1.25rem] text-white/50 font-light">Redirecting to {roleInfo[role].title}</p>
                   </div>
-                  
-                  <motion.div 
+
+                  <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.5 }}
@@ -1176,8 +1170,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                       </svg>
                     </div>
                   </motion.div>
-                  
-                  <motion.button 
+
+                  <motion.button
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1 }}

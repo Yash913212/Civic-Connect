@@ -16,10 +16,10 @@ export const withRoleGuard = (WrappedComponent: any, allowedRoles: User['role'][
           router.push('/');
         } else if (user && !allowedRoles.includes(user.role)) {
           // If logged in but wrong role, redirect to their respective dashboard
-          if (user.role === 'CITIZEN') router.push('/citizen/dashboard');
-          else if (user.role === 'OFFICER') router.push('/officer/dashboard');
-          else if (user.role === 'ADMIN') router.push('/admin/dashboard');
-          else router.push('/');
+          if (user.role === 'CITIZEN') window.location.href = '/citizen/dashboard';
+          else if (user.role === 'OFFICER') window.location.href = '/officer/dashboard';
+          else if (user.role === 'ADMIN') window.location.href = '/admin/dashboard';
+          else window.location.href = '/';
         }
       }
     }, [loading, isAuthenticated, user, router]);

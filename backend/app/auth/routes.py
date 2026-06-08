@@ -1,0 +1,85 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from app.database.database import get_db
+from app.auth.schemas import UserRegister, UserLogin, TokenResponse, UserResponse
+from app.database.models import User, RoleEnum
+from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token
+from app.auth.dependencies import get_current_user
+
+router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+
+@router.post("/register")
+def register(user_in: UserRegister, db: Session = Depends(get_db)):
+    if db.query(User).filter(User.email == user_in.email).first():
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    if db.query(User).filter(User.phone_number == user_in.phone_number).first():
+        raise HTTPException(status_code=400, detail="Phone number already registered")
+        
+    new_user = User(
+        full_name=user_in.full_name,
+        email=user_in.email,
+        phone_number=user_in.phone_number,
+        password_hash=get_password_hash(user_in.password),
+        role=RoleEnum.CITIZEN
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return {"message": "User registered successfully"}
+
+@router.post("/login", response_model=TokenResponse)
+def login(user_in: UserLogin, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == user_in.email).first()
+    if not user or not verify_password(user_in.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+    if not user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+
+    access_token = create_access_token(subject=user.id)
+    refresh_token = create_refresh_token(subject=user.id)
+    
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "user": user
+    }
+
+from pydantic import BaseModel
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+@router.post("/refresh")
+def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        from jose import jwt, JWTError
+        from app.core.config import settings
+        payload = jwt.decode(request.refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+        
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None or not user.is_active:
+        raise credentials_exception
+        
+    access_token = create_access_token(subject=user.id)
+    return {"access_token": access_token}
+
+@router.get("/me", response_model=UserResponse)
+def read_users_me(current_user: User = Depends(get_current_user)):
+    return current_user
