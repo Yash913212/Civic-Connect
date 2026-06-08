@@ -4,7 +4,7 @@ from app.database.database import get_db
 from app.auth.schemas import UserRegister, UserLogin, TokenResponse, UserResponse
 from app.database.models import User, RoleEnum
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user, RequireAdmin
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -89,3 +89,9 @@ def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+from typing import List
+@router.get("/admin/officers", response_model=List[UserResponse], dependencies=[RequireAdmin])
+def get_officers(db: Session = Depends(get_db)):
+    officers = db.query(User).filter(User.role == RoleEnum.OFFICER).all()
+    return officers

@@ -1,22 +1,24 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { withRoleGuard } from "@/middleware/roleGuard";
-
-import { useState } from "react";
+import { ComplaintService, Complaint } from "@/services/complaints.service";
+import { apiClient } from "@/auth/apiClient";
+import { useAuth } from "@/auth/authContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Building2, Users, FileText, Map, Settings, AlertTriangle, 
   CheckCircle, FolderOpen, Briefcase, Activity, Clock, Bell,
-  LogOut, Download, Filter, Search, ChevronRight, Database
+  LogOut, Download, Filter, Search, ChevronRight, Database,
+  Loader2, X
 } from "lucide-react";
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Legend, AreaChart, Area
 } from "recharts";
-import { useRouter } from "next/navigation";
-import Footer from "@/components/sections/Footer";
-import { CanvasRevealEffect } from "@/components/ui/sign-in-flow-1";
+import Navbar from "@/components/Navbar";
 
+// Keeping the mock charts for aesthetic purposes since we don't have historical data yet
 const complaintTrends = [
   { name: 'Mon', new: 120, resolved: 90 },
   { name: 'Tue', new: 150, resolved: 110 },
@@ -34,33 +36,72 @@ const deptPerformance = [
   { name: 'Traffic', efficiency: 45 },
 ];
 
-function AdminDashboard() {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"overview" | "complaints" | "departments" | "map" | "reports">("overview");
+interface Officer {
+  id: string;
+  email: string;
+  full_name: string;
+}
 
-  const handleSignOut = () => {
-    sessionStorage.clear();
-    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-    document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-    router.push("/");
+function AdminDashboard() {
+  const { user, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState<"overview" | "complaints" | "departments" | "map" | "reports">("overview");
+  
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [officers, setOfficers] = useState<Officer[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
+  const [selectedOfficerId, setSelectedOfficerId] = useState("");
+  const [assigning, setAssigning] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [complaintsData, officersResponse] = await Promise.all([
+        ComplaintService.getAdminComplaints(),
+        apiClient.get<Officer[]>('/auth/admin/officers')
+      ]);
+      setComplaints(complaintsData);
+      setOfficers(officersResponse.data);
+    } catch (error) {
+      console.error("Failed to load admin data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const openAssignModal = (complaint: Complaint) => {
+    setSelectedComplaint(complaint);
+    setSelectedOfficerId(complaint.assigned_officer_id || "");
+    setIsAssignModalOpen(true);
+  };
+
+  const handleAssign = async () => {
+    if (!selectedComplaint || !selectedOfficerId) return;
+    setAssigning(true);
+    try {
+      await ComplaintService.assignOfficer(selectedComplaint.id, selectedOfficerId);
+      await loadData();
+      setIsAssignModalOpen(false);
+    } catch (error) {
+      console.error("Failed to assign officer", error);
+    } finally {
+      setAssigning(false);
+    }
+  };
+
+  const openCount = complaints.filter(c => c.status !== 'CLOSED' && c.status !== 'RESOLVED').length;
+  const closedCount = complaints.filter(c => c.status === 'CLOSED' || c.status === 'RESOLVED').length;
+
   return (
-    <main className="bg-transparent text-white min-h-screen pt-32 pb-24 relative overflow-hidden flex flex-col justify-between selection:bg-white/20">
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <CanvasRevealEffect
-          animationSpeed={3}
-          containerClassName="bg-transparent"
-          colors={[[168, 85, 247]]}
-          dotSize={6}
-          reverse={false}
-        />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--background)_0%,_transparent_100%)] opacity-20" />
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
-      </div>
-      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none z-0" />
-      <div className="absolute w-[50vw] h-[50vw] rounded-full bg-purple-500/10 blur-[150px] left-[-10%] top-[20%] pointer-events-none z-0" />
-      <div className="absolute w-[40vw] h-[40vw] rounded-full bg-amber-500/10 blur-[150px] right-[5%] bottom-[-10%] pointer-events-none z-0" />
+    <main className="bg-[#050505] text-white min-h-screen pt-32 pb-24 relative overflow-hidden flex flex-col font-sans">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/10 via-[#050505] to-[#050505] z-0 pointer-events-none" />
+      <Navbar />
 
       <div className="container mx-auto px-6 relative z-10 flex-grow w-full max-w-7xl">
         
@@ -70,7 +111,7 @@ function AdminDashboard() {
             <span className="text-xs uppercase tracking-[0.2em] font-bold text-purple-500 mb-2 block">
               Operations Center
             </span>
-            <h1 className="text-3xl md:text-5xl font-heading font-bold text-white tracking-tight">
+            <h1 className="text-3xl md:text-5xl font-bold text-white tracking-tight">
               City <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500">Admin</span> Console
             </h1>
           </div>
@@ -80,7 +121,7 @@ function AdminDashboard() {
               Notifications
             </button>
             <button 
-              onClick={handleSignOut}
+              onClick={logout}
               className="flex items-center gap-2 px-4 py-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl hover:bg-rose-500/20 transition-all text-sm font-semibold"
             >
               <LogOut className="w-4 h-4" />
@@ -90,7 +131,6 @@ function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
           {/* Sidebar Navigation */}
           <div className="lg:col-span-3 space-y-2">
             {[
@@ -122,14 +162,12 @@ function AdminDashboard() {
           {/* Main Content Area */}
           <div className="lg:col-span-9 min-h-[600px]">
             <AnimatePresence mode="wait">
-              
               {activeTab === "overview" && (
                 <motion.div
                   key="overview"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
                   <motion.div 
@@ -145,19 +183,19 @@ function AdminDashboard() {
                       <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       <FileText className="absolute top-4 right-4 w-12 h-12 text-white/5 group-hover:text-white/10 transition-colors" />
                       <span className="text-[10px] font-bold text-white/50 uppercase tracking-wider block relative z-10">Total Complaints</span>
-                      <h3 className="text-3xl font-bold text-white mt-2 relative z-10">12,402</h3>
+                      <h3 className="text-3xl font-bold text-white mt-2 relative z-10">{loading ? "..." : complaints.length}</h3>
                     </motion.div>
                     <motion.div variants={{ hidden: { opacity: 0, scale: 0.95 }, show: { opacity: 1, scale: 1 } }} className="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/20 relative overflow-hidden group">
                       <div className="absolute inset-0 bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       <AlertTriangle className="absolute top-4 right-4 w-12 h-12 text-amber-500/10 group-hover:text-amber-500/20 transition-colors" />
                       <span className="text-[10px] font-bold text-amber-500/70 uppercase tracking-wider block relative z-10">Open</span>
-                      <h3 className="text-3xl font-bold text-amber-400 mt-2 relative z-10">1,240</h3>
+                      <h3 className="text-3xl font-bold text-amber-400 mt-2 relative z-10">{loading ? "..." : openCount}</h3>
                     </motion.div>
                     <motion.div variants={{ hidden: { opacity: 0, scale: 0.95 }, show: { opacity: 1, scale: 1 } }} className="p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 relative overflow-hidden group">
                       <div className="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       <CheckCircle className="absolute top-4 right-4 w-12 h-12 text-emerald-500/10 group-hover:text-emerald-500/20 transition-colors" />
                       <span className="text-[10px] font-bold text-emerald-500/70 uppercase tracking-wider block relative z-10">Closed</span>
-                      <h3 className="text-3xl font-bold text-emerald-400 mt-2 relative z-10">10,850</h3>
+                      <h3 className="text-3xl font-bold text-emerald-400 mt-2 relative z-10">{loading ? "..." : closedCount}</h3>
                     </motion.div>
                     <motion.div variants={{ hidden: { opacity: 0, scale: 0.95 }, show: { opacity: 1, scale: 1 } }} className="p-5 rounded-2xl bg-cyan-500/5 border border-cyan-500/20 relative overflow-hidden group">
                       <div className="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -214,7 +252,6 @@ function AdminDashboard() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
@@ -230,75 +267,83 @@ function AdminDashboard() {
                     </div>
                   </div>
 
-                  <motion.div 
-                    variants={{
-                      hidden: { opacity: 0 },
-                      show: { opacity: 1, transition: { staggerChildren: 0.1 } }
-                    }}
-                    initial="hidden"
-                    animate="show"
-                    className="space-y-4"
-                  >
-                    {[
-                      { id: "C-8839", title: "Massive pothole causing accidents", dept: "Public Works", priority: "Critical", status: "Unassigned", time: "2 hours ago" },
-                      { id: "C-8840", title: "Streetlight completely off", dept: "Water & Power", priority: "High", status: "Assigned", time: "5 hours ago" },
-                      { id: "C-8841", title: "Overflowing garbage bin", dept: "Sanitation", priority: "Medium", status: "Assigned", time: "1 day ago" },
-                      { id: "C-8842", title: "Faded crosswalk paint", dept: "Traffic", priority: "Low", status: "Escalated", time: "3 days ago" }
-                    ].map((item, idx) => (
-                      <motion.div 
-                        variants={{
-                          hidden: { opacity: 0, x: -20 },
-                          show: { opacity: 1, x: 0 }
-                        }}
-                        key={idx} 
-                        className="p-4 rounded-xl bg-white/[0.01] border border-white/10 hover:bg-white/[0.03] transition-colors flex flex-col md:flex-row justify-between items-center gap-4 group"
-                      >
-                        <div className="flex items-center gap-4 w-full md:w-auto">
-                          <div className={`p-3 rounded-xl border ${
-                            item.priority === 'Critical' ? 'bg-rose-500/10 border-rose-500/30 text-rose-500' :
-                            item.priority === 'High' ? 'bg-orange-500/10 border-orange-500/30 text-orange-500' :
-                            item.priority === 'Medium' ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' :
-                            'bg-blue-500/10 border-blue-500/30 text-blue-500'
-                          }`}>
-                            <AlertTriangle size={20} />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-mono text-white/40">{item.id}</span>
-                              <h4 className="text-sm font-bold text-white">{item.title}</h4>
+                  {loading ? (
+                    <div className="flex items-center justify-center h-64">
+                      <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                    </div>
+                  ) : complaints.length === 0 ? (
+                    <div className="text-center py-20 text-white/40 border border-white/5 rounded-2xl bg-white/[0.01]">
+                      No complaints found.
+                    </div>
+                  ) : (
+                    <motion.div 
+                      variants={{
+                        hidden: { opacity: 0 },
+                        show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+                      }}
+                      initial="hidden"
+                      animate="show"
+                      className="space-y-4"
+                    >
+                      {complaints.map((item) => (
+                        <motion.div 
+                          variants={{
+                            hidden: { opacity: 0, x: -20 },
+                            show: { opacity: 1, x: 0 }
+                          }}
+                          key={item.id} 
+                          className="p-4 rounded-xl bg-white/[0.01] border border-white/10 hover:bg-white/[0.03] transition-colors flex flex-col md:flex-row justify-between items-center gap-4 group"
+                        >
+                          <div className="flex items-center gap-4 w-full md:w-auto overflow-hidden">
+                            <div className={`p-3 rounded-xl border flex-shrink-0 ${
+                              item.priority === 'HIGH' ? 'bg-orange-500/10 border-orange-500/30 text-orange-500' :
+                              item.priority === 'MEDIUM' ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' :
+                              'bg-blue-500/10 border-blue-500/30 text-blue-500'
+                            }`}>
+                              <AlertTriangle size={20} />
                             </div>
-                            <div className="flex items-center gap-3 mt-1 text-xs">
-                              <span className="text-white/60 flex items-center gap-1"><Building2 size={12}/> {item.dept}</span>
-                              <span className="text-white/40 flex items-center gap-1"><Clock size={12}/> {item.time}</span>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-mono text-white/40 truncate w-16">{item.id.split('-')[0]}...</span>
+                                <h4 className="text-sm font-bold text-white truncate max-w-[200px] sm:max-w-xs">{item.title}</h4>
+                              </div>
+                              <div className="flex items-center gap-3 mt-1 text-xs">
+                                <span className="text-white/60 flex items-center gap-1"><Building2 size={12}/> {item.department || "No Dept"}</span>
+                                <span className="text-white/40 flex items-center gap-1"><Clock size={12}/> {new Date(item.created_at).toLocaleDateString()}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-                          <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                            item.status === 'Unassigned' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
-                            item.status === 'Escalated' ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' :
-                            'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
-                          }`}>
-                            {item.status}
-                          </span>
-                          <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-semibold rounded-lg transition-colors border border-white/10">
-                            Manage
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </motion.div>
+                          
+                          <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border whitespace-nowrap ${
+                              item.status === 'SUBMITTED' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
+                              item.status === 'IN_PROGRESS' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                              item.status === 'RESOLVED' || item.status === 'CLOSED' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                              'bg-purple-500/10 border-purple-500/20 text-purple-400'
+                            }`}>
+                              {item.status}
+                            </span>
+                            <button 
+                              onClick={() => openAssignModal(item)}
+                              className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-semibold rounded-lg transition-colors border border-white/10 whitespace-nowrap"
+                            >
+                              {item.assigned_officer_id ? "Reassign" : "Assign"}
+                            </button>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  )}
                 </motion.div>
               )}
 
+              {/* Keep other tabs same */}
               {activeTab === "departments" && (
                 <motion.div
                   key="departments"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
                   <div className="flex justify-between items-center mb-6">
@@ -353,7 +398,6 @@ function AdminDashboard() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
                   <h3 className="text-xl font-bold text-white mb-6">Report Generation</h3>
@@ -400,7 +444,6 @@ function AdminDashboard() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
                   className="space-y-6 h-[600px] flex flex-col"
                 >
                   <div className="flex justify-between items-center mb-2">
@@ -414,7 +457,6 @@ function AdminDashboard() {
                     <Map className="w-24 h-24 text-white/5 absolute z-0" />
                     <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay z-0"></div>
                     
-                    {/* Simulated Map Markers */}
                     <div className="absolute top-[30%] left-[40%] w-4 h-4 bg-rose-500 rounded-full shadow-[0_0_15px_rgba(244,63,94,0.8)] animate-pulse z-10" />
                     <div className="absolute top-[50%] left-[60%] w-4 h-4 bg-amber-500 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.8)] z-10" />
                     <div className="absolute top-[20%] left-[20%] w-6 h-6 bg-cyan-500/50 rounded-full flex items-center justify-center border border-cyan-400 z-10 text-[8px] font-bold">12</div>
@@ -433,7 +475,90 @@ function AdminDashboard() {
         </div>
 
       </div>
-      <Footer />
+
+      {/* Assignment Modal */}
+      <AnimatePresence>
+        {isAssignModalOpen && selectedComplaint && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-white">Assign Officer</h3>
+                <button 
+                  onClick={() => setIsAssignModalOpen(false)}
+                  className="text-white/50 hover:text-white transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-white/50 uppercase mb-2 block">Complaint ID</label>
+                  <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-sm font-mono text-white/80">
+                    {selectedComplaint.id}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-white/50 uppercase mb-2 block">Title</label>
+                  <div className="text-sm text-white font-medium">
+                    {selectedComplaint.title}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-white/50 uppercase mb-2 block">Select Officer</label>
+                  {officers.length === 0 ? (
+                    <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3 rounded-lg text-sm">
+                      No officers found in the system.
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedOfficerId}
+                      onChange={(e) => setSelectedOfficerId(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-purple-500/50 transition-colors appearance-none"
+                    >
+                      <option value="">-- Select an Officer --</option>
+                      {officers.map(officer => (
+                        <option key={officer.id} value={officer.id} className="bg-gray-900 text-white">
+                          {officer.full_name} ({officer.email})
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-8 flex gap-3">
+                <button
+                  onClick={() => setIsAssignModalOpen(false)}
+                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAssign}
+                  disabled={!selectedOfficerId || assigning}
+                  className="flex-1 py-3 bg-purple-500 hover:bg-purple-400 text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {assigning ? <Loader2 size={16} className="animate-spin" /> : "Confirm Assignment"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </main>
   );
 }
