@@ -783,9 +783,14 @@ export const SignInPage = ({ className }: SignInPageProps) => {
           phone_number: phone,
           password
         });
-        setIsSignUp(false);
-        setPassword("");
-        setIsLoading(false);
+        
+        // Auto-login after successful signup
+        const response = await authService.login({ email, password });
+        setAuthUser(response.user, response.access_token, response.refresh_token);
+        
+        setReverseCanvasVisible(true);
+        setTimeout(() => setInitialCanvasVisible(false), 50);
+        setTimeout(() => setStep("success"), 2000);
         return;
       }
 
@@ -809,7 +814,13 @@ export const SignInPage = ({ className }: SignInPageProps) => {
 
     } catch (err: any) {
       if (err.response?.data?.detail) {
-        setError(err.response.data.detail);
+        const errorMsg = err.response.data.detail;
+        setError(errorMsg);
+        
+        // Auto switch to sign up if account not found
+        if (errorMsg.includes("Account not found") && roleInfo[role].canSignup) {
+          setTimeout(() => setIsSignUp(true), 1500);
+        }
       } else {
         setError(err.message || "Authentication failed");
       }
