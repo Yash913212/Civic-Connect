@@ -44,26 +44,28 @@ export default function LiveDemo() {
         const toastId = showUploadProgress();
         const formData = new FormData();
         formData.append("file", file);
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api$/, '') : "http://localhost:8000";
+        const rawApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:8000/api";
+        const baseUrl = rawApiUrl.replace(/\/api\/?$/, '');
         const uploadRes = await fetch(`${baseUrl}/upload`, {
           method: "POST",
           body: formData,
         });
-        if (!uploadRes.ok) throw new Error("Upload failed");
+        if (!uploadRes.ok) throw new Error(`Upload failed with status ${uploadRes.status}`);
         
         toast.dismiss(toastId);
         const uploadData = await uploadRes.json();
         aiAnalysis = uploadData.analysis;
-      } catch (error) {
+      } catch (error: any) {
         console.error("Image upload failed:", error);
-        toast.error("❌ Upload failed.");
+        toast.error(`❌ Upload failed: ${error.message}`);
         setStep(0);
         return;
       }
     } else if (text) {
       try {
         const toastId = showTextLoading("Analyzing Text", "Processing civic issue description");
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api$/, '') : "http://localhost:8000";
+        const rawApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:8000/api";
+        const baseUrl = rawApiUrl.replace(/\/api\/?$/, '');
         const analyzeRes = await fetch(`${baseUrl}/analyze_text`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -93,7 +95,8 @@ export default function LiveDemo() {
 
       try {
         const analysisToastId = showAIAnalysis();
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api$/, '') : "http://localhost:8000";
+        const rawApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:8000/api";
+        const baseUrl = rawApiUrl.replace(/\/api\/?$/, '');
         const res = await fetch(`${baseUrl}/complaint`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
