@@ -86,11 +86,11 @@ export default function LiveDemo() {
         
     if (aiAnalysis) {
       setAnalysisResult({
-        title: aiAnalysis.title || "Unknown Issue",
+        title: aiAnalysis.issueDetected || aiAnalysis.title || "Unknown Issue",
         department: aiAnalysis.department || "General",
         priority: aiAnalysis.priority || "Low",
         confidence: aiAnalysis.confidence || "0%",
-        description: aiAnalysis.description || "No description."
+        description: aiAnalysis.summary || aiAnalysis.description || "No description."
       });
 
       try {
@@ -101,10 +101,12 @@ export default function LiveDemo() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            title: aiAnalysis.title || "Road Damage (Pothole)",
-            description: aiAnalysis.description || "Severe road surface degradation observed.",
-            location: "Main St."
-          })
+            title: aiAnalysis.issueDetected || aiAnalysis.title || "Road Damage (Pothole)",
+            description: aiAnalysis.summary || aiAnalysis.description || "Severe road surface degradation observed.",
+            location: "Determining via GPS...",
+            department: aiAnalysis.department || "General",
+            priority: aiAnalysis.priority || "Low"
+          }),
         });
         if (!res.ok) throw new Error("Complaint submission failed");
         
