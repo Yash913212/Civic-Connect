@@ -53,7 +53,8 @@ function AdminDashboard() {
 
   useEffect(() => {
     const toastId = showTextLoading("Admin Sync", "Connecting to Civic DB");
-    fetch("http://localhost:8000/complaints")
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api$/, '') : "http://localhost:8000";
+    fetch(`${baseUrl}/complaints`)
       .then(res => res.json())
       .then(data => {
         const backendComplaints = data.map((c: any) => ({

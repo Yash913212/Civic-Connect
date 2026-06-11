@@ -44,7 +44,8 @@ export default function LiveDemo() {
         const toastId = showUploadProgress();
         const formData = new FormData();
         formData.append("file", file);
-        const uploadRes = await fetch("http://localhost:8000/upload", {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api$/, '') : "http://localhost:8000";
+        const uploadRes = await fetch(`${baseUrl}/upload`, {
           method: "POST",
           body: formData,
         });
@@ -62,7 +63,8 @@ export default function LiveDemo() {
     } else if (text) {
       try {
         const toastId = showTextLoading("Analyzing Text", "Processing civic issue description");
-        const analyzeRes = await fetch("http://localhost:8000/analyze_text", {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api$/, '') : "http://localhost:8000";
+        const analyzeRes = await fetch(`${baseUrl}/analyze_text`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text }),
@@ -91,7 +93,8 @@ export default function LiveDemo() {
 
       try {
         const analysisToastId = showAIAnalysis();
-        const res = await fetch("http://localhost:8000/complaint", {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api$/, '') : "http://localhost:8000";
+        const res = await fetch(`${baseUrl}/complaint`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
