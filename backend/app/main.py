@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import shutil
@@ -230,17 +230,21 @@ def analyze_text(request: TextAnalysisRequest):
 
 @app.post("/complaint")
 def create_complaint(complaint: Complaint, db: Session = Depends(get_db)):
-    db_complaint = DBComplaint(
-        title=complaint.title,
-        description=complaint.description,
-        location=complaint.location,
-        department=complaint.department,
-        priority=complaint.priority
-    )
-    db.add(db_complaint)
-    db.commit()
-    db.refresh(db_complaint)
-    return {"message": "Complaint Submitted Successfully", "id": db_complaint.id}
+    try:
+        db_complaint = DBComplaint(
+            title=complaint.title,
+            description=complaint.description,
+            location=complaint.location,
+            department=complaint.department,
+            priority=complaint.priority
+        )
+        db.add(db_complaint)
+        db.commit()
+        db.refresh(db_complaint)
+        return {"message": "Complaint Submitted Successfully", "id": db_complaint.id}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/complaints")
 def get_complaints(db: Session = Depends(get_db)):
