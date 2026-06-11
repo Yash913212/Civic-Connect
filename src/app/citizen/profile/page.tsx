@@ -21,6 +21,7 @@ import {
   Save,
   Check
 } from "lucide-react";
+import { showSystemStatus } from "@/components/ui/CustomToasts";
 
 export default function CitizenProfile() {
   const router = useRouter();
@@ -39,9 +40,6 @@ export default function CitizenProfile() {
 
   // Active tab state
   const [activeTab, setActiveTab] = useState<"edit" | "security" | "activity">("edit");
-  
-  // Toast notifications state
-  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     // Read session details
@@ -68,10 +66,7 @@ export default function CitizenProfile() {
     window.dispatchEvent(new Event("storage"));
     
     // Show premium success toast
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
+    showSystemStatus("Profile Updated", "Configurations saved successfully");
   };
 
   const handleSignOut = () => {
@@ -445,25 +440,6 @@ export default function CitizenProfile() {
         </div>
 
       </div>
-
-      {/* Dynamic Success Toast */}
-      <AnimatePresence>
-        {showToast && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, x: "-50%" }}
-            animate={{ opacity: 1, y: 0, x: "-50%" }}
-            exit={{ opacity: 0, y: 50, x: "-50%" }}
-            className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-[200] flex items-center gap-3 px-6 py-4 rounded-full border border-emerald-500/30 bg-black/90 backdrop-blur-md shadow-[0_0_30px_rgba(16,185,129,0.3)]"
-          >
-            <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-black">
-              <Check className="w-4 h-4" />
-            </div>
-            <span className="text-xs font-bold text-white tracking-wide">
-              Profile Configurations Saved Successfully!
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <Footer />
     </main>

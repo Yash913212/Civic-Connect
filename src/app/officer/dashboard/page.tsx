@@ -16,6 +16,9 @@ import {
 import { useRouter } from "next/navigation";
 import Footer from "@/components/sections/Footer";
 import { CanvasRevealEffect } from "@/components/ui/sign-in-flow-1";
+import { toast } from "sonner";
+import confetti from "canvas-confetti";
+import { showUploadProgress, showTextLoading, showResolution, showOfficerAssigned, showAdminAlert } from "@/components/ui/CustomToasts";
 
 const workloadData = [
   { name: 'Mon', tasks: 4 },
@@ -253,11 +256,21 @@ function OfficerDashboard() {
                             <div>
                               <h4 className="text-xs font-bold text-white/50 uppercase mb-2">Field Actions</h4>
                               <div className="grid grid-cols-2 gap-3">
-                                <button className="flex flex-col items-center justify-center gap-2 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-colors">
+                                <button 
+                                  onClick={() => {
+                                    showUploadProgress();
+                                  }}
+                                  className="flex flex-col items-center justify-center gap-2 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-colors"
+                                >
                                   <Camera size={20} className="text-cyan-400" />
                                   <span className="text-xs font-semibold text-white">Upload Evidence</span>
                                 </button>
-                                <button className="flex flex-col items-center justify-center gap-2 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-colors">
+                                <button 
+                                  onClick={() => {
+                                    toast.success("Notes saved to case file.");
+                                  }}
+                                  className="flex flex-col items-center justify-center gap-2 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-colors"
+                                >
                                   <MessageSquare size={20} className="text-cyan-400" />
                                   <span className="text-xs font-semibold text-white">Add Notes</span>
                                 </button>
@@ -266,10 +279,19 @@ function OfficerDashboard() {
                           </div>
 
                           <div className="pt-6 border-t border-white/10 mt-6 grid grid-cols-2 gap-3">
-                            <button className="py-2.5 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 font-bold text-sm rounded-xl transition-colors border border-emerald-500/30 flex justify-center items-center gap-2">
+                            <button 
+                              onClick={() => {
+                                showResolution();
+                                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                              }}
+                              className="py-2.5 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 font-bold text-sm rounded-xl transition-colors border border-emerald-500/30 flex justify-center items-center gap-2"
+                            >
                                <CheckCircle size={16} /> Mark Resolved
                             </button>
-                            <button className="py-2.5 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 font-bold text-sm rounded-xl transition-colors border border-amber-500/30">
+                            <button 
+                              onClick={() => showAdminAlert("Sector 7", "Emergency Request Sent")}
+                              className="py-2.5 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 font-bold text-sm rounded-xl transition-colors border border-amber-500/30"
+                            >
                                Request Help
                             </button>
                           </div>
@@ -317,7 +339,12 @@ function OfficerDashboard() {
                     <div className="z-30 p-6 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl max-w-sm text-center">
                       <h4 className="text-white font-bold mb-2">GPS Tracking Active</h4>
                       <p className="text-xs text-white/60 mb-4">Navigating to assigned tasks. Map auto-centers on your current location.</p>
-                      <button className="px-6 py-2 bg-cyan-500 text-black rounded-lg text-sm font-bold hover:bg-cyan-400 transition-colors flex items-center justify-center gap-2 mx-auto">
+                      <button 
+                        onClick={() => {
+                          showTextLoading("Navigating to Task", "Calculating optimal route");
+                        }}
+                        className="px-6 py-2 bg-cyan-500 text-black rounded-lg text-sm font-bold hover:bg-cyan-400 transition-colors flex items-center justify-center gap-2 mx-auto"
+                      >
                          <Play size={16}/> Start Navigation
                       </button>
                     </div>

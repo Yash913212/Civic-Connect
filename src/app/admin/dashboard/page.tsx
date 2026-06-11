@@ -2,7 +2,7 @@
 
 import { withRoleGuard } from "@/middleware/roleGuard";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Building2, Users, FileText, Map, Settings, AlertTriangle, 
@@ -16,6 +16,9 @@ import {
 import { useRouter } from "next/navigation";
 import Footer from "@/components/sections/Footer";
 import { CanvasRevealEffect } from "@/components/ui/sign-in-flow-1";
+import { toast } from "sonner";
+import confetti from "canvas-confetti";
+import { showTextLoading, showSystemStatus, showOfficerAssigned, showAIFuturistic } from "@/components/ui/CustomToasts";
 
 const complaintTrends = [
   { name: 'Mon', new: 120, resolved: 90 },
@@ -34,9 +37,55 @@ const deptPerformance = [
   { name: 'Traffic', efficiency: 45 },
 ];
 
+interface ComplaintData {
+  id: string;
+  title: string;
+  dept: string;
+  priority: string;
+  status: string;
+  time: string;
+}
+
 function AdminDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"overview" | "complaints" | "departments" | "map" | "reports">("overview");
+  const [complaints, setComplaints] = useState<ComplaintData[]>([]);
+
+  useEffect(() => {
+    const toastId = showTextLoading("Admin Sync", "Connecting to Civic DB");
+    fetch("http://localhost:8000/complaints")
+      .then(res => res.json())
+      .then(data => {
+        const backendComplaints = data.map((c: any) => ({
+          id: c.id.substring(0, 8).toUpperCase(),
+          title: c.title,
+          dept: c.dept,
+          priority: c.priority,
+          status: c.status,
+          time: c.time.split('T')[0]
+        }));
+        setComplaints([
+          ...backendComplaints,
+          { id: "C-8839", title: "Massive pothole causing accidents", dept: "Public Works", priority: "Critical", status: "Unassigned", time: "2 hours ago" },
+          { id: "C-8840", title: "Streetlight completely off", dept: "Water & Power", priority: "High", status: "Assigned", time: "5 hours ago" },
+          { id: "C-8841", title: "Overflowing garbage bin", dept: "Sanitation", priority: "Medium", status: "Assigned", time: "1 day ago" },
+          { id: "C-8842", title: "Faded crosswalk paint", dept: "Traffic", priority: "Low", status: "Escalated", time: "3 days ago" }
+        ]);
+        toast.dismiss(toastId);
+        showSystemStatus("Database Sync", "Complaints loaded successfully");
+      })
+      .catch(err => {
+        console.error(err);
+        setComplaints([
+          { id: "C-8839", title: "Massive pothole causing accidents", dept: "Public Works", priority: "Critical", status: "Unassigned", time: "2 hours ago" },
+          { id: "C-8840", title: "Streetlight completely off", dept: "Water & Power", priority: "High", status: "Assigned", time: "5 hours ago" },
+          { id: "C-8841", title: "Overflowing garbage bin", dept: "Sanitation", priority: "Medium", status: "Assigned", time: "1 day ago" },
+          { id: "C-8842", title: "Faded crosswalk paint", dept: "Traffic", priority: "Low", status: "Escalated", time: "3 days ago" }
+        ]);
+        toast.dismiss(toastId);
+        showSystemStatus("Sync Error", "Loaded offline data. Server unavailable.", true);
+      });
+  }, []);
 
   const handleSignOut = () => {
     sessionStorage.clear();
@@ -239,12 +288,7 @@ function AdminDashboard() {
                     animate="show"
                     className="space-y-4"
                   >
-                    {[
-                      { id: "C-8839", title: "Massive pothole causing accidents", dept: "Public Works", priority: "Critical", status: "Unassigned", time: "2 hours ago" },
-                      { id: "C-8840", title: "Streetlight completely off", dept: "Water & Power", priority: "High", status: "Assigned", time: "5 hours ago" },
-                      { id: "C-8841", title: "Overflowing garbage bin", dept: "Sanitation", priority: "Medium", status: "Assigned", time: "1 day ago" },
-                      { id: "C-8842", title: "Faded crosswalk paint", dept: "Traffic", priority: "Low", status: "Escalated", time: "3 days ago" }
-                    ].map((item, idx) => (
+                    {complaints.map((item, idx) => (
                       <motion.div 
                         variants={{
                           hidden: { opacity: 0, x: -20 },
@@ -282,7 +326,13 @@ function AdminDashboard() {
                           }`}>
                             {item.status}
                           </span>
-                          <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-semibold rounded-lg transition-colors border border-white/10">
+                          <button 
+                            onClick={() => {
+                              showOfficerAssigned(item.dept, "2 Hours");
+                              confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+                            }}
+                            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-semibold rounded-lg transition-colors border border-white/10"
+                          >
                             Manage
                           </button>
                         </div>
@@ -303,7 +353,13 @@ function AdminDashboard() {
                 >
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-bold text-white">Department Workloads</h3>
-                    <button className="px-4 py-2 bg-purple-500 hover:bg-purple-400 text-white font-semibold text-sm rounded-lg transition-colors">
+                    <button 
+                      onClick={() => {
+                        const t = showTextLoading("Provisioning", "Allocating department resources");
+                        setTimeout(() => showSystemStatus("Department Created", "System resources allocated to new department"), 2000);
+                      }}
+                      className="px-4 py-2 bg-purple-500 hover:bg-purple-400 text-white font-semibold text-sm rounded-lg transition-colors"
+                    >
                       + New Department
                     </button>
                   </div>

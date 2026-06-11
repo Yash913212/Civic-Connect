@@ -5,6 +5,7 @@ import SmoothScroll from "@/components/SmoothScroll";
 import Navbar from "@/components/Navbar";
 import GlobalBackground from "@/components/GlobalBackground";
 import { AuthProvider } from "@/auth/AuthProvider";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
       className={`${inter.variable} ${sora.variable} dark antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans overflow-x-hidden">
+        <Toaster theme="dark" position="top-right" richColors closeButton />
         <AuthProvider>
           <SmoothScroll>
             <GlobalBackground />

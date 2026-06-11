@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Menu, X, User, LogOut, ShieldCheck, Award, Settings, Terminal, Activity } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import NotificationBell from "./ui/NotificationBell";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -111,9 +112,11 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Profile Dropdown trigger or Launch App button */}
-            {user ? (
-              <div className="relative" ref={dropdownRef}>
+            <div className="flex items-center gap-4">
+              <NotificationBell />
+              {/* Profile Dropdown trigger or Launch App button */}
+              {user ? (
+                <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   aria-label="Toggle user profile menu"
@@ -220,6 +223,7 @@ export default function Navbar() {
                 Sign In
               </Link>
             )}
+            </div>
           </div>
 
           {/* Mobile Toggle */}

@@ -4,12 +4,15 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/auth/AuthProvider";
 import { authService } from "@/auth/authService";
 import { cn } from "@/lib/utils";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import WarpTransition from "./WarpTransition";
-import { Lock, Shield, Key, Activity, Loader2, Eye, EyeOff, User, Briefcase } from "lucide-react";
+import { Lock, Shield, Key, Activity, Loader2, Eye, EyeOff, User, Briefcase, Check, ShieldAlert, Cpu } from "lucide-react";
+import { toast } from "sonner";
+import { showTextLoading, showSystemStatus } from "@/components/ui/CustomToasts";
+import confetti from "canvas-confetti";
 
 import * as THREE from "three";
 
@@ -746,7 +749,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [role, setRole] = useState<Role>('CITIZEN');
-  const prevRoleIndexRef = useRef<number>(0);
+  const [prevRoleIndex, setPrevRoleIndex] = useState<number>(0);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -775,6 +778,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     setIsLoading(true);
     setError(null);
 
+    const toastId = showTextLoading(isSignUp ? "Account Provisioning" : "Authentication", isSignUp ? "Creating secure identity profile" : "Verifying secure credentials...");
+
     try {
       if (isSignUp) {
         await authService.register({
@@ -787,6 +792,10 @@ export const SignInPage = ({ className }: SignInPageProps) => {
         // Auto-login after successful signup
         const response = await authService.login({ email, password });
         setAuthUser(response.user, response.access_token, response.refresh_token);
+        
+        toast.dismiss(toastId);
+        showSystemStatus("Identity Verified", "Account created securely");
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
         
         setReverseCanvasVisible(true);
         setTimeout(() => setInitialCanvasVisible(false), 50);
@@ -802,6 +811,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
 
       // Store in context
       setAuthUser(response.user, response.access_token, response.refresh_token);
+      toast.dismiss(toastId);
+      showSystemStatus("Handshake Successful", "Welcome back");
 
       setReverseCanvasVisible(true);
       setTimeout(() => {
@@ -813,9 +824,11 @@ export const SignInPage = ({ className }: SignInPageProps) => {
       }, 2000);
 
     } catch (err: any) {
+      toast.dismiss(toastId);
       if (err.response?.data?.detail) {
         const errorMsg = err.response.data.detail;
         setError(errorMsg);
+        showSystemStatus("Security Alert", errorMsg, true);
         
         // Auto switch to sign up if account not found
         if (errorMsg.includes("Account not found") && roleInfo[role].canSignup) {
@@ -823,6 +836,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
         }
       } else {
         setError(err.message || "Authentication failed");
+        showSystemStatus("Access Denied", err.message || "Invalid credentials", true);
       }
     } finally {
       setIsLoading(false);
@@ -893,7 +907,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         key={r}
                         type="button"
                         onClick={() => {
-                          prevRoleIndexRef.current = roles.indexOf(role);
+                          setPrevRoleIndex(roles.indexOf(role));
                           setRole(r);
                           setError(null);
                         }}
@@ -973,7 +987,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
               {step === "email" ? (
                 <motion.div
                   key={`email-step-${role}`}
-                  custom={roles.indexOf(role) >= prevRoleIndexRef.current ? 1 : -1}
+                  custom={roles.indexOf(role) >= prevRoleIndex ? 1 : -1}
                   variants={{
                     enter: (dir: number) => ({ opacity: 0, x: dir * 36, filter: "blur(5px)" }),
                     center: { opacity: 1, x: 0, filter: "blur(0px)" },
