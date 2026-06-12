@@ -1,16 +1,24 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Canvas } from "@react-three/fiber";
+import { useTheme } from "next-themes";
 import NeuralNetwork from "@/components/canvas/NeuralNetwork";
+import LightNetwork from "@/components/canvas/LightNetwork";
 import CinematicVideo from "@/components/ui/CinematicVideo";
 
 export default function GlobalBackground() {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -67,47 +75,72 @@ export default function GlobalBackground() {
     return () => ctx.revert();
   }, []);
 
-  return (
-    <div ref={containerRef} className="fixed inset-0 w-full h-full z-[-1] overflow-hidden bg-background pointer-events-none">
-      
-      {/* Layer 1: Cinematic Video */}
-      <CinematicVideo
-        ref={videoRef}
-        className="opacity-80"
-        zoom={true}
-      />
+  if (!mounted) return null;
 
-      {/* Layer 2: Dark Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/60 to-background opacity-90" />
+  const isLight = theme === "light";
+
+  return (
+    <div ref={containerRef} className="fixed inset-0 w-full h-full z-[-1] overflow-hidden bg-slate-50 dark:bg-[#050816] pointer-events-none transition-colors duration-500">
+      
+      {/* Layer 1: Cinematic Video (Dark mode only) */}
+      {!isLight && (
+        <CinematicVideo
+          ref={videoRef}
+          className="opacity-80"
+          zoom={true}
+        />
+      )}
+
+      {/* Layer 2: Gradient Overlay */}
+      <div className={`absolute inset-0 transition-opacity duration-1000 ${
+        isLight 
+          ? "bg-gradient-to-br from-[#F8FAFC] via-[#FFFFFF] to-[#EEF6FF] opacity-100" 
+          : "bg-gradient-to-b from-transparent via-[#050816]/60 to-[#050816] opacity-90"
+      }`} />
 
       {/* Layer 3: AI Glow Overlay */}
       <div 
         ref={glowRef}
-        className="absolute inset-0 opacity-30 transition-opacity duration-1000"
+        className={`absolute inset-0 transition-opacity duration-1000 ${isLight ? 'opacity-50' : 'opacity-30'}`}
         style={{
-          background: "radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.15) 0%, transparent 70%)"
+          background: isLight 
+            ? "radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.08) 0%, transparent 60%)"
+            : "radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.15) 0%, transparent 70%)"
         }}
       />
 
-      {/* Layer 4: Animated Grid Pattern */}
-      <div 
-        className="absolute inset-0 opacity-[0.15]" 
-        style={{
-          backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
-          backgroundPosition: "center center",
-          perspective: "1000px",
-          transform: "rotateX(60deg) scale(2)",
-          transformOrigin: "bottom center",
-        }}
-      />
+      {/* Layer 4: Animated Grid Pattern (Dark Mode Only) */}
+      {!isLight && (
+        <div 
+          className="absolute inset-0 transition-opacity duration-1000 opacity-[0.15]"
+          style={{
+            backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+            backgroundPosition: "center center",
+            perspective: "1000px",
+            transform: "rotateX(60deg) scale(2)",
+            transformOrigin: "bottom center",
+          }}
+        />
+      )}
 
-      {/* Layer 5 & 6: Neural Network Animation (R3F Canvas) */}
-      <div className="absolute inset-0 z-10 opacity-70">
-        <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
-          <NeuralNetwork />
-        </Canvas>
-      </div>
+      {/* Elegant Aurora Animation for Light Mode */}
+      {isLight && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-60">
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-300/40 mix-blend-multiply filter blur-[120px] animate-blob" />
+          <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-200/40 mix-blend-multiply filter blur-[120px] animate-blob animation-delay-2000" />
+          <div className="absolute bottom-[-20%] left-[20%] w-[50%] h-[50%] rounded-full bg-indigo-300/40 mix-blend-multiply filter blur-[120px] animate-blob animation-delay-4000" />
+        </div>
+      )}
+
+      {/* Layer 5 & 6: Neural Network Animation (R3F Canvas - Dark Mode Only) */}
+      {!isLight && (
+        <div className="absolute inset-0 z-10 transition-opacity duration-1000 opacity-70">
+          <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
+            <NeuralNetwork />
+          </Canvas>
+        </div>
+      )}
 
       {/* Layer 7 is the actual page content sitting in front of this fixed container */}
     </div>

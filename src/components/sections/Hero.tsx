@@ -53,7 +53,7 @@ export default function Hero() {
           </Link>
           <button 
             onClick={() => document.getElementById('use-cases')?.scrollIntoView({ behavior: 'smooth' })}
-            className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-full font-medium backdrop-blur-md hover:bg-white/10 transition-colors duration-300 w-full sm:w-auto text-center"
+            className="px-8 py-4 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 text-slate-900 dark:text-white rounded-full font-medium backdrop-blur-md hover:bg-black/5 dark:bg-white/10 transition-colors duration-300 w-full sm:w-auto text-center"
           >
             Watch AI Demo
           </button>
@@ -67,8 +67,8 @@ export default function Hero() {
           { value: "15+", label: "Departments" },
           { value: "50K+", label: "Complaints Processed" },
         ].map((stat, i) => (
-          <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md hover:-translate-y-2 transition-transform duration-300 shadow-xl text-center">
-            <div className="text-2xl md:text-3xl font-bold text-white mb-2">{stat.value}</div>
+          <div key={i} className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-6 backdrop-blur-md hover:-translate-y-2 transition-transform duration-300 shadow-xl text-center">
+            <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-2">{stat.value}</div>
             <div className="text-sm text-muted-foreground">{stat.label}</div>
           </div>
         ))}

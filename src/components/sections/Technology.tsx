@@ -51,7 +51,7 @@ export default function Technology() {
   return (
     <section id="technology" className="py-32 w-full max-w-7xl mx-auto px-6 relative z-10">
       <div className="mb-20 text-center">
-        <h2 className="text-4xl md:text-6xl font-heading font-bold mb-6 text-white">AI Technology <span className="text-primary text-glow">Showcase</span></h2>
+        <h2 className="text-4xl md:text-6xl font-heading font-bold mb-6 text-slate-900 dark:text-white">AI Technology <span className="text-primary text-glow">Showcase</span></h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Powered by the world's most advanced machine learning models.</p>
       </div>
 
@@ -61,28 +61,28 @@ export default function Technology() {
             key={i}
             whileHover={{ y: -4 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className={`${tech.size} relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0c1220] via-[#050810] to-[#020306] border border-[#1e293b] hover:border-cyan-500/50 p-6 md:p-8 flex flex-col justify-end group transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.8)] hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] min-h-[240px] md:min-h-0`}
+            className={`${tech.size} relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-slate-50 to-slate-100 dark:from-[#0c1220] dark:via-[#050810] dark:to-[#020306] border border-black/5 dark:border-[#1e293b] hover:border-cyan-400 dark:hover:border-cyan-500/50 p-6 md:p-8 flex flex-col justify-end group transition-all duration-500 shadow-xl dark:shadow-[0_4px_30px_rgba(0,0,0,0.8)] hover:shadow-cyan-400/20 dark:hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] min-h-[240px] md:min-h-0`}
           >
             {/* Category Badge */}
             <div className="absolute top-6 left-6 z-20">
-              <span className="px-3 py-1 text-[10px] font-bold tracking-wider uppercase text-cyan-400 bg-cyan-950/60 border border-cyan-800/60 rounded-full backdrop-blur-sm shadow-[0_0_10px_rgba(6,182,212,0.1)]">
+              <span className="px-3 py-1 text-[10px] font-bold tracking-wider uppercase text-cyan-700 bg-cyan-100 border border-cyan-200 dark:text-cyan-400 dark:bg-cyan-950/60 dark:border-cyan-800/60 rounded-full backdrop-blur-sm shadow-sm dark:shadow-[0_0_10px_rgba(6,182,212,0.1)]">
                 {tech.category}
               </span>
             </div>
 
             {/* Background Image with Overlay */}
             <div 
-              className="absolute inset-0 bg-cover bg-center transition-all duration-700 group-hover:scale-105 opacity-20 group-hover:opacity-40 mix-blend-luminosity group-hover:mix-blend-normal"
+              className="absolute inset-0 bg-cover bg-center transition-all duration-700 group-hover:scale-105 opacity-[0.03] dark:opacity-20 group-hover:opacity-10 dark:group-hover:opacity-40 mix-blend-luminosity group-hover:mix-blend-normal"
               style={{ backgroundImage: `url(${tech.img})` }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#02040a] via-[#02040a]/75 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 dark:from-[#02040a] dark:via-[#02040a]/75 to-transparent" />
 
             {/* Animated Glow */}
             <div className="absolute -inset-[100%] bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[spin_4s_linear_infinite] transition-opacity duration-500 blur-2xl pointer-events-none" />
 
             <div className="relative z-10 transform transition-transform duration-300 group-hover:-translate-y-1">
-              <h3 className="text-2xl font-bold mb-2 text-white group-hover:text-cyan-300 transition-colors duration-300">{tech.name}</h3>
-              <p className="text-muted-foreground group-hover:text-white/90 transition-colors duration-300 text-sm md:text-base leading-relaxed">{tech.desc}</p>
+              <h3 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white group-hover:text-cyan-300 transition-colors duration-300">{tech.name}</h3>
+              <p className="text-muted-foreground group-hover:text-slate-700 dark:text-white/90 transition-colors duration-300 text-sm md:text-base leading-relaxed">{tech.desc}</p>
             </div>
           </motion.div>
         ))}

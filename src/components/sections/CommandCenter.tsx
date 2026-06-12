@@ -17,7 +17,7 @@ export default function CommandCenter() {
           { title: "Active Issues", value: "3,150", icon: Clock, color: "text-yellow-500" },
           { title: "Critical Alerts", value: "240", icon: AlertTriangle, color: "text-destructive" },
         ].map((stat, i) => (
-          <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md hover:bg-white/10 transition-colors">
+          <div key={i} className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-6 backdrop-blur-md hover:bg-black/5 dark:bg-white/10 transition-colors">
             <div className="flex justify-between items-start mb-4">
               <div className="text-sm text-muted-foreground font-medium">{stat.title}</div>
               <stat.icon className={`w-5 h-5 ${stat.color}`} />
@@ -28,9 +28,9 @@ export default function CommandCenter() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-auto md:h-[400px]">
-        <div className="col-span-1 md:col-span-2 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md flex flex-col h-auto md:h-full min-h-[300px] md:min-h-0">
+        <div className="col-span-1 md:col-span-2 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-6 backdrop-blur-md flex flex-col h-auto md:h-full min-h-[300px] md:min-h-0">
           <h3 className="text-lg font-medium mb-4">Resolution Times</h3>
-          <div className="flex-1 border-t border-b border-white/10 relative flex items-end pb-4 gap-4 min-h-[160px]">
+          <div className="flex-1 border-t border-b border-black/5 dark:border-white/10 relative flex items-end pb-4 gap-4 min-h-[160px]">
             {/* Mock Chart */}
             {[40, 60, 45, 80, 55, 90, 30].map((h, i) => (
               <div key={i} className="flex-1 bg-primary/20 hover:bg-primary/50 transition-colors rounded-t-sm" style={{ height: `${h}%` }} />
@@ -38,7 +38,7 @@ export default function CommandCenter() {
           </div>
         </div>
 
-        <div className="col-span-1 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md flex flex-col h-auto md:h-full min-h-[350px] md:min-h-0 overflow-hidden">
+        <div className="col-span-1 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-6 backdrop-blur-md flex flex-col h-auto md:h-full min-h-[350px] md:min-h-0 overflow-hidden">
           <h3 className="text-lg font-medium mb-4">Live Alert Feed</h3>
           <div className="flex-1 overflow-y-auto pr-2 space-y-4 max-h-[300px] md:max-h-none">
             {[

@@ -132,7 +132,7 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
         transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateY(${isHovered ? "-10px" : "0px"})`,
         transition: isHovered ? "transform 0.1s ease-out" : "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)",
       }}
-      className={`team-card-animate highlight-card relative rounded-[28px] border border-white/10 bg-white/[0.02] backdrop-blur-md p-5 overflow-hidden transition-all duration-300 shadow-xl w-full h-full flex flex-col justify-between ${accentGradients[member.accent]}`}
+      className={`team-card-animate highlight-card relative rounded-[28px] border border-black/5 dark:border-white/10 bg-white/[0.02] backdrop-blur-md p-5 overflow-hidden transition-all duration-300 shadow-xl w-full h-full flex flex-col justify-between ${accentGradients[member.accent]}`}
     >
       {/* Animated glow border layout */}
       <div 
@@ -158,15 +158,15 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
           
           {/* Role badge inside image */}
-          <div className="absolute bottom-3 left-3 right-3 py-2 px-3 rounded-xl bg-black/60 border border-white/10 backdrop-blur-md">
-            <span className="text-[10px] sm:text-[11px] font-semibold tracking-tight text-white/90 uppercase block text-center whitespace-normal leading-tight">
+          <div className="absolute bottom-3 left-3 right-3 py-2 px-3 rounded-xl bg-white/80 dark:bg-black/60 border border-black/5 dark:border-white/10 backdrop-blur-md">
+            <span className="text-[10px] sm:text-[11px] font-semibold tracking-tight text-slate-900 dark:text-white/90 uppercase block text-center whitespace-normal leading-tight">
               {member.role}
             </span>
           </div>
         </div>
 
         {/* Member Name */}
-        <h4 className="text-xl font-bold text-white mb-2 tracking-wide font-heading">
+        <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-2 tracking-wide font-heading">
           {member.name}
         </h4>
 
@@ -185,7 +185,7 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
           {member.skills.map((skill) => (
             <span
               key={skill}
-              className="px-2.5 py-1 rounded-md text-[10px] font-medium border border-white/5 bg-white/[0.02] text-white/60 hover:text-white hover:border-white/20 transition-colors"
+              className="px-2.5 py-1 rounded-md text-[10px] font-medium border border-white/5 bg-white/[0.02] text-slate-600 dark:text-white/60 hover:text-slate-900 dark:text-white hover:border-black/10 dark:border-white/20 transition-colors"
             >
               {skill}
             </span>
@@ -200,7 +200,7 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
           href={member.linkedin}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-2 rounded-full border border-white/5 bg-white/[0.01] text-white/50 hover:bg-white/[0.05] hover:text-cyan-400 transition-all flex items-center justify-center"
+          className="p-2 rounded-full border border-white/5 bg-white/[0.01] text-slate-500 dark:text-white/50 hover:bg-white/[0.05] hover:text-cyan-400 transition-all flex items-center justify-center"
           title="LinkedIn"
         >
           <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
@@ -213,7 +213,7 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
           href={member.github}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-2 rounded-full border border-white/5 bg-white/[0.01] text-white/50 hover:bg-white/[0.05] hover:text-purple-400 transition-all flex items-center justify-center"
+          className="p-2 rounded-full border border-white/5 bg-white/[0.01] text-slate-500 dark:text-white/50 hover:bg-white/[0.05] hover:text-purple-400 transition-all flex items-center justify-center"
           title="GitHub"
         >
           <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
@@ -224,7 +224,7 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
         {/* Email */}
         <a
           href={member.email}
-          className="p-2 rounded-full border border-white/5 bg-white/[0.01] text-white/50 hover:bg-white/[0.05] hover:text-emerald-400 transition-all flex items-center justify-center"
+          className="p-2 rounded-full border border-white/5 bg-white/[0.01] text-slate-500 dark:text-white/50 hover:bg-white/[0.05] hover:text-emerald-400 transition-all flex items-center justify-center"
           title="Email"
         >
           <Mail className="w-3.5 h-3.5" />
@@ -365,7 +365,7 @@ export default function Team() {
           </motion.span>
           <h2 
             ref={titleRef} 
-            className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 text-white leading-tight"
+            className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 text-slate-900 dark:text-white leading-tight"
           >
             Meet The Minds Behind <span className="text-gradient">Civic Connect</span>
           </h2>
@@ -385,17 +385,17 @@ export default function Team() {
         </div>
 
         {/* Team Statistics Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto mb-32 border-t border-b border-white/10 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto mb-32 border-t border-b border-black/5 dark:border-white/10 py-12">
           
           {/* Members */}
           <div className="text-center group p-4 rounded-2xl transition-colors hover:bg-white/[0.01]">
             <div className="flex justify-center mb-2 text-cyan-400">
               <Users className="w-6 h-6 animate-pulse" />
             </div>
-            <div className="text-4xl font-bold font-mono text-white mb-1 flex justify-center items-baseline">
+            <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">
               <span className="team-count-stat" data-target={5}>0</span>
             </div>
-            <div className="text-xs uppercase tracking-wider font-semibold text-white/50">Team Members</div>
+            <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-white/50">Team Members</div>
           </div>
 
           {/* Technologies */}
@@ -403,11 +403,11 @@ export default function Team() {
             <div className="flex justify-center mb-2 text-purple-400">
               <Globe className="w-6 h-6" />
             </div>
-            <div className="text-4xl font-bold font-mono text-white mb-1 flex justify-center items-baseline">
+            <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">
               <span className="team-count-stat" data-target={20}>0</span>
               <span className="text-purple-400 ml-0.5">+</span>
             </div>
-            <div className="text-xs uppercase tracking-wider font-semibold text-white/50">Technologies</div>
+            <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-white/50">Technologies</div>
           </div>
 
           {/* AI Models */}
@@ -415,10 +415,10 @@ export default function Team() {
             <div className="flex justify-center mb-2 text-blue-400">
               <Cpu className="w-6 h-6" />
             </div>
-            <div className="text-4xl font-bold font-mono text-white mb-1 flex justify-center items-baseline">
+            <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">
               <span className="team-count-stat" data-target={6}>0</span>
             </div>
-            <div className="text-xs uppercase tracking-wider font-semibold text-white/50">AI Models</div>
+            <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-white/50">AI Models</div>
           </div>
 
           {/* Shared Vision */}
@@ -426,21 +426,21 @@ export default function Team() {
             <div className="flex justify-center mb-2 text-pink-400">
               <Award className="w-6 h-6" />
             </div>
-            <div className="text-4xl font-bold font-mono text-white mb-1 flex justify-center items-baseline">
+            <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">
               <span className="team-count-stat" data-target={1}>0</span>
             </div>
-            <div className="text-xs uppercase tracking-wider font-semibold text-white/50">Shared Vision</div>
+            <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-white/50">Shared Vision</div>
           </div>
 
         </div>
 
         {/* Large Premium Mission Quote */}
-        <div className="team-quote-block max-w-4xl mx-auto text-center py-16 px-6 relative border border-white/10 rounded-[32px] bg-white/[0.01] backdrop-blur-sm shadow-inner">
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 bg-black">
+        <div className="team-quote-block max-w-4xl mx-auto text-center py-16 px-6 relative border border-black/5 dark:border-white/10 rounded-[32px] bg-white/[0.01] backdrop-blur-sm shadow-inner">
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 bg-transparent dark:bg-black">
             <span className="text-5xl text-purple-400/30 font-serif font-bold">“</span>
           </div>
           
-          <blockquote className="text-2xl md:text-4xl text-white font-serif-instrument leading-tight italic tracking-wide max-w-3xl mx-auto">
+          <blockquote className="text-2xl md:text-4xl text-slate-900 dark:text-white font-serif-instrument leading-tight italic tracking-wide max-w-3xl mx-auto">
             "Together, we are building intelligent systems that connect citizens, governments, and technology to create smarter and more responsive cities."
           </blockquote>
           

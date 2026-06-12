@@ -59,7 +59,7 @@ function Counter({ value, suffix, label, decimals = 0, start, delay }: any) {
 
   return (
     <div className="flex flex-col items-center text-center">
-      <div className="text-5xl md:text-7xl font-bold font-mono mb-4 text-glow text-white">
+      <div className="text-5xl md:text-7xl font-bold font-mono mb-4 text-glow text-slate-900 dark:text-white">
         {count.toFixed(decimals)}{suffix}
       </div>
       <div className="text-sm md:text-base text-muted-foreground uppercase tracking-wider font-medium">{label}</div>

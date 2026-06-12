@@ -46,7 +46,7 @@ export default function TheProblem() {
   return (
     <section ref={containerRef} className="min-h-screen md:h-screen w-full flex flex-col md:flex-row items-stretch md:items-center bg-transparent overflow-hidden relative border-t border-white/5 py-16 md:py-0">
       <div className="relative md:absolute top-0 left-0 md:top-20 md:left-20 z-10 px-6 md:px-0 mb-8 md:mb-0">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-white leading-tight">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-slate-900 dark:text-white leading-tight">
           Cities Generate <span className="text-destructive">Thousands</span><br className="hidden md:block" /> of Complaints Every Day
         </h2>
       </div>

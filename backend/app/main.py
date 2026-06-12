@@ -29,12 +29,6 @@ try:
         conn.execute(text("ALTER TABLE complaints ALTER COLUMN status TYPE VARCHAR USING status::VARCHAR"))
 except Exception as e:
     pass
-
-try:
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE complaints ALTER COLUMN citizen_id DROP NOT NULL"))
-except Exception as e:
-    pass
 app = FastAPI(title="CivicConnect API")
 
 app.add_middleware(

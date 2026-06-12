@@ -7,6 +7,7 @@ import { Menu, X, User, LogOut, ShieldCheck, Award, Settings, Terminal, Activity
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "./ui/NotificationBell";
+import { ThemeToggle } from "./ThemeToggle";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -80,7 +81,7 @@ export default function Navbar() {
         transition={{ duration: 0.8, ease: "easeOut", delay: 1 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled 
-            ? "bg-black/40 backdrop-blur-xl border-b border-white/10 py-4 shadow-[0_4px_30px_rgba(0,0,0,0.1)]" 
+            ? "bg-white/70 dark:bg-black/40 backdrop-blur-xl border-b border-black/10 dark:border-white/10 shadow-sm dark:shadow-[0_4px_30px_rgba(0,0,0,0.1)]" 
             : "bg-transparent py-6"
         }`}
       >
@@ -90,7 +91,7 @@ export default function Navbar() {
             <div className="relative h-10 w-10 rounded-md group-hover:scale-105 transition-transform duration-300 flex items-center justify-center overflow-hidden">
               <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full" />
             </div>
-            <span className="text-xl font-bold font-heading text-white tracking-wider group-hover:text-cyan-400 transition-colors">
+            <span className="text-xl font-bold font-sans text-slate-900 dark:text-white tracking-wider group-hover:text-sky-600 dark:group-hover:text-cyan-400 transition-colors">
               Civic Connect
             </span>
           </Link>
@@ -98,13 +99,13 @@ export default function Navbar() {
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
             {showNavLinks && (
-              <div className="flex items-center gap-6 bg-white/5 border border-white/10 rounded-full px-6 py-2 backdrop-blur-md">
+              <div className="flex items-center gap-6 bg-slate-900/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-full px-6 py-2 backdrop-blur-md">
                 {navLinks.map((link) => (
                   <a
                     key={link.name}
                     href={link.href}
                     onClick={(e) => handleScrollTo(e, link.href)}
-                    className="text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer"
+                    className="text-sm font-medium text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                   >
                     {link.name}
                   </a>
@@ -113,6 +114,7 @@ export default function Navbar() {
             )}
 
             <div className="flex items-center gap-4">
+              <ThemeToggle />
               <NotificationBell />
               {/* Profile Dropdown trigger or Launch App button */}
               {user ? (
@@ -121,7 +123,7 @@ export default function Navbar() {
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   aria-label="Toggle user profile menu"
                   aria-expanded={dropdownOpen}
-                  className="flex items-center gap-3 py-1.5 pl-2.5 pr-4 rounded-full border border-white/10 bg-white/[0.03] hover:bg-white/[0.08] hover:border-cyan-500/30 transition-all duration-300 shadow-md group"
+                  className="flex items-center gap-3 py-1.5 pl-2.5 pr-4 rounded-full border border-black/10 dark:border-white/10 bg-slate-900/[0.03] dark:bg-white/[0.03] hover:bg-slate-900/[0.08] dark:hover:bg-white/[0.08] hover:border-sky-500/30 dark:hover:border-cyan-500/30 transition-all duration-300 shadow-sm group"
                 >
                   {/* Dynamic Glowing Avatar */}
                   <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold font-heading shadow-[0_0_10px_rgba(6,182,212,0.3)] group-hover:shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all">
@@ -129,8 +131,8 @@ export default function Navbar() {
                     <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border border-black rounded-full" />
                   </div>
                   <div className="text-left">
-                    <p className="text-xs font-bold text-white leading-none mb-0.5">{user.full_name}</p>
-                    <p className="text-[10px] text-cyan-400 font-semibold leading-none">{user.role}</p>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white leading-none mb-0.5">{user.full_name}</p>
+                    <p className="text-[10px] text-sky-600 dark:text-cyan-400 font-semibold leading-none">{user.role}</p>
                   </div>
                 </button>
 
@@ -142,17 +144,17 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 15, scale: 0.95 }}
                       transition={{ duration: 0.2, ease: "easeOut" }}
-                      className="absolute right-0 mt-3 w-72 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-2xl p-4 shadow-[0_10px_50px_rgba(0,0,0,0.5)] z-[100] text-left"
+                      className="absolute right-0 mt-3 w-72 rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-black/60 backdrop-blur-2xl p-4 shadow-lg dark:shadow-[0_10px_50px_rgba(0,0,0,0.5)] z-[100] text-left"
                     >
                       {/* User Header */}
-                      <div className="flex items-center gap-3 pb-3 border-b border-white/10 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+                      <div className="flex items-center gap-3 pb-3 border-b border-black/10 dark:border-white/10 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 dark:from-cyan-500 to-indigo-500 dark:to-purple-500 flex items-center justify-center text-white font-bold text-sm">
                           {user.full_name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="overflow-hidden">
-                          <h5 className="text-sm font-bold text-white truncate">{user.full_name}</h5>
-                          <p className="text-xs text-white/50 truncate mb-1">{user.email}</p>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-semibold bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+                          <h5 className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.full_name}</h5>
+                          <p className="text-xs text-slate-500 dark:text-white/50 truncate mb-1">{user.email}</p>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-semibold bg-sky-500/10 dark:bg-cyan-500/10 border border-sky-500/20 dark:border-cyan-500/20 text-sky-600 dark:text-cyan-400">
                             {user.role}
                           </span>
                         </div>
@@ -160,28 +162,28 @@ export default function Navbar() {
 
                       {/* Interactive Profile Stats/Details */}
                       <div className="space-y-2 mb-4">
-                        <div className="flex items-center justify-between p-2 rounded-lg bg-white/[0.01] hover:bg-white/[0.03] transition-colors border border-white/5">
-                          <div className="flex items-center gap-2 text-white/70">
-                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                        <div className="flex items-center justify-between p-2 rounded-lg bg-black/5 dark:bg-white/[0.01] hover:bg-black/10 dark:hover:bg-white/[0.03] transition-colors border border-black/5 dark:border-white/5">
+                          <div className="flex items-center gap-2 text-slate-600 dark:text-white/70">
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                             <span className="text-[11px] font-medium">Session Status</span>
                           </div>
-                          <span className="text-[10px] text-emerald-400 font-bold">Secured</span>
+                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Secured</span>
                         </div>
 
-                        <div className="flex items-center justify-between p-2 rounded-lg bg-white/[0.01] hover:bg-white/[0.03] transition-colors border border-white/5">
-                          <div className="flex items-center gap-2 text-white/70">
-                            <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                        <div className="flex items-center justify-between p-2 rounded-lg bg-black/5 dark:bg-white/[0.01] hover:bg-black/10 dark:hover:bg-white/[0.03] transition-colors border border-black/5 dark:border-white/5">
+                          <div className="flex items-center gap-2 text-slate-600 dark:text-white/70">
+                            <Activity className="w-3.5 h-3.5 text-sky-600 dark:text-cyan-400" />
                             <span className="text-[11px] font-medium">Trust Rank</span>
                           </div>
-                          <span className="text-[10px] text-cyan-400 font-bold font-mono">99.8%</span>
+                          <span className="text-[10px] text-sky-600 dark:text-cyan-400 font-bold font-mono">99.8%</span>
                         </div>
 
-                        <div className="flex items-center justify-between p-2 rounded-lg bg-white/[0.01] hover:bg-white/[0.03] transition-colors border border-white/5">
-                          <div className="flex items-center gap-2 text-white/70">
-                            <Terminal className="w-3.5 h-3.5 text-purple-400" />
+                        <div className="flex items-center justify-between p-2 rounded-lg bg-black/5 dark:bg-white/[0.01] hover:bg-black/10 dark:hover:bg-white/[0.03] transition-colors border border-black/5 dark:border-white/5">
+                          <div className="flex items-center gap-2 text-slate-600 dark:text-white/70">
+                            <Terminal className="w-3.5 h-3.5 text-indigo-600 dark:text-purple-400" />
                             <span className="text-[11px] font-medium">Role Level</span>
                           </div>
-                          <span className="text-[10px] text-purple-400 font-bold">L3 Validator</span>
+                          <span className="text-[10px] text-indigo-600 dark:text-purple-400 font-bold">L3 Validator</span>
                         </div>
                       </div>
 
@@ -190,7 +192,7 @@ export default function Navbar() {
                         <Link
                           href={user.role === 'ADMIN' ? '/admin/dashboard' : user.role === 'OFFICER' ? '/officer/dashboard' : '/citizen/dashboard'}
                           onClick={() => setDropdownOpen(false)}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-all text-left"
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-white/70 dark:hover:text-white bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 rounded-xl border border-black/5 dark:border-white/10 transition-all text-left"
                         >
                           <Activity className="w-4 h-4 text-cyan-400" />
                           <span>{user.role === 'ADMIN' ? 'Admin Portal' : user.role === 'OFFICER' ? 'Officer Portal' : 'Citizen Portal'}</span>
@@ -198,14 +200,14 @@ export default function Navbar() {
                         <Link
                           href="/citizen/profile"
                           onClick={() => setDropdownOpen(false)}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-all text-left"
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-white/70 dark:hover:text-white bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 rounded-xl border border-black/5 dark:border-white/10 transition-all text-left"
                         >
                           <Settings className="w-4 h-4 text-emerald-400" />
                           <span>User Profile</span>
                         </Link>
                         <button
                           onClick={handleSignOut}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-400 hover:text-white bg-rose-500/5 hover:bg-rose-500/20 rounded-xl border border-rose-500/10 hover:border-rose-500/30 transition-all text-left"
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-white bg-rose-500/10 hover:bg-rose-500/20 dark:bg-rose-500/5 dark:hover:bg-rose-500/20 rounded-xl border border-rose-500/20 dark:border-rose-500/10 hover:border-rose-500/30 transition-all text-left"
                         >
                           <LogOut className="w-4 h-4" />
                           <span>Sign Out Session</span>
@@ -228,7 +230,7 @@ export default function Navbar() {
 
           {/* Mobile Toggle */}
           <button 
-            className="md:hidden text-white/70 hover:text-white"
+            className="md:hidden text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Open mobile navigation menu"
           >

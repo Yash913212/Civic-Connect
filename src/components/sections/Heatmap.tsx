@@ -186,13 +186,13 @@ export default function Heatmap() {
 
       <div className="relative z-10 p-6 md:p-24 max-w-7xl mx-auto h-full flex flex-col justify-between pointer-events-none gap-8">
         <div>
-          <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-4">Smart City Heatmap</h2>
+          <h2 className="text-3xl md:text-5xl font-heading font-bold text-slate-900 dark:text-white mb-4">Smart City Heatmap</h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-xl">Real-time visualization of civic anomalies powered by predictive clustering.</p>
         </div>
 
         <div className="flex flex-wrap gap-4">
           {['Pothole Hotspots', 'Garbage Overflow', 'Water Leaks'].map((item, i) => (
-            <div key={i} className="bg-background/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+            <div key={i} className="bg-background/80 backdrop-blur-md border border-black/5 dark:border-white/10 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-primary' : i === 1 ? 'bg-yellow-500' : 'bg-cyan-500'}`} />
               {item}
             </div>

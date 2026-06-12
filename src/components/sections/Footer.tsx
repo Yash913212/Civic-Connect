@@ -20,10 +20,10 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="w-full bg-transparent relative border-t border-white/10 overflow-hidden pt-20">
+    <footer className="w-full bg-transparent relative border-t border-black/5 dark:border-white/10 overflow-hidden pt-20">
       {/* Infinite Marquee */}
-      <div ref={marqueeRef} className="w-full overflow-hidden border-y border-white/10 py-4 mb-20 bg-primary/5">
-        <div className="marquee-inner flex whitespace-nowrap text-3xl font-heading font-bold text-white/20 uppercase tracking-widest w-max">
+      <div ref={marqueeRef} className="w-full overflow-hidden border-y border-black/5 dark:border-white/10 py-4 mb-20 bg-primary/5">
+        <div className="marquee-inner flex whitespace-nowrap text-3xl font-heading font-bold text-slate-500 dark:text-white/20 uppercase tracking-widest w-max">
           <span>AI • SMART CITY • CIVIC INTELLIGENCE • FUTURE GOVERNANCE •&nbsp;</span>
           <span>AI • SMART CITY • CIVIC INTELLIGENCE • FUTURE GOVERNANCE •&nbsp;</span>
           <span>AI • SMART CITY • CIVIC INTELLIGENCE • FUTURE GOVERNANCE •&nbsp;</span>
@@ -36,11 +36,11 @@ export default function Footer() {
             <div className="relative h-20 w-20 rounded-xl overflow-hidden flex items-center justify-center">
               <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full" />
             </div>
-            <span className="text-2xl font-bold font-heading text-white tracking-wider">
+            <span className="text-2xl font-bold font-heading text-slate-900 dark:text-white tracking-wider">
               Civic Connect
             </span>
           </div>
-          <div className="flex items-center gap-3 text-sm font-medium border border-white/10 bg-white/5 w-fit px-4 py-2 rounded-full mb-8">
+          <div className="flex items-center gap-3 text-sm font-medium border border-black/5 dark:border-white/10 bg-black/5 dark:bg-white/5 w-fit px-4 py-2 rounded-full mb-8">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             AI System Online
           </div>
@@ -53,7 +53,7 @@ export default function Footer() {
           <ul className="flex flex-col gap-4 text-right">
             {['Home', 'Technology', 'Demo', 'Dashboard', 'Contact', 'GitHub'].map((link) => (
               <li key={link}>
-                <a href="#" className="text-muted-foreground hover:text-white hover:pl-2 transition-all duration-300">
+                <a href="#" className="text-muted-foreground hover:text-slate-900 dark:text-white hover:pl-2 transition-all duration-300">
                   {link}
                 </a>
               </li>
@@ -62,7 +62,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="text-center py-6 border-t border-white/10 text-xs text-white/30">
+      <div className="text-center py-6 border-t border-black/5 dark:border-white/10 text-xs text-slate-500 dark:text-white/30">
         &copy; {new Date().getFullYear()} Civic Connect. All rights reserved. Award-winning Apple-level Design.
       </div>
     </footer>

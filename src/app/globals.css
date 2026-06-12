@@ -49,16 +49,48 @@
 }
 
 :root {
-  /* Default to dark mode for cinematic feel */
-  --background: oklch(0.12 0 0);
-  /* Very dark gray/black */
+  /* Premium Light Mode */
+  --background: oklch(0.98 0 0); /* #F8FAFC equivalent */
+  --foreground: oklch(0.12 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.12 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.12 0 0);
+  --primary: oklch(0.45 0.15 250); /* #2563EB Citizen Light */
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.9 0.05 250);
+  --secondary-foreground: oklch(0.12 0 0);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.4 0 0);
+  --accent: oklch(0.95 0.05 250);
+  --accent-foreground: oklch(0.12 0 0);
+  --destructive: oklch(0.6 0.2 20);
+  --border: oklch(0.9 0 0); /* #E2E8F0 */
+  --input: oklch(0.9 0 0);
+  --ring: oklch(0.45 0.15 250);
+  
+  --chart-1: oklch(0.45 0.15 250);
+  --chart-2: oklch(0.5 0.15 280);
+  --chart-3: oklch(0.5 0.15 310);
+  --chart-4: oklch(0.5 0.15 340);
+  --chart-5: oklch(0.5 0.15 10);
+  --radius: 0.75rem;
+
+  /* Global System Colors Light */
+  --color-citizen: #2563EB;
+  --color-officer: #16A34A;
+  --color-admin: #EA580C;
+}
+
+.dark {
+  /* Dark Mode for cinematic feel */
+  --background: oklch(0.12 0 0); /* Very dark gray/black */
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.15 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.15 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.6 0.15 250);
-  /* Cyan-ish */
+  --primary: oklch(0.6 0.15 250); /* Cyan-ish */
   --primary-foreground: oklch(0.12 0 0);
   --secondary: oklch(0.2 0.05 250);
   --secondary-foreground: oklch(0.985 0 0);
@@ -70,12 +102,17 @@
   --border: oklch(0.25 0 0);
   --input: oklch(0.2 0 0);
   --ring: oklch(0.6 0.15 250);
+  
   --chart-1: oklch(0.6 0.15 250);
   --chart-2: oklch(0.6 0.15 280);
   --chart-3: oklch(0.6 0.15 310);
   --chart-4: oklch(0.6 0.15 340);
   --chart-5: oklch(0.6 0.15 10);
-  --radius: 0.75rem;
+
+  /* Global System Colors Dark */
+  --color-citizen: #00D9FF;
+  --color-officer: #22C55E;
+  --color-admin: #F59E0B;
 }
 
 @layer base {
@@ -116,6 +153,10 @@ html.lenis body {
 
 /* Glowing text utility */
 .text-glow {
+  text-shadow: none;
+}
+
+.dark .text-glow {
   text-shadow: 0 0 20px var(--primary);
 }
 
@@ -139,4 +180,19 @@ html.lenis body {
   pointer-events: none;
   opacity: 0.5;
   mix-blend-mode: overlay;
+}
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+.animate-blob {
+  animation: blob 7s infinite;
+}
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+.animation-delay-4000 {
+  animation-delay: 4s;
 }

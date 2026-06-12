@@ -13,6 +13,7 @@ import { Lock, Shield, Key, Activity, Loader2, Eye, EyeOff, User, Briefcase, Che
 import { toast } from "sonner";
 import { showTextLoading, showSystemStatus } from "@/components/ui/CustomToasts";
 import confetti from "canvas-confetti";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 import * as THREE from "three";
 
@@ -486,6 +487,7 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
         </nav>
 
         <div className="hidden sm:flex items-center gap-2 sm:gap-3">
+          <ThemeToggle />
           {loginButtonElement}
           {signupButtonElement}
         </div>
@@ -587,11 +589,11 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
               initial={{ x: -50, y: -100, opacity: 0 }}
               animate={{ x: -400, y: -150, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.1, type: "spring", bounce: 0.4 }}
-              className="absolute hidden lg:flex w-64 h-32 bg-blue-900/20 border border-blue-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col justify-between shadow-[0_0_30px_rgba(59,130,246,0.15)]"
+              className="absolute hidden lg:flex w-64 h-32 bg-slate-200/60 dark:bg-blue-900/20 border border-slate-300 dark:border-blue-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col justify-between shadow-[0_0_30px_rgba(59,130,246,0.15)]"
             >
-              <div className="text-blue-300 text-xs font-semibold tracking-wide uppercase">Complaints Submitted</div>
-              <div className="text-3xl font-bold text-white flex items-center gap-3">
-                1,204 <span className="text-xs text-blue-400 bg-blue-500/20 px-2 py-1 rounded-full">+12%</span>
+              <div className="text-blue-600 dark:text-blue-300 text-xs font-semibold tracking-wide uppercase">Complaints Submitted</div>
+              <div className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                1,204 <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-500/10 dark:bg-blue-500/20 px-2 py-1 rounded-full">+12%</span>
               </div>
               <div className="w-full h-1.5 bg-blue-950/50 rounded-full overflow-hidden mt-2">
                 <motion.div className="h-full bg-blue-400" initial={{ width: 0 }} animate={{ width: "70%" }} transition={{ duration: 1, delay: 0.5 }} />
@@ -603,9 +605,9 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
               initial={{ x: 50, y: 100, opacity: 0 }}
               animate={{ x: 400, y: 150, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.2, type: "spring", bounce: 0.4 }}
-              className="absolute hidden lg:flex w-64 h-48 bg-blue-900/20 border border-blue-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(59,130,246,0.15)]"
+              className="absolute hidden lg:flex w-64 h-48 bg-slate-200/60 dark:bg-blue-900/20 border border-slate-300 dark:border-blue-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(59,130,246,0.15)]"
             >
-              <div className="text-blue-300 text-xs font-semibold tracking-wide uppercase mb-4">Resolution Progress</div>
+              <div className="text-blue-600 dark:text-blue-300 text-xs font-semibold tracking-wide uppercase mb-4">Resolution Progress</div>
               <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
                 <div className="absolute inset-0 rounded-full border-4 border-blue-950/50" />
                 <motion.div
@@ -613,7 +615,7 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
                 />
-                <div className="text-lg font-bold text-white">84%</div>
+                <div className="text-lg font-bold text-slate-900 dark:text-white">84%</div>
               </div>
             </motion.div>
 
@@ -638,10 +640,10 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
               initial={{ x: 50, y: -100, opacity: 0 }}
               animate={{ x: 400, y: -150, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.1, type: "spring", bounce: 0.4 }}
-              className="absolute hidden lg:flex w-64 h-36 bg-green-900/20 border border-green-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col justify-between shadow-[0_0_30px_rgba(34,197,94,0.15)]"
+              className="absolute hidden lg:flex w-64 h-36 bg-slate-200/60 dark:bg-green-900/20 border border-slate-300 dark:border-green-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col justify-between shadow-[0_0_30px_rgba(34,197,94,0.15)]"
             >
-              <div className="text-green-300 text-xs font-semibold tracking-wide uppercase">Assigned Cases</div>
-              <div className="text-4xl font-bold text-white">42</div>
+              <div className="text-green-600 dark:text-green-300 text-xs font-semibold tracking-wide uppercase">Assigned Cases</div>
+              <div className="text-4xl font-bold text-slate-900 dark:text-white">42</div>
               <div className="flex gap-1.5 mt-2">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <motion.div
@@ -660,9 +662,9 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
               initial={{ x: -50, y: 100, opacity: 0 }}
               animate={{ x: -400, y: 150, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.2, type: "spring", bounce: 0.4 }}
-              className="absolute hidden lg:flex w-64 h-48 bg-green-900/20 border border-green-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(34,197,94,0.15)]"
+              className="absolute hidden lg:flex w-64 h-48 bg-slate-200/60 dark:bg-green-900/20 border border-slate-300 dark:border-green-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(34,197,94,0.15)]"
             >
-              <div className="text-green-300 text-xs font-semibold tracking-wide uppercase mb-4">Officer Performance</div>
+              <div className="text-green-600 dark:text-green-300 text-xs font-semibold tracking-wide uppercase mb-4">Officer Performance</div>
               <div className="w-full h-full flex items-end justify-between gap-2 pb-2">
                 {[40, 70, 45, 90, 65, 80].map((h, i) => (
                   <motion.div
@@ -692,20 +694,20 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
               initial={{ x: -50, y: -100, opacity: 0 }}
               animate={{ x: -420, y: -120, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.1, type: "spring", bounce: 0.4 }}
-              className="absolute hidden lg:grid w-72 h-44 bg-orange-900/20 border border-orange-500/30 rounded-2xl backdrop-blur-xl p-5 grid-cols-2 gap-4 shadow-[0_0_30px_rgba(249,115,22,0.15)]"
+              className="absolute hidden lg:grid w-72 h-44 bg-slate-200/60 dark:bg-orange-900/20 border border-slate-300 dark:border-orange-500/30 rounded-2xl backdrop-blur-xl p-5 grid-cols-2 gap-4 shadow-[0_0_30px_rgba(249,115,22,0.15)]"
             >
               <div>
-                <div className="text-orange-300 text-[10px] font-semibold uppercase tracking-wider">Total Departments</div>
-                <div className="text-2xl font-bold text-white mt-1">12</div>
+                <div className="text-orange-600 dark:text-orange-300 text-[10px] font-semibold uppercase tracking-wider">Total Departments</div>
+                <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">12</div>
               </div>
               <div>
-                <div className="text-orange-300 text-[10px] font-semibold uppercase tracking-wider">Active Officers</div>
-                <div className="text-2xl font-bold text-white mt-1">148</div>
+                <div className="text-orange-600 dark:text-orange-300 text-[10px] font-semibold uppercase tracking-wider">Active Officers</div>
+                <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">148</div>
               </div>
               <div className="col-span-2 mt-2">
-                <div className="text-orange-300 text-[10px] font-semibold uppercase tracking-wider mb-2 flex justify-between">
+                <div className="text-orange-600 dark:text-orange-300 text-[10px] font-semibold uppercase tracking-wider mb-2 flex justify-between">
                   <span>Resolution Rate</span>
-                  <span className="text-orange-100">88%</span>
+                  <span className="text-orange-800 dark:text-orange-100">88%</span>
                 </div>
                 <div className="w-full h-1.5 bg-orange-950/50 rounded-full overflow-hidden">
                   <motion.div className="h-full bg-orange-400" initial={{ width: 0 }} animate={{ width: "88%" }} transition={{ duration: 1, delay: 0.5 }} />
@@ -718,9 +720,9 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
               initial={{ x: 50, y: 100, opacity: 0 }}
               animate={{ x: 420, y: 120, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.2, type: "spring", bounce: 0.4 }}
-              className="absolute hidden lg:flex w-64 h-48 bg-orange-900/20 border border-orange-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(249,115,22,0.15)]"
+              className="absolute hidden lg:flex w-64 h-48 bg-slate-200/60 dark:bg-orange-900/20 border border-slate-300 dark:border-orange-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(249,115,22,0.15)]"
             >
-              <div className="text-orange-300 text-xs font-semibold tracking-wide uppercase mb-4">System Analytics</div>
+              <div className="text-orange-600 dark:text-orange-300 text-xs font-semibold tracking-wide uppercase mb-4">System Analytics</div>
               <div className="flex gap-3 h-24">
                 <motion.div
                   initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}
@@ -897,7 +899,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
             {step === "email" && (
               <div className="w-full mb-4">
                 {/* Tab strip */}
-                <div className="flex w-full p-1 bg-white/5 border border-white/10 rounded-xl backdrop-blur-md relative">
+                <div className="flex w-full p-1 bg-slate-200/50 dark:bg-white/5 border border-slate-300/50 dark:border-white/10 rounded-xl backdrop-blur-md relative">
                   {roles.map((r) => {
                     const isActive = role === r;
                     return (
@@ -912,7 +914,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                           setError(null);
                         }}
                         className={`flex-1 relative z-10 flex items-center justify-center gap-1.5 py-2.5 text-[10px] sm:text-xs font-bold tracking-wide transition-colors duration-200
-                          ${isActive ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                          ${isActive ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-white/40 dark:hover:text-white/70'}`}
                       >
                         {/* Icon with spring scale */}
                         <motion.span
@@ -1013,14 +1015,14 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                           className="absolute inset-0 flex flex-col items-center justify-start"
                         >
-                          <h1 className="text-2xl font-bold tracking-tight text-white">{roleInfo[role].title}</h1>
-                          <p className="text-sm text-white/50 mt-1">{roleInfo[role].desc}</p>
+                          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{roleInfo[role].title}</h1>
+                          <p className="text-sm text-slate-600 dark:text-white/50 mt-1">{roleInfo[role].desc}</p>
                         </motion.div>
                       </AnimatePresence>
                     </div>
                   </div>
 
-                  <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-2xl relative overflow-hidden">
+                  <div className="w-full bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-lg dark:shadow-2xl relative overflow-hidden">
                     <motion.div
                       className="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-[100px] opacity-20 pointer-events-none"
                       animate={{
@@ -1054,50 +1056,50 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         {isSignUp && (
                           <>
                             <div className="space-y-1.5 text-left">
-                              <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Full Name</label>
+                              <label className="text-xs font-medium text-slate-600 dark:text-white/80 uppercase tracking-wider">Full Name</label>
                               <input
                                 type="text"
                                 placeholder="Jane Doe"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full bg-black/20 text-white border border-white/10 rounded-lg py-2.5 px-4 focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-colors"
+                                className="w-full bg-black/5 dark:bg-black/20 text-slate-900 dark:text-white border border-black/10 dark:border-white/10 rounded-lg py-2.5 px-4 focus:outline-none focus:border-slate-300 dark:focus:border-white/30 placeholder:text-slate-400 dark:placeholder:text-white/20 transition-colors"
                                 required={isSignUp}
                               />
                             </div>
                             <div className="space-y-1.5 text-left">
-                              <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Phone Number</label>
+                              <label className="text-xs font-medium text-slate-600 dark:text-white/80 uppercase tracking-wider">Phone Number</label>
                               <input
                                 type="text"
                                 placeholder="+1 (555) 000-0000"
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
-                                className="w-full bg-black/20 text-white border border-white/10 rounded-lg py-2.5 px-4 focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-colors"
+                                className="w-full bg-black/5 dark:bg-black/20 text-slate-900 dark:text-white border border-black/10 dark:border-white/10 rounded-lg py-2.5 px-4 focus:outline-none focus:border-slate-300 dark:focus:border-white/30 placeholder:text-slate-400 dark:placeholder:text-white/20 transition-colors"
                                 required={isSignUp}
                               />
                             </div>
                           </>
                         )}
                         <div className="space-y-1.5 text-left">
-                          <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Email</label>
+                          <label className="text-xs font-medium text-slate-600 dark:text-white/80 uppercase tracking-wider">Email</label>
                           <input
                             type="email"
                             placeholder="user@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full bg-black/20 text-white border border-white/10 rounded-lg py-2.5 px-4 focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-colors"
+                            className="w-full bg-black/5 dark:bg-black/20 text-slate-900 dark:text-white border border-black/10 dark:border-white/10 rounded-lg py-2.5 px-4 focus:outline-none focus:border-slate-300 dark:focus:border-white/30 placeholder:text-slate-400 dark:placeholder:text-white/20 transition-colors"
                             required
                           />
                         </div>
 
                         <div className="space-y-1.5 text-left">
-                          <label className="text-xs font-medium text-white/80 uppercase tracking-wider">Password</label>
+                          <label className="text-xs font-medium text-slate-600 dark:text-white/80 uppercase tracking-wider">Password</label>
                           <div className="relative">
                             <input
                               type={showPassword ? "text" : "password"}
                               placeholder="****************"
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
-                              className="w-full bg-black/20 text-white border border-white/10 rounded-lg py-2.5 pl-4 pr-10 focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-colors tracking-widest"
+                              className="w-full bg-black/5 dark:bg-black/20 text-slate-900 dark:text-white border border-black/10 dark:border-white/10 rounded-lg py-2.5 pl-4 pr-10 focus:outline-none focus:border-slate-300 dark:focus:border-white/30 placeholder:text-slate-400 dark:placeholder:text-white/20 transition-colors tracking-widest"
                               required
                             />
                             <button
@@ -1114,11 +1116,11 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                           <div className="flex items-center justify-between pt-1">
                             <label className="flex items-center gap-2 cursor-pointer group">
                               <input type="checkbox" className="hidden" />
-                              <div className="w-4 h-4 rounded border border-white/20 bg-black/20 group-hover:border-white/40 flex items-center justify-center">
+                              <div className="w-4 h-4 rounded border border-black/20 dark:border-white/20 bg-black/5 dark:bg-black/20 group-hover:border-black/40 dark:group-hover:border-white/40 flex items-center justify-center">
                               </div>
-                              <span className="text-xs text-white/60 group-hover:text-white transition-colors">Remember me</span>
+                              <span className="text-xs text-slate-600 dark:text-white/60 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Remember me</span>
                             </label>
-                            <button type="button" className="text-xs text-white/60 hover:text-white transition-colors focus:outline-none">Forgot password?</button>
+                            <button type="button" className="text-xs text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none">Forgot password?</button>
                           </div>
                         )}
 
@@ -1126,7 +1128,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                           <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-[#e5e5e5] text-black font-semibold rounded-lg py-2.5 hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-slate-900 dark:bg-[#e5e5e5] text-white dark:text-black font-semibold rounded-lg py-2.5 hover:bg-slate-800 dark:hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {isLoading ? <Loader2 size={18} className="animate-spin" /> : (isSignUp ? "Sign Up" : "Sign In")}
                           </button>
@@ -1135,12 +1137,12 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     )}
 
                     {roleInfo[role].canSignup && (
-                      <p className="text-xs text-white/50 mt-6 text-center relative z-10">
+                      <p className="text-xs text-slate-600 dark:text-white/50 mt-6 text-center relative z-10">
                         {isSignUp ? "Already have an account? " : "Don't have an account? "}
                         <button
                           type="button"
                           onClick={() => setIsSignUp(!isSignUp)}
-                          className="text-white hover:underline transition-colors focus:outline-none font-medium"
+                          className="text-slate-900 dark:text-white hover:underline transition-colors focus:outline-none font-medium"
                         >
                           {isSignUp ? "Sign In" : "Sign Up"}
                         </button>
@@ -1148,7 +1150,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     )}
 
                     {/* Security Trust Indicators */}
-                    <div className="mt-8 flex justify-center gap-3 text-[9px] sm:text-[10px] text-white/40 relative z-10 w-full overflow-hidden">
+                    <div className="mt-8 flex justify-center gap-3 text-[9px] sm:text-[10px] text-slate-500 dark:text-white/40 relative z-10 w-full overflow-hidden">
                       <motion.div
                         className="flex gap-4 sm:gap-6 justify-center w-full flex-wrap"
                         initial={{ opacity: 0, y: 10 }}
@@ -1164,7 +1166,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                   </div>
 
                   {/* Status Bar */}
-                  <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[10px] text-white/40">
+                  <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[10px] text-slate-500 dark:text-white/40">
                     <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Platform Online</span>
                     <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Database Connected</span>
                     <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Services Active</span>
@@ -1179,8 +1181,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                   className="space-y-6 text-center"
                 >
                   <div className="space-y-1">
-                    <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">Access Granted</h1>
-                    <p className="text-[1.25rem] text-white/50 font-light">Redirecting to {roleInfo[role].title}</p>
+                    <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-slate-900 dark:text-white">Access Granted</h1>
+                    <p className="text-[1.25rem] text-slate-600 dark:text-white/50 font-light">Redirecting to {roleInfo[role].title}</p>
                   </div>
 
                   <motion.div
@@ -1189,8 +1191,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     transition={{ duration: 0.5, delay: 0.5 }}
                     className="py-10"
                   >
-                    <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-white to-white/70 flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-black" viewBox="0 0 20 20" fill="currentColor">
+                    <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-slate-900 to-slate-700 dark:from-white dark:to-white/70 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white dark:text-black" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
@@ -1200,7 +1202,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1 }}
-                    className="w-full rounded-full bg-white text-black font-medium py-3 hover:bg-white/90 transition-colors"
+                    className="w-full rounded-full bg-slate-900 text-white dark:bg-white dark:text-black font-medium py-3 hover:bg-slate-800 dark:hover:bg-white/90 transition-colors"
                     onClick={() => {
                       sessionStorage.setItem("transition-from-login", "true");
                       const user = authService.getLocalUser();

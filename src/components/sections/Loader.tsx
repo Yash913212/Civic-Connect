@@ -221,7 +221,7 @@ export default function Loader() {
 
       {/* Center Content */}
       <div className="z-10 text-center font-heading">
-        <h1 className="text-5xl md:text-7xl font-bold mb-4 text-glow-premium text-white tracking-wider">Civic Connect</h1>
+        <h1 className="text-5xl md:text-7xl font-bold mb-4 text-glow-premium text-slate-900 dark:text-white tracking-wider">Civic Connect</h1>
         <div className="h-10 relative overflow-hidden flex justify-center items-center text-primary text-xl font-medium tracking-wide">
           {words.map((word, i) => (
             <span key={word} className={`word-${i} absolute opacity-0 translate-y-8`}>
@@ -233,8 +233,8 @@ export default function Loader() {
 
       {/* Bottom Loading Progress */}
       <div className="absolute bottom-20 w-64 md:w-96 flex flex-col items-center gap-4 z-10">
-        <div className="text-3xl font-mono font-light text-white/80 tracking-widest">{progress.toString().padStart(3, '0')}</div>
-        <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden relative shadow-[0_0_10px_rgba(255,255,255,0.05)] border border-white/5">
+        <div className="text-3xl font-mono font-light text-slate-600 dark:text-white/80 tracking-widest">{progress.toString().padStart(3, '0')}</div>
+        <div className="w-full h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden relative shadow-[0_0_10px_rgba(255,255,255,0.05)] border border-white/5">
           <div
             className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 via-cyan-400 to-purple-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]"
             style={{ width: `${progress}%` }}

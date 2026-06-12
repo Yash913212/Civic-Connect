@@ -220,8 +220,8 @@ const EngineScene = () => {
                 <div 
                   className={`relative flex flex-col items-center justify-center p-4 rounded-[1.5rem] border transition-all duration-700 w-52 md:w-56 cursor-pointer ${
                     isActive 
-                      ? "bg-[#050810]/90 backdrop-blur-xl scale-110 shadow-2xl" 
-                      : "bg-[#050810]/40 backdrop-blur-sm border-white/5 opacity-50 scale-90 hover:opacity-100 hover:scale-100"
+                      ? "bg-white/90 dark:bg-[#050810]/90 backdrop-blur-xl scale-110 shadow-xl dark:shadow-2xl" 
+                      : "bg-white/40 dark:bg-[#050810]/40 backdrop-blur-sm border-black/5 dark:border-white/5 opacity-50 scale-90 hover:opacity-100 hover:scale-100"
                   }`}
                   style={{
                     borderColor: isActive ? mod.color : undefined,
@@ -230,16 +230,16 @@ const EngineScene = () => {
                   onClick={() => setActiveNode(i)}
                 >
                   <div 
-                    className="w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors duration-500 border border-white/10"
+                    className="w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors duration-500 border border-black/5 dark:border-white/10"
                     style={{ 
-                      backgroundColor: isActive ? `${mod.color}20` : 'rgba(255,255,255,0.02)',
-                      color: isActive ? mod.color : 'rgba(255,255,255,0.4)',
+                      backgroundColor: isActive ? `${mod.color}20` : 'rgba(148, 163, 184, 0.1)',
+                      color: isActive ? mod.color : 'currentColor',
                       boxShadow: isActive ? `0 0 20px ${mod.color}60` : undefined
                     }}
                   >
                     <Icon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-white font-bold text-center text-xs md:text-sm leading-tight tracking-wide">
+                  <h3 className="text-slate-900 dark:text-white font-bold text-center text-xs md:text-sm leading-tight tracking-wide">
                     {mod.label}
                   </h3>
                   
@@ -292,10 +292,10 @@ export default function Solution() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-sm shadow-xl"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 mb-6 backdrop-blur-sm shadow-xl"
         >
           <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_12px_#22d3ee]" />
-          <span className="text-xs font-mono font-bold tracking-[0.2em] text-white/80 uppercase">
+          <span className="text-xs font-mono font-bold tracking-[0.2em] text-slate-600 dark:text-white/80 uppercase">
             System Architecture
           </span>
         </motion.div>
@@ -305,7 +305,7 @@ export default function Solution() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-          className="text-4xl md:text-5xl lg:text-7xl font-heading font-black mb-6 text-white tracking-tight leading-[1.1]"
+          className="text-4xl md:text-5xl lg:text-7xl font-heading font-black mb-6 text-slate-900 dark:text-white tracking-tight leading-[1.1]"
         >
           Autonomous <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500">Resolution Engine</span>
         </motion.h2>

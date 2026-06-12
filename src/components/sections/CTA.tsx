@@ -8,7 +8,7 @@ export default function CTA() {
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.05] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col items-center text-center px-6">
-        <h2 className="text-3xl sm:text-5xl md:text-8xl font-heading font-black tracking-tighter mb-8 max-w-5xl text-glow text-white leading-tight">
+        <h2 className="text-3xl sm:text-5xl md:text-8xl font-heading font-black tracking-tighter mb-8 max-w-5xl text-glow text-slate-900 dark:text-white leading-tight">
           BUILDING SMARTER CITIES WITH AI
         </h2>
 
@@ -21,7 +21,7 @@ export default function CTA() {
           </Link>
           <button 
             onClick={() => document.getElementById('use-cases')?.scrollIntoView({ behavior: 'smooth' })}
-            className="px-10 py-5 bg-transparent border border-white/20 text-white rounded-full font-bold text-base md:text-lg backdrop-blur-md hover:bg-white/10 transition-colors duration-300 text-center"
+            className="px-10 py-5 bg-transparent border border-black/10 dark:border-white/20 text-slate-900 dark:text-white rounded-full font-bold text-base md:text-lg backdrop-blur-md hover:bg-black/5 dark:bg-white/10 transition-colors duration-300 text-center"
           >
             View Demo
           </button>

@@ -160,7 +160,7 @@ export default function LiveDemo() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-auto lg:h-[600px]">
           {/* Left: Input */}
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[350px] lg:min-h-0">
+          <div className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[350px] lg:min-h-0">
             <h3 className="text-xl font-medium mb-6">1. Input</h3>
 
             <input 
@@ -173,14 +173,14 @@ export default function LiveDemo() {
             
             <div 
               onClick={handleUploadClick}
-              className="flex-1 border-2 border-dashed border-white/20 rounded-2xl flex flex-col items-center justify-center text-muted-foreground hover:bg-white/5 transition-colors cursor-pointer mb-6 group min-h-[160px] relative overflow-hidden"
+              className="flex-1 border-2 border-dashed border-black/10 dark:border-white/20 rounded-2xl flex flex-col items-center justify-center text-muted-foreground hover:bg-black/5 dark:bg-white/5 transition-colors cursor-pointer mb-6 group min-h-[160px] relative overflow-hidden"
             >
               {previewUrl ? (
                 <>
                   <img src={previewUrl} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
                     <CheckCircle2 className="w-10 h-10 mb-2 text-primary" />
-                    <p className="text-white font-medium text-center px-4 truncate max-w-full">
+                    <p className="text-slate-900 dark:text-white font-medium text-center px-4 truncate max-w-full">
                       {uploadedFile?.name || 'Image Uploaded'}
                     </p>
                   </div>
@@ -193,7 +193,7 @@ export default function LiveDemo() {
               )}
             </div>
 
-            <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10 mb-4">
+            <div className="bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-black/5 dark:border-white/10 mb-4 shadow-sm dark:shadow-none">
               <p className="text-sm text-muted-foreground mb-2">Or describe issue...</p>
               <div className="flex justify-between items-center gap-2">
                 <input
@@ -201,7 +201,7 @@ export default function LiveDemo() {
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
                   placeholder="Massive pothole on Main St."
-                  className="flex-1 bg-transparent border-b border-white/20 text-white/80 focus:outline-none focus:border-primary py-1"
+                  className="flex-1 bg-transparent border-b border-black/10 dark:border-white/20 text-slate-600 dark:text-white/80 focus:outline-none focus:border-primary py-1"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && textInput) simulateProcessing(undefined, textInput);
                   }}
@@ -211,7 +211,7 @@ export default function LiveDemo() {
                     if (textInput) simulateProcessing(undefined, textInput);
                     else alert("Microphone Activated. Listening...");
                   }}
-                  className="p-3 rounded-full bg-primary/20 text-primary hover:bg-primary hover:text-white transition-colors"
+                  className="p-3 rounded-full bg-primary/20 text-primary hover:bg-primary hover:text-slate-900 dark:text-white transition-colors"
                 >
                   <Mic className="w-5 h-5" />
                 </button>
@@ -231,7 +231,7 @@ export default function LiveDemo() {
           </div>
 
           {/* Center: Processing */}
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[250px] lg:min-h-0 relative overflow-hidden">
+          <div className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[250px] lg:min-h-0 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
             <h3 className="text-xl font-medium mb-6 relative z-10">2. AI Pipeline</h3>
 
@@ -243,12 +243,12 @@ export default function LiveDemo() {
               ].map((item, idx) => (
                 <div key={item.id} className="flex items-center gap-4">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 
-                    ${step > idx ? 'border-primary bg-primary text-white' :
-                      step === idx + 1 ? 'border-primary text-primary animate-pulse' : 'border-white/20 text-transparent'}`}
+                    ${step > idx ? 'border-primary bg-primary text-slate-900 dark:text-white' :
+                      step === idx + 1 ? 'border-primary text-primary animate-pulse' : 'border-black/10 dark:border-white/20 text-transparent'}`}
                   >
                     {step > idx && <CheckCircle2 className="w-4 h-4" />}
                   </div>
-                  <span className={`${step >= idx + 1 ? 'text-white' : 'text-muted-foreground'} font-mono text-sm`}>
+                  <span className={`${step >= idx + 1 ? 'text-slate-900 dark:text-white' : 'text-muted-foreground'} font-mono text-sm`}>
                     {item.text}
                   </span>
                 </div>
@@ -257,7 +257,7 @@ export default function LiveDemo() {
           </div>
 
           {/* Right: Results */}
-          <div className="bg-white/5 border border-primary/30 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[300px] lg:min-h-0 shadow-[0_0_50px_rgba(var(--primary),0.1)]">
+          <div className="bg-black/5 dark:bg-white/5 border border-primary/30 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[300px] lg:min-h-0 shadow-[0_0_50px_rgba(var(--primary),0.1)]">
             <h3 className="text-xl font-medium mb-6">3. Results</h3>
 
             <AnimatePresence>
@@ -267,12 +267,12 @@ export default function LiveDemo() {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex-1 flex flex-col gap-4"
                 >
-                  <div className="bg-black/40 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                  <div className="bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-xl p-4 border border-black/5 dark:border-white/10 shadow-sm dark:shadow-none">
                     <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Issue</div>
                     <div className="text-lg font-medium">{analysisResult?.title || "Road Damage (Pothole)"}</div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-black/40 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                    <div className="bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-xl p-4 border border-black/5 dark:border-white/10 shadow-sm dark:shadow-none">
                       <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Department</div>
                       <div className="text-primary font-medium truncate" title={analysisResult?.department || "Public Works"}>
                         {analysisResult?.department || "Public Works"}
@@ -288,7 +288,7 @@ export default function LiveDemo() {
                   </div>
                   <div className="bg-primary/10 rounded-xl p-4 border border-primary/20 flex-1 overflow-y-auto max-h-[140px] scrollbar-thin scrollbar-thumb-white/20">
                     <div className="text-xs text-primary/80 uppercase tracking-wider mb-2">Generated Note</div>
-                    <p className="text-sm leading-relaxed text-white/90">
+                    <p className="text-sm leading-relaxed text-slate-700 dark:text-white/90">
                       "{analysisResult?.description || "Severe road surface degradation observed. Immediate patch repair recommended."}"
                     </p>
                     {analysisResult?.confidence && (
@@ -299,7 +299,7 @@ export default function LiveDemo() {
                   </div>
                 </motion.div>
               ) : (
-                <div className="flex-1 flex items-center justify-center text-muted-foreground border-2 border-dashed border-white/10 rounded-2xl">
+                <div className="flex-1 flex items-center justify-center text-muted-foreground border-2 border-dashed border-black/5 dark:border-white/10 rounded-2xl">
                   Awaiting Input...
                 </div>
               )}
