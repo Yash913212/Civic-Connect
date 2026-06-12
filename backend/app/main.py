@@ -299,22 +299,15 @@ async def upload_image(file: UploadFile = File(...)):
             ai_result = ai_result.split("```")[1].split("```")[0].strip()
             
         analysis = json.loads(ai_result)
-        
-        if str(analysis.get("isValid", "True")).lower() == "false":
-            os.remove(filepath)
-            raise HTTPException(status_code=400, detail=analysis.get("invalidReason", "Image does not contain a valid civic issue."))
 
         for k, v in analysis.items():
             if isinstance(v, (dict, list)):
                 analysis[k] = json.dumps(v)
             else:
                 analysis[k] = str(v)
-    except HTTPException:
-        raise
     except Exception as e:
         print(f"AI Analysis failed: {e}")
         analysis = {
-            "isValid": "True",
             "issueDetected": "Unknown Issue",
             "category": "Unknown",
             "department": "General",
