@@ -16,6 +16,12 @@ from app.auth.routes import router as auth_router
 
 Base.metadata.create_all(bind=engine)
 
+from sqlalchemy import text
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE complaints ADD COLUMN image_url VARCHAR"))
+except Exception as e:
+    pass
 app = FastAPI(title="CivicConnect API")
 
 app.add_middleware(
