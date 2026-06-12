@@ -22,6 +22,13 @@ try:
         conn.execute(text("ALTER TABLE complaints ADD COLUMN image_url VARCHAR"))
 except Exception as e:
     pass
+
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE complaints ALTER COLUMN priority TYPE VARCHAR USING priority::VARCHAR"))
+        conn.execute(text("ALTER TABLE complaints ALTER COLUMN status TYPE VARCHAR USING status::VARCHAR"))
+except Exception as e:
+    pass
 app = FastAPI(title="CivicConnect API")
 
 app.add_middleware(
