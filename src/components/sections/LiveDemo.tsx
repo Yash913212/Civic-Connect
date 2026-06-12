@@ -34,6 +34,7 @@ export default function LiveDemo() {
     setStep(1);
     
     let aiAnalysis = null;
+    let uploadedImageUrl = null;
 
     if (file) {
       setUploadedFile(file);
@@ -50,14 +51,21 @@ export default function LiveDemo() {
           method: "POST",
           body: formData,
         });
-        if (!uploadRes.ok) throw new Error(`Upload failed with status ${uploadRes.status}`);
+        
+        if (!uploadRes.ok) {
+           const errorData = await uploadRes.json().catch(() => ({}));
+           throw new Error(errorData.detail || `Upload failed with status ${uploadRes.status}`);
+        }
         
         toast.dismiss(toastId);
         const uploadData = await uploadRes.json();
         aiAnalysis = uploadData.analysis;
+        uploadedImageUrl = uploadData.imageUrl;
       } catch (error: any) {
         console.error("Image upload failed:", error);
         toast.error(`❌ Upload failed: ${error.message}`);
+        setUploadedFile(null);
+        setPreviewUrl(null);
         setStep(0);
         return;
       }
@@ -101,11 +109,12 @@ export default function LiveDemo() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            title: aiAnalysis.issueDetected || aiAnalysis.title || "Road Damage (Pothole)",
-            description: aiAnalysis.summary || aiAnalysis.description || "Severe road surface degradation observed.",
+            title: String(aiAnalysis.issueDetected || aiAnalysis.title || "Road Damage (Pothole)"),
+            description: String(aiAnalysis.summary || aiAnalysis.description || "Severe road surface degradation observed."),
             location: "Determining via GPS...",
-            department: aiAnalysis.department || "General",
-            priority: aiAnalysis.priority || "Low"
+            department: String(aiAnalysis.department || "General"),
+            priority: String(aiAnalysis.priority || "Low"),
+            ...(uploadedImageUrl ? { image_url: uploadedImageUrl } : {})
           }),
         });
         if (!res.ok) throw new Error("Complaint submission failed");

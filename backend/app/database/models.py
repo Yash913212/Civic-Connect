@@ -39,5 +39,6 @@ class Complaint(Base):
     department = Column(String, default="General")
     priority = Column(String, default="Low")
     status = Column(Enum(ComplaintStatus), default=ComplaintStatus.UNASSIGNED)
+    image_url = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

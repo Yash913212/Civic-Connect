@@ -11,6 +11,7 @@ from app.database.database import engine, Base, get_db
 from app.database.models import Complaint as DBComplaint
 from sqlalchemy.orm import Session
 from fastapi import Depends
+from fastapi.staticfiles import StaticFiles
 from app.auth.routes import router as auth_router
 
 Base.metadata.create_all(bind=engine)
@@ -27,6 +28,8 @@ app.add_middleware(
 
 app.include_router(auth_router)
 
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -36,6 +39,7 @@ class Complaint(BaseModel):
     location: str
     department: str = "General"
     priority: str = "Low"
+    image_url: str | None = None
 
 @app.get("/")
 @app.head("/")
@@ -82,6 +86,13 @@ async def upload_image(file: UploadFile = File(...)):
         You must classify civic grievances visible in uploaded images.
 
         ================================================
+        VALIDATION RULES
+        You MUST first determine if the image actually contains a valid civic infrastructure issue.
+        Images of selfies, random objects, food, pets, indoor settings (unless public infrastructure), or other non-civic matters are INVALID.
+        If the image is invalid, set "isValid" to false and provide an "invalidReason".
+        If valid, set "isValid" to true.
+
+        ================================================
         SUPPORTED IMAGE CATEGORIES
         Road Infrastructure (Potholes, Road Cracks, Damaged Roads, Broken Pavements, Road Erosion, Missing Road Signs)
         Drainage (Blocked Drainage, Open Drainage, Overflowing Drainage, Water Logging, Sewage Overflow, Drainage Damage)
@@ -94,7 +105,7 @@ async def upload_image(file: UploadFile = File(...)):
 
         ================================================
         IMAGE ANALYSIS WORKFLOW
-        Step 1: Detect visible issue.
+        Step 1: Detect visible issue and validate.
         Step 2: Determine category.
         Step 3: Determine department.
         Step 4: Determine severity.
@@ -128,6 +139,8 @@ async def upload_image(file: UploadFile = File(...)):
         OUTPUT FORMAT
         Return JSON only.
         {
+          "isValid": true,
+          "invalidReason": "",
           "issueDetected": "",
           "category": "",
           "department": "",
@@ -156,10 +169,30 @@ async def upload_image(file: UploadFile = File(...)):
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
         response_data = response.json()
         ai_result = response_data['choices'][0]['message']['content']
+        
+        ai_result = ai_result.strip()
+        if ai_result.startswith("```json"):
+            ai_result = ai_result.split("```json")[1].split("```")[0].strip()
+        elif ai_result.startswith("```"):
+            ai_result = ai_result.split("```")[1].split("```")[0].strip()
+            
         analysis = json.loads(ai_result)
+        
+        if str(analysis.get("isValid", "True")).lower() == "false":
+            os.remove(filepath)
+            raise HTTPException(status_code=400, detail=analysis.get("invalidReason", "Image does not contain a valid civic issue."))
+
+        for k, v in analysis.items():
+            if isinstance(v, (dict, list)):
+                analysis[k] = json.dumps(v)
+            else:
+                analysis[k] = str(v)
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"AI Analysis failed: {e}")
         analysis = {
+            "isValid": "True",
             "issueDetected": "Unknown Issue",
             "category": "Unknown",
             "department": "General",
@@ -173,6 +206,7 @@ async def upload_image(file: UploadFile = File(...)):
     return {
         "message": "Image Uploaded",
         "filename": file.filename,
+        "imageUrl": f"/uploads/{file.filename}",
         "analysis": analysis
     }
 
@@ -215,7 +249,20 @@ def analyze_text(request: TextAnalysisRequest):
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
         response_data = response.json()
         ai_result = response_data['choices'][0]['message']['content']
+        
+        ai_result = ai_result.strip()
+        if ai_result.startswith("```json"):
+            ai_result = ai_result.split("```json")[1].split("```")[0].strip()
+        elif ai_result.startswith("```"):
+            ai_result = ai_result.split("```")[1].split("```")[0].strip()
+            
         analysis = json.loads(ai_result)
+        
+        for k, v in analysis.items():
+            if isinstance(v, (dict, list)):
+                analysis[k] = json.dumps(v)
+            else:
+                analysis[k] = str(v)
     except Exception as e:
         print(f"AI Text Analysis failed: {e}")
         analysis = {
@@ -236,7 +283,8 @@ def create_complaint(complaint: Complaint, db: Session = Depends(get_db)):
             description=complaint.description,
             location=complaint.location,
             department=complaint.department,
-            priority=complaint.priority
+            priority=complaint.priority,
+            image_url=complaint.image_url
         )
         db.add(db_complaint)
         db.commit()
@@ -259,6 +307,7 @@ def get_complaints(db: Session = Depends(get_db)):
             "dept": c.department,
             "priority": c.priority,
             "status": c.status.value if hasattr(c.status, 'value') else c.status,
+            "image_url": c.image_url,
             "time": c.created_at.isoformat() if c.created_at else "Just now"
         }
         for c in complaints
