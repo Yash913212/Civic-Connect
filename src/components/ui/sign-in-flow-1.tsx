@@ -860,29 +860,48 @@ export const SignInPage = ({ className }: SignInPageProps) => {
   return (
     <div className={cn("flex w-[100%] flex-col min-h-screen bg-transparent relative overflow-hidden", className)}>
       <div className="absolute inset-0 z-0 pointer-events-none">
-        {initialCanvasVisible && (
-          <div className="absolute inset-0">
-            <CanvasRevealEffect
-              animationSpeed={3}
-              containerClassName="bg-transparent"
-              colors={roleInfo[role].color as any}
-              dotSize={6}
-              reverse={false}
-            />
-          </div>
-        )}
 
-        {reverseCanvasVisible && (
-          <div className="absolute inset-0">
-            <CanvasRevealEffect
-              animationSpeed={4}
-              containerClassName="bg-transparent"
-              colors={roleInfo[role].color as any}
-              dotSize={6}
-              reverse={true}
-            />
-          </div>
-        )}
+        <AnimatePresence>
+          {initialCanvasVisible && (
+            <motion.div
+              key={`canvas-initial-${role}`}
+              initial={{ opacity: 0, scale: 1.05, filter: "blur(8px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 0.95, filter: "blur(8px)" }}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-0"
+            >
+              <CanvasRevealEffect
+                animationSpeed={3}
+                containerClassName="bg-transparent"
+                colors={roleInfo[role].color as any}
+                dotSize={6}
+                reverse={false}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {reverseCanvasVisible && (
+            <motion.div
+              key={`canvas-reverse-${role}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="absolute inset-0"
+            >
+              <CanvasRevealEffect
+                animationSpeed={4}
+                containerClassName="bg-transparent"
+                colors={roleInfo[role].color as any}
+                dotSize={6}
+                reverse={true}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--background)_0%,_transparent_100%)] opacity-0" />
         <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-background/50 to-transparent" />
