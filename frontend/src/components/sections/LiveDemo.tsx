@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Upload, Mic, Play, CheckCircle2 } from "lucide-react";
+import { Upload, Mic, Play, CheckCircle2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
@@ -38,8 +38,10 @@ export default function LiveDemo() {
 
     if (file) {
       setUploadedFile(file);
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      if (!previewUrl) {
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+      }
 
       try {
         const toastId = showUploadProgress();
@@ -145,12 +147,32 @@ export default function LiveDemo() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      simulateProcessing(e.target.files[0]);
+      const file = e.target.files[0];
+      setUploadedFile(file);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
     }
   };
 
   const handleUploadClick = () => {
+    if (step > 0 && step < 4) return;
     fileInputRef.current?.click();
+  };
+
+  const handleDiscard = () => {
+    setUploadedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    setStep(0);
+    setAnalysisResult(null);
   };
 
   return (
@@ -184,6 +206,18 @@ export default function LiveDemo() {
                       {uploadedFile?.name || 'Image Uploaded'}
                     </p>
                   </div>
+                  {step !== 1 && step !== 2 && step !== 3 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDiscard();
+                      }}
+                      className="absolute top-3 right-3 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white/80 hover:text-white transition-colors z-20"
+                      aria-label="Discard image"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </>
               ) : (
                 <>
