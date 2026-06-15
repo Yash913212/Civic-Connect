@@ -7,7 +7,7 @@ export default function Footer() {
   const marqueeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let ctx = gsap.context(() => {
+    const ctx = gsap.context(() => {
       gsap.to(".marquee-inner", {
         xPercent: -50,
         ease: "none",

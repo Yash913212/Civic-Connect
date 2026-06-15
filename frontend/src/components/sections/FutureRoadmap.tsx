@@ -18,7 +18,7 @@ export default function FutureRoadmap() {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
-    let mm = gsap.matchMedia();
+    const mm = gsap.matchMedia();
 
     mm.add("(min-width: 768px)", () => {
       const items = gsap.utils.toArray(".roadmap-item");

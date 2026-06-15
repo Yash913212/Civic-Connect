@@ -18,7 +18,7 @@ export default function TheProblem() {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
-    let mm = gsap.matchMedia();
+    const mm = gsap.matchMedia();
 
     mm.add("(min-width: 768px)", () => {
       const wrapper = document.querySelector(".problem-wrapper") as HTMLElement;

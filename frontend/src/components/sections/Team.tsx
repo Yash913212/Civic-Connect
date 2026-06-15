@@ -242,7 +242,7 @@ export default function Team() {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
-    let ctx = gsap.context(() => {
+    const ctx = gsap.context(() => {
       // Blur reveal and text split for main title and subtitle
       gsap.fromTo(
         titleRef.current,

@@ -10,7 +10,7 @@ export default function Hero() {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
-    let ctx = gsap.context(() => {
+    const ctx = gsap.context(() => {
       gsap.from(".hero-content > *", {
         y: 50,
         opacity: 0,

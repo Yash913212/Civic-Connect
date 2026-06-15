@@ -22,7 +22,7 @@ export default function Loader() {
     }
 
     // Progress counter
-    let ctx = gsap.context(() => {
+    const ctx = gsap.context(() => {
       if (isFromLogin) {
         const tl = gsap.timeline({
           onComplete: () => {
