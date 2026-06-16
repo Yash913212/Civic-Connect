@@ -4,7 +4,7 @@ from pydantic import BaseModel
 import shutil
 import os
 from dotenv import load_dotenv
-
+from app.ai.predict import predict_issue
 load_dotenv()
 
 from app.database.database import engine, Base, get_db
@@ -334,7 +334,29 @@ async def upload_image(file: UploadFile = File(...)):
 
 class TextAnalysisRequest(BaseModel):
     text: str
+@app.post("/ai/analyze")
+async def analyze_image(
+    file: UploadFile = File(...)
+):
 
+    file_path = (
+        f"uploads/{file.filename}"
+    )
+
+    with open(
+        file_path,
+        "wb"
+    ) as f:
+
+        f.write(
+            await file.read()
+        )
+
+    result = predict_issue(
+        file_path
+    )
+
+    return result
 @app.post("/analyze_text")
 def analyze_text(request: TextAnalysisRequest):
     try:

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useRef, useEffect } from "react";
 import { Upload, Mic, Play, CheckCircle2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,6 +10,85 @@ export default function LiveDemo() {
   const [step, setStep] = useState(0);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] =
+useState<File | null>(null);
+
+const [aiResult, setAiResult] =
+useState<any>(null);
+
+const [loading, setLoading] =
+useState(false);
+const handleProcessAI = async () => {
+
+  if (!selectedFile) {
+    alert("Please upload image");
+    return;
+  }
+
+  const formData = new FormData();
+
+  formData.append(
+    "file",
+    selectedFile
+  );
+
+  try {
+
+    setLoading(true);
+
+    const response =
+      await fetch(
+        "http://127.0.0.1:8000/ai/analyze",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+    const data =
+  await response.json();
+
+console.log(data);
+
+setAiResult(data);
+
+setAnalysisResult({
+  title: data.issue,
+
+  department:
+    data.issue === "roads"
+      ? "Roads Department"
+      : data.issue === "garbage"
+      ? "Sanitation"
+      : data.issue === "water"
+      ? "Water Department"
+      : "Drainage Department",
+
+  priority: "High",
+
+  confidence:
+    `${data.confidence}%`,
+
+  description:
+    data.complaint
+});
+
+setStep(4);
+
+  } catch (error) {
+
+    console.error(
+      "AI Error:",
+      error
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
+};
+
   const [analysisResult, setAnalysisResult] = useState<{
     title: string;
     department: string;
@@ -149,6 +227,8 @@ export default function LiveDemo() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setUploadedFile(file);
+      setSelectedFile(file);
+
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
       }
@@ -185,14 +265,13 @@ export default function LiveDemo() {
           <div className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[350px] lg:min-h-0">
             <h3 className="text-xl font-medium mb-6">1. Input</h3>
 
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileChange} 
-              className="hidden" 
-              accept="image/*" 
-            />
-            
+           <input
+  ref={fileInputRef}
+  type="file"
+  accept="image/*"
+  className="hidden"
+  onChange={handleFileChange}
+/>
             <div 
               onClick={handleUploadClick}
               className="flex-1 border-2 border-dashed border-black/10 dark:border-white/20 rounded-2xl flex flex-col items-center justify-center text-muted-foreground hover:bg-black/5 dark:bg-white/5 transition-colors cursor-pointer mb-6 group min-h-[160px] relative overflow-hidden"
@@ -252,16 +331,20 @@ export default function LiveDemo() {
               </div>
             </div>
 
-            <button
-              onClick={() => {
-                if (uploadedFile) simulateProcessing(uploadedFile);
-                else if (textInput) simulateProcessing(undefined, textInput);
-                else alert("Please upload an image or describe the issue.");
-              }}
-              className="w-full py-4 bg-white text-black font-medium rounded-xl hover:bg-white/90 transition-colors flex items-center justify-center gap-2"
-            >
-              <Play className="w-4 h-4 fill-current" /> Process with AI
-            </button>
+          <button
+  onClick={handleProcessAI}
+  className="w-full py-4 bg-white text-black font-medium rounded-xl hover:bg-white/90 transition-colors flex items-center justify-center gap-2"
+>
+  <Play className="w-4 h-4 fill-current" />
+  Process with AI
+</button>
+
+{loading && (
+  <p className="text-center mt-3">
+    Processing...
+  </p>
+)}
+
           </div>
 
           {/* Center: Processing */}
@@ -312,17 +395,34 @@ export default function LiveDemo() {
                         {analysisResult?.department || "Public Works"}
                       </div>
                     </div>
-                    <div className="bg-background rounded-xl p-4 border border-destructive/50">
-                      <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Priority</div>
-                      <div className="text-destructive font-bold flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-                        {analysisResult?.priority || "High"}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-primary/10 rounded-xl p-4 border border-primary/20 flex-1 overflow-y-auto max-h-[140px] scrollbar-thin scrollbar-thumb-white/20">
+                 
+
+  <div className="bg-background rounded-xl p-4 border border-destructive/50">
+    <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+      Priority
+    </div>
+
+    <div className="text-destructive font-bold flex items-center gap-2">
+      <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+      {analysisResult?.priority || "High"}
+    </div>
+  </div>
+
+  <div className="col-span-2 bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-xl p-4 border border-black/5 dark:border-white/10 shadow-sm dark:shadow-none">
+    <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+      Confidence
+    </div>
+
+    <div className="text-green-400 font-bold">
+      {analysisResult?.confidence || "0%"}
+    </div>
+  </div>
+
+</div>
+                  
+                 <div className="bg-primary/10 rounded-xl p-5 border border-primary/20 min-h-[220px] overflow-y-auto break-words scrollbar-thin scrollbar-thumb-white/20">
                     <div className="text-xs text-primary/80 uppercase tracking-wider mb-2">Generated Note</div>
-                    <p className="text-sm leading-relaxed text-slate-700 dark:text-white/90">
+                    <p className="text-base leading-8 text-white">
                       "{analysisResult?.description || "Severe road surface degradation observed. Immediate patch repair recommended."}"
                     </p>
                     {analysisResult?.confidence && (
