@@ -63,7 +63,10 @@ import base64
 import requests
 import json
 
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+from app.core.config import settings
+
+def get_openrouter_api_key():
+    return settings.OPENROUTER_API_KEY or os.environ.get("OPENROUTER_API_KEY", "")
 
 @app.post("/upload")
 async def upload_image(file: UploadFile = File(...)):
@@ -78,7 +81,7 @@ async def upload_image(file: UploadFile = File(...)):
         mime_type = file.content_type or "image/jpeg"
         
         headers = {
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Authorization": f"Bearer {get_openrouter_api_key()}",
             "Content-Type": "application/json"
         }
         
@@ -313,6 +316,10 @@ async def upload_image(file: UploadFile = File(...)):
         raise
     except Exception as e:
         print(f"AI Analysis failed: {e}")
+        error_msg = str(e)
+        if 'response_data' in locals():
+            error_msg += f" | Response: {json.dumps(response_data)}"
+            
         analysis = {
             "isValid": "True",
             "issueDetected": "Unknown Issue",
@@ -321,7 +328,7 @@ async def upload_image(file: UploadFile = File(...)):
             "severity": "Low",
             "priority": "Low",
             "confidence": "0%",
-            "summary": "Could not analyze the image.",
+            "summary": f"Error: {error_msg}",
             "recommendedResolutionTime": "Unknown"
         }
         
@@ -366,7 +373,7 @@ async def analyze_image(
 def analyze_text(request: TextAnalysisRequest):
     try:
         headers = {
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Authorization": f"Bearer {get_openrouter_api_key()}",
             "Content-Type": "application/json"
         }
         
