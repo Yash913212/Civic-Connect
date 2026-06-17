@@ -14,6 +14,16 @@ from fastapi import Depends
 from fastapi.staticfiles import StaticFiles
 from app.auth.routes import router as auth_router
 
+import urllib.parse
+from app.core.config import settings
+try:
+    db_url = settings.DATABASE_URL
+    parsed = urllib.parse.urlparse(db_url)
+    masked = db_url.replace(parsed.password, "********") if parsed.password else db_url
+    print(f"INFO:     Connecting to database: {masked}")
+except Exception:
+    print(f"INFO:     Connecting to database: {settings.DATABASE_URL}")
+
 Base.metadata.create_all(bind=engine)
 
 from sqlalchemy import text
