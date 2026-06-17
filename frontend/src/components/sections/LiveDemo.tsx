@@ -19,77 +19,11 @@ useState<any>(null);
 const [loading, setLoading] =
 useState(false);
 const handleProcessAI = async () => {
-
   if (!selectedFile) {
     alert("Please upload image");
     return;
   }
-
-  const formData = new FormData();
-
-  formData.append(
-    "file",
-    selectedFile
-  );
-
-  try {
-
-    setLoading(true);
-
-    const rawApiUrl =
-  process.env.NEXT_PUBLIC_API_URL?.trim()
-  || "http://localhost:8000";
-
-const response = await fetch(
-  `${rawApiUrl}/ai/analyze`,
-  {
-    method: "POST",
-    body: formData
-  }
-);
-
-    const data =
-  await response.json();
-
-console.log(data);
-
-setAiResult(data);
-
-setAnalysisResult({
-  title: data.issue,
-
-  department:
-    data.issue === "roads"
-      ? "Roads Department"
-      : data.issue === "garbage"
-      ? "Sanitation"
-      : data.issue === "water"
-      ? "Water Department"
-      : "Drainage Department",
-
-  priority: "High",
-
-  confidence:
-    `${data.confidence}%`,
-
-  description:
-    data.complaint
-});
-
-setStep(4);
-
-  } catch (error) {
-
-    console.error(
-      "AI Error:",
-      error
-    );
-
-  } finally {
-
-    setLoading(false);
-
-  }
+  await simulateProcessing(selectedFile);
 };
 
   const [analysisResult, setAnalysisResult] = useState<{

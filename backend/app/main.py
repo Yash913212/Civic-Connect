@@ -352,11 +352,16 @@ async def analyze_image(
             await file.read()
         )
 
-    result = predict_issue(
-        file_path
-    )
-
-    return result
+    try:
+        result = predict_issue(file_path)
+        return result
+    except Exception as e:
+        print(f"Prediction failed: {e}")
+        return {
+            "issue": "Unknown",
+            "confidence": 0,
+            "complaint": f"Analysis failed: {str(e)}"
+        }
 @app.post("/analyze_text")
 def analyze_text(request: TextAnalysisRequest):
     try:
