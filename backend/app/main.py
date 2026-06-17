@@ -80,6 +80,13 @@ def get_openrouter_api_key():
 
 @app.post("/upload")
 async def upload_image(file: UploadFile = File(...)):
+    api_key = get_openrouter_api_key()
+    if not api_key:
+        raise HTTPException(
+            status_code=400,
+            detail="OpenRouter API Key is not configured on the server. Please set the OPENROUTER_API_KEY environment variable."
+        )
+
     contents = await file.read()
     
     filepath = os.path.join(UPLOAD_DIR, file.filename)
@@ -91,7 +98,7 @@ async def upload_image(file: UploadFile = File(...)):
         mime_type = file.content_type or "image/jpeg"
         
         headers = {
-            "Authorization": f"Bearer {get_openrouter_api_key()}",
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
         
@@ -302,6 +309,16 @@ async def upload_image(file: UploadFile = File(...)):
         }
         
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+        if response.status_code != 200:
+            error_detail = response.text
+            try:
+                error_json = response.json()
+                if "error" in error_json:
+                    error_detail = error_json["error"].get("message", error_detail)
+            except Exception:
+                pass
+            raise Exception(f"OpenRouter API error (Status {response.status_code}): {error_detail}")
+            
         response_data = response.json()
         ai_result = response_data['choices'][0]['message']['content']
         
@@ -381,9 +398,15 @@ async def analyze_image(
         }
 @app.post("/analyze_text")
 def analyze_text(request: TextAnalysisRequest):
+    api_key = get_openrouter_api_key()
+    if not api_key:
+        raise HTTPException(
+            status_code=400,
+            detail="OpenRouter API Key is not configured on the server. Please set the OPENROUTER_API_KEY environment variable."
+        )
     try:
         headers = {
-            "Authorization": f"Bearer {get_openrouter_api_key()}",
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
         
@@ -413,6 +436,16 @@ def analyze_text(request: TextAnalysisRequest):
         }
         
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+        if response.status_code != 200:
+            error_detail = response.text
+            try:
+                error_json = response.json()
+                if "error" in error_json:
+                    error_detail = error_json["error"].get("message", error_detail)
+            except Exception:
+                pass
+            raise Exception(f"OpenRouter API error (Status {response.status_code}): {error_detail}")
+            
         response_data = response.json()
         ai_result = response_data['choices'][0]['message']['content']
         
@@ -429,6 +462,8 @@ def analyze_text(request: TextAnalysisRequest):
                 analysis[k] = json.dumps(v)
             else:
                 analysis[k] = str(v)
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"AI Text Analysis failed: {e}")
         analysis = {
