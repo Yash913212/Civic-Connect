@@ -46,3 +46,4 @@ backend/app/__pycache__/
 backend/app/auth/__pycache__/
 backend/app/core/__pycache__/
 backend/app/database/__pycache__/
+backend/uploads/

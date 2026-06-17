@@ -36,14 +36,17 @@ const handleProcessAI = async () => {
 
     setLoading(true);
 
-    const response =
-      await fetch(
-        "http://127.0.0.1:8000/ai/analyze",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+    const rawApiUrl =
+  process.env.NEXT_PUBLIC_API_URL?.trim()
+  || "http://localhost:8000";
+
+const response = await fetch(
+  `${rawApiUrl}/ai/analyze`,
+  {
+    method: "POST",
+    body: formData
+  }
+);
 
     const data =
   await response.json();
