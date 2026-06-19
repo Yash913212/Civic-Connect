@@ -1,8 +1,20 @@
+import os
+import sys
+
+# Ensure the local virtual environment's site-packages are preferred
+venv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'venv')
+if os.path.exists(venv_path):
+    lib_dir = os.path.join(venv_path, 'lib')
+    if os.path.exists(lib_dir):
+        for py_dir in os.listdir(lib_dir):
+            site_packages = os.path.join(lib_dir, py_dir, 'site-packages')
+            if os.path.exists(site_packages) and site_packages not in sys.path:
+                sys.path.insert(0, site_packages)
+
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import shutil
-import os
 from dotenv import load_dotenv
 from app.ai.predict import predict_issue
 load_dotenv()
@@ -43,7 +55,15 @@ app = FastAPI(title="CivicConnect API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://civic-connect-self.vercel.app"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+        "http://127.0.0.1:3002",
+        "https://civic-connect-self.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

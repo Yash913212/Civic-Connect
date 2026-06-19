@@ -11,20 +11,87 @@ export default function LiveDemo() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] =
-useState<File | null>(null);
+    useState<File | null>(null);
 
-const [aiResult, setAiResult] =
-useState<any>(null);
+  const [aiResult, setAiResult] =
+    useState<any>(null);
 
-const [loading, setLoading] =
-useState(false);
-const handleProcessAI = async () => {
-  if (!selectedFile) {
-    alert("Please upload image");
-    return;
-  }
-  await simulateProcessing(selectedFile);
-};
+  const [loading, setLoading] =
+    useState(false);
+  const handleProcessAI = async () => {
+
+    if (!selectedFile) {
+      alert("Please upload image");
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("file", selectedFile);
+
+    if (textInput.trim()) {
+      formData.append("description", textInput);
+    }
+
+    try {
+
+      setLoading(true);
+
+      const rawApiUrl =
+        process.env.NEXT_PUBLIC_API_URL?.trim()
+        || "http://localhost:8000";
+
+      const response = await fetch(
+        `${rawApiUrl}/ai/analyze`,
+        {
+          method: "POST",
+          body: formData
+        }
+      );
+
+      const data =
+        await response.json();
+
+      console.log(data);
+
+      setAiResult(data);
+
+      setAnalysisResult({
+        title: data.issue,
+
+        department:
+          data.issue === "roads"
+            ? "Roads Department"
+            : data.issue === "garbage"
+              ? "Sanitation"
+              : data.issue === "water"
+                ? "Water Department"
+                : "Drainage Department",
+
+        priority: "High",
+
+        confidence:
+          `${data.confidence}%`,
+
+        description:
+          data.complaint
+      });
+
+      setStep(4);
+
+    } catch (error) {
+
+      console.error(
+        "AI Error:",
+        error
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  };
 
   const [analysisResult, setAnalysisResult] = useState<{
     title: string;
@@ -36,6 +103,67 @@ const handleProcessAI = async () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [textInput, setTextInput] = useState("");
+  const [selectedLanguage, setSelectedLanguage] =
+    useState("en-IN");
+  const [isListening, setIsListening] = useState(false);
+
+  const startSpeechRecognition = () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      toast.error("Speech recognition is not supported in this browser");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = selectedLanguage;
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    setIsListening(true);
+
+    toast.success(
+      `🎤 Listening in ${selectedLanguage === "en-IN"
+        ? "English"
+        : selectedLanguage === "te-IN"
+          ? "Telugu"
+          : "Hindi"
+      }`
+    );
+
+    recognition.start();
+
+    recognition.onresult = (event: any) => {
+      const transcript =
+        event.results[0][0].transcript;
+
+      setTextInput(transcript);
+
+      setIsListening(false);
+
+      toast.success("✅ Voice captured");
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event: any) => {
+      setIsListening(false);
+
+      if (
+        event.error === "no-speech" ||
+        event.error === "aborted"
+      ) {
+        return;
+      }
+
+      toast.error("Unable to recognize speech");
+    };
+  };
 
   useEffect(() => {
     return () => {
@@ -47,7 +175,7 @@ const handleProcessAI = async () => {
 
   const simulateProcessing = async (file?: File, text?: string) => {
     setStep(1);
-    
+
     let aiAnalysis = null;
     let uploadedImageUrl = null;
 
@@ -68,12 +196,12 @@ const handleProcessAI = async () => {
           method: "POST",
           body: formData,
         });
-        
+
         if (!uploadRes.ok) {
-           const errorData = await uploadRes.json().catch(() => ({}));
-           throw new Error(errorData.detail || `Upload failed with status ${uploadRes.status}`);
+          const errorData = await uploadRes.json().catch(() => ({}));
+          throw new Error(errorData.detail || `Upload failed with status ${uploadRes.status}`);
         }
-        
+
         toast.dismiss(toastId);
         const uploadData = await uploadRes.json();
         aiAnalysis = uploadData.analysis;
@@ -98,7 +226,7 @@ const handleProcessAI = async () => {
         });
         if (!analyzeRes.ok) throw new Error("Analysis failed");
         const analyzeData = await analyzeRes.json();
-        
+
         toast.dismiss(toastId);
         aiAnalysis = analyzeData.analysis;
       } catch (error) {
@@ -108,7 +236,7 @@ const handleProcessAI = async () => {
         return;
       }
     }
-        
+
     if (aiAnalysis) {
       setAnalysisResult({
         title: aiAnalysis.issueDetected || aiAnalysis.title || "Unknown Issue",
@@ -135,12 +263,12 @@ const handleProcessAI = async () => {
           }),
         });
         if (!res.ok) throw new Error("Complaint submission failed");
-        
+
         // Wait for analysis toast to "finish" visually
         setTimeout(() => {
           toast.dismiss(analysisToastId);
           showComplaintSuccess(`CC-2026-${Math.floor(1000 + Math.random() * 9000)}`);
-          
+
           // Trigger confetti for major achievement
           confetti({
             particleCount: 100,
@@ -148,7 +276,7 @@ const handleProcessAI = async () => {
             origin: { y: 0.6 }
           });
         }, 3000);
-        
+
       } catch (error) {
         console.error("Backend connection failed:", error);
         toast.error("❌ Unable to submit complaint. Please try again.");
@@ -202,14 +330,14 @@ const handleProcessAI = async () => {
           <div className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[350px] lg:min-h-0">
             <h3 className="text-xl font-medium mb-6">1. Input</h3>
 
-           <input
-  ref={fileInputRef}
-  type="file"
-  accept="image/*"
-  className="hidden"
-  onChange={handleFileChange}
-/>
-            <div 
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <div
               onClick={handleUploadClick}
               className="flex-1 border-2 border-dashed border-black/10 dark:border-white/20 rounded-2xl flex flex-col items-center justify-center text-muted-foreground hover:bg-black/5 dark:bg-white/5 transition-colors cursor-pointer mb-6 group min-h-[160px] relative overflow-hidden"
             >
@@ -245,6 +373,19 @@ const handleProcessAI = async () => {
 
             <div className="bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-black/5 dark:border-white/10 mb-4 shadow-sm dark:shadow-none">
               <p className="text-sm text-muted-foreground mb-2">Or describe issue...</p>
+              {isListening && (
+                <p className="text-red-500 text-sm font-medium mb-2 animate-pulse">
+                  🎤 Listening...
+                </p>
+              )}
+              <p className="text-xs text-primary mb-2">
+                Voice Language:
+                {selectedLanguage === "en-IN"
+                  ? " English"
+                  : selectedLanguage === "te-IN"
+                    ? " Telugu"
+                    : " Hindi"}
+              </p>
               <div className="flex justify-between items-center gap-2">
                 <input
                   type="text"
@@ -256,31 +397,56 @@ const handleProcessAI = async () => {
                     if (e.key === 'Enter' && textInput) simulateProcessing(undefined, textInput);
                   }}
                 />
-                <button 
+                <select
+                  value={selectedLanguage}
+                  onChange={(e) =>
+                    setSelectedLanguage(e.target.value)
+                  }
+                  className="px-3 py-2 rounded-lg bg-slate-800 text-white border border-slate-600 text-sm"
+                >
+
+                  <option value="en-IN" className="text-black">
+                    🇬🇧 English
+                  </option>
+
+                  <option value="te-IN" className="text-black">
+                    🇮🇳 Telugu
+                  </option>
+
+                  <option value="hi-IN" className="text-black">
+                    🇮🇳 Hindi
+                  </option>
+
+                </select>
+                <button
                   onClick={() => {
-                    if (textInput) simulateProcessing(undefined, textInput);
-                    else alert("Microphone Activated. Listening...");
+                    startSpeechRecognition();
                   }}
-                  className="p-3 rounded-full bg-primary/20 text-primary hover:bg-primary hover:text-slate-900 dark:text-white transition-colors"
+                  className={`p-3 rounded-full transition-colors ${isListening
+                      ? "bg-red-500 text-white animate-pulse"
+                      : "bg-primary/20 text-primary hover:bg-primary hover:text-slate-900 dark:text-white"
+                    }`}
                 >
                   <Mic className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-          <button
-  onClick={handleProcessAI}
-  className="w-full py-4 bg-white text-black font-medium rounded-xl hover:bg-white/90 transition-colors flex items-center justify-center gap-2"
->
-  <Play className="w-4 h-4 fill-current" />
-  Process with AI
-</button>
-
-{loading && (
-  <p className="text-center mt-3">
-    Processing...
-  </p>
-)}
+            <button
+              onClick={() => {
+                if (step > 0 && step < 4) return;
+                if (!selectedFile && !textInput.trim()) {
+                  toast.error("Please upload an image or describe the issue");
+                  return;
+                }
+                simulateProcessing(selectedFile || undefined, textInput || undefined);
+              }}
+              disabled={step > 0 && step < 4}
+              className={`w-full py-4 bg-white text-black font-medium rounded-xl hover:bg-white/90 transition-colors flex items-center justify-center gap-2 ${(step > 0 && step < 4) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <Play className="w-4 h-4 fill-current" />
+              {step > 0 && step < 4 ? "Processing..." : "Process with AI"}
+            </button>
 
           </div>
 
@@ -332,32 +498,32 @@ const handleProcessAI = async () => {
                         {analysisResult?.department || "Public Works"}
                       </div>
                     </div>
-                 
 
-  <div className="bg-background rounded-xl p-4 border border-destructive/50">
-    <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-      Priority
-    </div>
 
-    <div className="text-destructive font-bold flex items-center gap-2">
-      <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-      {analysisResult?.priority || "High"}
-    </div>
-  </div>
+                    <div className="bg-background rounded-xl p-4 border border-destructive/50">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                        Priority
+                      </div>
 
-  <div className="col-span-2 bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-xl p-4 border border-black/5 dark:border-white/10 shadow-sm dark:shadow-none">
-    <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-      Confidence
-    </div>
+                      <div className="text-destructive font-bold flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                        {analysisResult?.priority || "High"}
+                      </div>
+                    </div>
 
-    <div className="text-green-400 font-bold">
-      {analysisResult?.confidence || "0%"}
-    </div>
-  </div>
+                    <div className="col-span-2 bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-xl p-4 border border-black/5 dark:border-white/10 shadow-sm dark:shadow-none">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                        Confidence
+                      </div>
 
-</div>
-                  
-                 <div className="bg-primary/10 rounded-xl p-5 border border-primary/20 min-h-[220px] overflow-y-auto break-words scrollbar-thin scrollbar-thumb-white/20">
+                      <div className="text-green-400 font-bold">
+                        {analysisResult?.confidence || "0%"}
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div className="bg-primary/10 rounded-xl p-5 border border-primary/20 min-h-[220px] overflow-y-auto break-words scrollbar-thin scrollbar-thumb-white/20">
                     <div className="text-xs text-primary/80 uppercase tracking-wider mb-2">Generated Note</div>
                     <p className="text-base leading-8 text-white">
                       "{analysisResult?.description || "Severe road surface degradation observed. Immediate patch repair recommended."}"

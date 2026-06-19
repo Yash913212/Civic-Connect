@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export default function proxy(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const role = request.cookies.get('role')?.value;
 
@@ -10,16 +10,6 @@ export default function proxy(request: NextRequest) {
 
   if (!token && !isAuthPage && !request.nextUrl.pathname.startsWith('/_next') && !request.nextUrl.pathname.startsWith('/api') && !request.nextUrl.pathname.includes('.')) {
     return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  if (isAuthPage && token && role) {
-    // const dashRoutes: Record<string, string> = {
-    //   CITIZEN: '/citizen/dashboard',
-    //   OFFICER: '/officer/dashboard',
-    //   ADMIN: '/admin/dashboard',
-    // };
-    // const target = dashRoutes[role] || '/citizen/dashboard';
-    // return NextResponse.redirect(new URL(target, request.url));
   }
 
   if (token && role) {

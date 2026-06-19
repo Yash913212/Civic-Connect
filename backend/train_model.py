@@ -1,3 +1,16 @@
+import os
+import sys
+
+# Ensure the local virtual environment's site-packages are preferred
+venv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'venv')
+if os.path.exists(venv_path):
+    lib_dir = os.path.join(venv_path, 'lib')
+    if os.path.exists(lib_dir):
+        for py_dir in os.listdir(lib_dir):
+            site_packages = os.path.join(lib_dir, py_dir, 'site-packages')
+            if os.path.exists(site_packages) and site_packages not in sys.path:
+                sys.path.insert(0, site_packages)
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
