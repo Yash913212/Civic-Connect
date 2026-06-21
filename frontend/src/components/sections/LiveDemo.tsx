@@ -37,9 +37,9 @@ export default function LiveDemo() {
 
       setLoading(true);
 
-      const rawApiUrl =
-        process.env.NEXT_PUBLIC_API_URL?.trim()
-        || "http://localhost:8000";
+      const rawApiUrl = "http://127.0.0.1:8000";
+
+      console.log("API URL:", rawApiUrl);
 
       const response = await fetch(
         `${rawApiUrl}/ai/analyze`,
@@ -66,9 +66,18 @@ export default function LiveDemo() {
               ? "Sanitation"
               : data.issue === "water"
                 ? "Water Department"
-                : "Drainage Department",
+                : data.issue === "drainage"
+                  ? "Drainage Department"
+                  : data.issue === "streetlight"
+                    ? "Electrical Department"
+                    : "General Department",
 
-        priority: "High",
+        priority:
+          data.confidence > 85
+            ? "High"
+            : data.confidence > 70
+              ? "Medium"
+              : "Low",
 
         confidence:
           `${data.confidence}%`,
@@ -77,7 +86,11 @@ export default function LiveDemo() {
           data.complaint
       });
 
-      setStep(4);
+      setStep(1);
+
+      setTimeout(() => setStep(2), 1000);
+      setTimeout(() => setStep(3), 2000);
+      setTimeout(() => setStep(4), 3000);
 
     } catch (error) {
 
@@ -319,15 +332,29 @@ export default function LiveDemo() {
     setStep(0);
     setAnalysisResult(null);
   };
+  const formatIssueName = (issue?: string) => {
+    if (!issue) return "Unknown Issue";
+
+    const issueMap: Record<string, string> = {
+      garbage: "Garbage Accumulation",
+      pothole: "Road Pothole",
+      drainage: "Blocked Drainage",
+      streetlight: "Broken Street Light",
+      waterleak: "Water Leakage",
+    };
+
+    return issueMap[issue.toLowerCase()] || issue;
+  };
 
   return (
+
     <section className="py-32 w-full bg-transparent relative">
       <div className="max-w-7xl mx-auto px-6">
         <h2 className="text-4xl md:text-6xl font-heading font-bold mb-16 text-center">Live AI Demo</h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-auto lg:h-[600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left: Input */}
-          <div className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[350px] lg:min-h-0">
+          <div className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-3xl p-8 flex flex-col h-[650px]">
             <h3 className="text-xl font-medium mb-6">1. Input</h3>
 
             <input
@@ -371,7 +398,7 @@ export default function LiveDemo() {
               )}
             </div>
 
-            <div className="bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-black/5 dark:border-white/10 mb-4 shadow-sm dark:shadow-none">
+            <div className="bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-black/5 dark:border-white/10 mt-4 shadow-sm dark:shadow-none">
               <p className="text-sm text-muted-foreground mb-2">Or describe issue...</p>
               {isListening && (
                 <p className="text-red-500 text-sm font-medium mb-2 animate-pulse">
@@ -386,72 +413,68 @@ export default function LiveDemo() {
                     ? " Telugu"
                     : " Hindi"}
               </p>
-              <div className="flex justify-between items-center gap-2">
+              <div className="flex flex-col gap-3">
+
                 <input
                   type="text"
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
                   placeholder="Massive pothole on Main St."
-                  className="flex-1 bg-transparent border-b border-black/10 dark:border-white/20 text-slate-600 dark:text-white/80 focus:outline-none focus:border-primary py-1"
+                  className="w-full bg-transparent border-b border-black/10 dark:border-white/20 text-slate-600 dark:text-white/80 focus:outline-none focus:border-primary py-1"
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && textInput) simulateProcessing(undefined, textInput);
+                    if (e.key === "Enter" && textInput)
+                      simulateProcessing(undefined, textInput);
                   }}
                 />
-                <select
-                  value={selectedLanguage}
-                  onChange={(e) =>
-                    setSelectedLanguage(e.target.value)
-                  }
-                  className="px-3 py-2 rounded-lg bg-slate-800 text-white border border-slate-600 text-sm"
-                >
 
-                  <option value="en-IN" className="text-black">
-                    🇬🇧 English
-                  </option>
+                <div className="flex items-center gap-3 mt-2">
 
-                  <option value="te-IN" className="text-black">
-                    🇮🇳 Telugu
-                  </option>
+                  <select
+                    value={selectedLanguage}
+                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    className="w-full px-3 py-3 rounded-lg bg-slate-800 text-white border border-slate-600 text-sm"
+                  >
+                    <option value="en-IN">English</option>
+                    <option value="te-IN">Telugu</option>
+                    <option value="hi-IN">Hindi</option>
+                  </select>
 
-                  <option value="hi-IN" className="text-black">
-                    🇮🇳 Hindi
-                  </option>
+                  <button
+                    onClick={() => {
+                      startSpeechRecognition();
+                    }}
 
-                </select>
-                <button
-                  onClick={() => {
-                    startSpeechRecognition();
-                  }}
-                  className={`p-3 rounded-full transition-colors ${isListening
+                    className={`w-12 h-12 flex items-center justify-center rounded-full transition-colors ${isListening
                       ? "bg-red-500 text-white animate-pulse"
                       : "bg-primary/20 text-primary hover:bg-primary hover:text-slate-900 dark:text-white"
-                    }`}
-                >
-                  <Mic className="w-5 h-5" />
-                </button>
+                      }`}
+                  >
+                    <Mic className="w-5 h-5" />
+                  </button>
+
+                </div>
+
               </div>
+
+              <button
+                onClick={handleProcessAI}
+                className="w-full mt-4 py-4 bg-white text-black font-medium rounded-xl hover:bg-white/90 transition-colors flex items-center justify-center gap-2"
+              >
+                <Play className="w-4 h-4 fill-current" />
+                Process with AI
+              </button>
+
+              {loading && (
+                <p className="text-center mt-3 animate-pulse text-primary">
+                  🤖 AI is analyzing...
+                </p>
+              )}
+
             </div>
-
-            <button
-              onClick={() => {
-                if (step > 0 && step < 4) return;
-                if (!selectedFile && !textInput.trim()) {
-                  toast.error("Please upload an image or describe the issue");
-                  return;
-                }
-                simulateProcessing(selectedFile || undefined, textInput || undefined);
-              }}
-              disabled={step > 0 && step < 4}
-              className={`w-full py-4 bg-white text-black font-medium rounded-xl hover:bg-white/90 transition-colors flex items-center justify-center gap-2 ${(step > 0 && step < 4) ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <Play className="w-4 h-4 fill-current" />
-              {step > 0 && step < 4 ? "Processing..." : "Process with AI"}
-            </button>
-
           </div>
 
           {/* Center: Processing */}
-          <div className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[250px] lg:min-h-0 relative overflow-hidden">
+          <div className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-3xl p-8 flex flex-col h-[650px] relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
             <h3 className="text-xl font-medium mb-6 relative z-10">2. AI Pipeline</h3>
 
@@ -477,19 +500,23 @@ export default function LiveDemo() {
           </div>
 
           {/* Right: Results */}
-          <div className="bg-black/5 dark:bg-white/5 border border-primary/30 rounded-3xl p-8 flex flex-col h-auto lg:h-full min-h-[300px] lg:min-h-0 shadow-[0_0_50px_rgba(var(--primary),0.1)]">
+          <div className="bg-black/5 dark:bg-white/5 border border-primary/30 rounded-3xl p-8 flex flex-col h-[650px] overflow-hidden shadow-[0_0_50px_rgba(var(--primary),0.1)]">
             <h3 className="text-xl font-medium mb-6">3. Results</h3>
 
             <AnimatePresence>
               {step === 4 ? (
+
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex-1 flex flex-col gap-4"
+                  className="flex-1 flex flex-col gap-4 overflow-hidden"
                 >
+
                   <div className="bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-xl p-4 border border-black/5 dark:border-white/10 shadow-sm dark:shadow-none">
                     <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Issue</div>
-                    <div className="text-lg font-medium">{analysisResult?.title || "Road Damage (Pothole)"}</div>
+                    <div className="text-lg font-medium">
+                      {formatIssueName(analysisResult?.title)}
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-xl p-4 border border-black/5 dark:border-white/10 shadow-sm dark:shadow-none">
@@ -520,10 +547,19 @@ export default function LiveDemo() {
                         {analysisResult?.confidence || "0%"}
                       </div>
                     </div>
+                    <div className="col-span-2 bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-xl p-4 border border-black/5 dark:border-white/10 shadow-sm dark:shadow-none">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                        Citizen Description
+                      </div>
+
+                      <div className="text-slate-900 dark:text-white">
+                        {textInput || "No description provided"}
+                      </div>
+                    </div>
 
                   </div>
 
-                  <div className="bg-primary/10 rounded-xl p-5 border border-primary/20 min-h-[220px] overflow-y-auto break-words scrollbar-thin scrollbar-thumb-white/20">
+                  <div className="bg-primary/10 rounded-xl p-5 border border-primary/20 flex-1 overflow-y-auto break-words scrollbar-thin scrollbar-thumb-white/20">
                     <div className="text-xs text-primary/80 uppercase tracking-wider mb-2">Generated Note</div>
                     <p className="text-base leading-8 text-white">
                       "{analysisResult?.description || "Severe road surface degradation observed. Immediate patch repair recommended."}"
@@ -544,6 +580,6 @@ export default function LiveDemo() {
           </div>
         </div>
       </div>
-    </section>
+    </section >
   );
 }

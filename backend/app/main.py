@@ -1,20 +1,8 @@
-import os
-import sys
-
-# Ensure the local virtual environment's site-packages are preferred
-venv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'venv')
-if os.path.exists(venv_path):
-    lib_dir = os.path.join(venv_path, 'lib')
-    if os.path.exists(lib_dir):
-        for py_dir in os.listdir(lib_dir):
-            site_packages = os.path.join(lib_dir, py_dir, 'site-packages')
-            if os.path.exists(site_packages) and site_packages not in sys.path:
-                sys.path.insert(0, site_packages)
-
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import shutil
+import os
 from dotenv import load_dotenv
 from app.ai.predict import predict_issue
 load_dotenv()
@@ -25,16 +13,6 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 from fastapi.staticfiles import StaticFiles
 from app.auth.routes import router as auth_router
-
-import urllib.parse
-from app.core.config import settings
-try:
-    db_url = settings.DATABASE_URL
-    parsed = urllib.parse.urlparse(db_url)
-    masked = db_url.replace(parsed.password, "********") if parsed.password else db_url
-    print(f"INFO:     Connecting to database: {masked}")
-except Exception:
-    print(f"INFO:     Connecting to database: {settings.DATABASE_URL}")
 
 Base.metadata.create_all(bind=engine)
 
@@ -58,10 +36,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:3001",
-        "http://localhost:3002",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
-        "http://127.0.0.1:3002",
         "https://civic-connect-self.vercel.app"
     ],
     allow_credentials=True,
@@ -93,20 +69,10 @@ import base64
 import requests
 import json
 
-from app.core.config import settings
-
-def get_openrouter_api_key():
-    return settings.OPENROUTER_API_KEY or os.environ.get("OPENROUTER_API_KEY", "")
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 
 @app.post("/upload")
 async def upload_image(file: UploadFile = File(...)):
-    api_key = get_openrouter_api_key()
-    if not api_key:
-        raise HTTPException(
-            status_code=400,
-            detail="OpenRouter API Key is not configured on the server. Please set the OPENROUTER_API_KEY environment variable."
-        )
-
     contents = await file.read()
     
     filepath = os.path.join(UPLOAD_DIR, file.filename)
@@ -118,7 +84,7 @@ async def upload_image(file: UploadFile = File(...)):
         mime_type = file.content_type or "image/jpeg"
         
         headers = {
-            "Authorization": f"Bearer {api_key}",
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
             "Content-Type": "application/json"
         }
         
@@ -329,16 +295,6 @@ async def upload_image(file: UploadFile = File(...)):
         }
         
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
-        if response.status_code != 200:
-            error_detail = response.text
-            try:
-                error_json = response.json()
-                if "error" in error_json:
-                    error_detail = error_json["error"].get("message", error_detail)
-            except Exception:
-                pass
-            raise Exception(f"OpenRouter API error (Status {response.status_code}): {error_detail}")
-            
         response_data = response.json()
         ai_result = response_data['choices'][0]['message']['content']
         
@@ -363,10 +319,6 @@ async def upload_image(file: UploadFile = File(...)):
         raise
     except Exception as e:
         print(f"AI Analysis failed: {e}")
-        error_msg = str(e)
-        if 'response_data' in locals():
-            error_msg += f" | Response: {json.dumps(response_data)}"
-            
         analysis = {
             "isValid": "True",
             "issueDetected": "Unknown Issue",
@@ -375,7 +327,7 @@ async def upload_image(file: UploadFile = File(...)):
             "severity": "Low",
             "priority": "Low",
             "confidence": "0%",
-            "summary": f"Error: {error_msg}",
+            "summary": "Could not analyze the image.",
             "recommendedResolutionTime": "Unknown"
         }
         
@@ -390,7 +342,8 @@ class TextAnalysisRequest(BaseModel):
     text: str
 @app.post("/ai/analyze")
 async def analyze_image(
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    description: str = Form("")
 ):
 
     file_path = (
@@ -406,27 +359,21 @@ async def analyze_image(
             await file.read()
         )
 
-    try:
-        result = predict_issue(file_path)
-        return result
-    except Exception as e:
-        print(f"Prediction failed: {e}")
-        return {
-            "issue": "Unknown",
-            "confidence": 0,
-            "complaint": f"Analysis failed: {str(e)}"
-        }
+    result = predict_issue(
+        file_path
+    )
+    result["citizen_description"] = description
+
+    return {
+    **result,
+    "citizen_description": description
+}
+
 @app.post("/analyze_text")
 def analyze_text(request: TextAnalysisRequest):
-    api_key = get_openrouter_api_key()
-    if not api_key:
-        raise HTTPException(
-            status_code=400,
-            detail="OpenRouter API Key is not configured on the server. Please set the OPENROUTER_API_KEY environment variable."
-        )
     try:
         headers = {
-            "Authorization": f"Bearer {api_key}",
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
             "Content-Type": "application/json"
         }
         
@@ -456,16 +403,6 @@ def analyze_text(request: TextAnalysisRequest):
         }
         
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
-        if response.status_code != 200:
-            error_detail = response.text
-            try:
-                error_json = response.json()
-                if "error" in error_json:
-                    error_detail = error_json["error"].get("message", error_detail)
-            except Exception:
-                pass
-            raise Exception(f"OpenRouter API error (Status {response.status_code}): {error_detail}")
-            
         response_data = response.json()
         ai_result = response_data['choices'][0]['message']['content']
         
@@ -482,8 +419,6 @@ def analyze_text(request: TextAnalysisRequest):
                 analysis[k] = json.dumps(v)
             else:
                 analysis[k] = str(v)
-    except HTTPException:
-        raise
     except Exception as e:
         print(f"AI Text Analysis failed: {e}")
         analysis = {
