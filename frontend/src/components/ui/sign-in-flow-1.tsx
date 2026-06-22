@@ -758,6 +758,15 @@ export const SignInPage = ({ className }: SignInPageProps) => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("rememberedEmail");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const [step, setStep] = useState<"email" | "success">("email");
   const [isLoading, setIsLoading] = useState(false);
@@ -815,6 +824,12 @@ export const SignInPage = ({ className }: SignInPageProps) => {
       setAuthUser(response.user, response.access_token, response.refresh_token);
       toast.dismiss(toastId);
       showSystemStatus("Handshake Successful", "Welcome back");
+
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", email);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+      }
 
       setReverseCanvasVisible(true);
       setTimeout(() => {
@@ -1134,12 +1149,24 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         {!isSignUp && (
                           <div className="flex items-center justify-between pt-1">
                             <label className="flex items-center gap-2 cursor-pointer group">
-                              <input type="checkbox" className="hidden" />
-                              <div className="w-4 h-4 rounded border border-black/20 dark:border-white/20 bg-black/5 dark:bg-black/20 group-hover:border-black/40 dark:group-hover:border-white/40 flex items-center justify-center">
+                              <input 
+                                type="checkbox" 
+                                className="hidden" 
+                                checked={rememberMe}
+                                onChange={(e) => setRememberMe(e.target.checked)}
+                              />
+                              <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                                rememberMe 
+                                  ? 'bg-blue-500 border-blue-500' 
+                                  : 'border-black/20 dark:border-white/20 bg-black/5 dark:bg-black/20 group-hover:border-black/40 dark:group-hover:border-white/40'
+                              }`}>
+                                {rememberMe && <Check size={12} className="text-white" strokeWidth={3} />}
                               </div>
                               <span className="text-xs text-slate-600 dark:text-white/60 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Remember me</span>
                             </label>
-                            <button type="button" className="text-xs text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none">Forgot password?</button>
+                            {role === 'CITIZEN' && (
+                              <Link href="/forgot-password" className="text-xs text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none">Forgot password?</Link>
+                            )}
                           </div>
                         )}
 

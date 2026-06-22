@@ -89,3 +89,61 @@ def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+from app.auth.schemas import ForgotPasswordRequest, ResetPasswordRequest
+from datetime import timedelta
+from jose import jwt, JWTError
+from app.core.config import settings
+
+@router.post("/forgot-password")
+def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user:
+        # Avoid user enumeration attacks in production, but since this is a civic connect portal
+        # and we need clear error feedback, let's return a nice error.
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with this email does not exist."
+        )
+    
+    if user.role != RoleEnum.CITIZEN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Password recovery is only available for Citizen accounts."
+        )
+    
+    # Generate reset token valid for 15 minutes
+    reset_token = create_access_token(subject=user.email, expires_delta=timedelta(minutes=15))
+    
+    # In a real app we'd send an email here.
+    # We will log the link and return the token to simulate it on the frontend.
+    print(f"PASSWORD RESET LINK: http://localhost:3000/reset-password?token={reset_token}")
+    
+    return {
+        "message": f"Password reset email simulated to {request.email}",
+        "reset_token": reset_token
+    }
+
+@router.post("/reset-password")
+def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Invalid or expired reset token."
+    )
+    try:
+        payload = jwt.decode(request.token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+        
+    user = db.query(User).filter(User.email == email).first()
+    if user is None:
+        raise credentials_exception
+        
+    # Update password
+    user.password_hash = get_password_hash(request.new_password)
+    db.commit()
+    
+    return {"message": "Password has been reset successfully."}

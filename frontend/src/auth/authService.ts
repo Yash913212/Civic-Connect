@@ -56,5 +56,15 @@ export const authService = {
     if (typeof window === 'undefined') return null;
     const userStr = localStorage.getItem('user');
     return userStr ? JSON.parse(userStr) : null;
+  },
+
+  forgotPassword: async (email: string): Promise<any> => {
+    const response = await apiClient.post('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  resetPassword: async (token: string, newPassword: string): Promise<any> => {
+    const response = await apiClient.post('/auth/reset-password', { token, new_password: newPassword });
+    return response.data;
   }
 };
