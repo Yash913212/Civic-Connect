@@ -5,8 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { showUploadProgress, showAIAnalysis, showComplaintSuccess, showTextLoading } from "@/components/ui/CustomToasts";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 export default function LiveDemo() {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
   const [step, setStep] = useState(0);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -19,6 +24,11 @@ export default function LiveDemo() {
   const [loading, setLoading] =
     useState(false);
   const handleProcessAI = async () => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in or register to upload an image and process with AI.");
+      router.push("/");
+      return;
+    }
 
     if (!selectedFile) {
       alert("Please upload image");
@@ -121,6 +131,12 @@ export default function LiveDemo() {
   const [isListening, setIsListening] = useState(false);
 
   const startSpeechRecognition = () => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in or register to use voice input.");
+      router.push("/");
+      return;
+    }
+
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
@@ -187,6 +203,12 @@ export default function LiveDemo() {
   }, [previewUrl]);
 
   const simulateProcessing = async (file?: File, text?: string) => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in or register to upload an image and process with AI.");
+      router.push("/");
+      return;
+    }
+
     setStep(1);
 
     let aiAnalysis = null;
@@ -302,6 +324,13 @@ export default function LiveDemo() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in or register to upload an image and process with AI.");
+      router.push("/");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setUploadedFile(file);
@@ -315,7 +344,16 @@ export default function LiveDemo() {
     }
   };
 
-  const handleUploadClick = () => {
+  const handleUploadClick = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      toast.error("Please sign in or register to upload an image and process with AI.");
+      router.push("/");
+      return;
+    }
     if (step > 0 && step < 4) return;
     fileInputRef.current?.click();
   };
