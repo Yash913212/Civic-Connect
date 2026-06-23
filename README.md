@@ -75,12 +75,13 @@ graph TD
 ## ✨ Premium Features
 
 ### 1. 🧬 Multi-Modal AI Core Showcase
-*   **VisionEye Anomaly Detection:** Spatial grid damage parsing powered by EfficientNetB0, classifying visual anomalies (e.g., potholes, public structure damage, structural cracks) instantly.
-*   **ContextAI Multimodal Analyzer:** Image context extraction using BLIP to generate automatic, descriptive summaries and tagging parameters for submitted imagery.
-*   **PolyglotNLP Dialect Core:** Multilingual feedback processing leveraging Google's MuRIL transformer, supporting diverse local Indian languages and regional dialects to democratize accessibility.
-*   **CivicVoice Transcriber:** Fast, seamless dictation interface leveraging OpenAI Whisper for voice-based grievance registrations.
-*   **LLM Action Synthesizer:** Advanced municipal briefing generator powered by Google's Gemini that writes detailed maintenance instructions and outputs department priorities.
-*   **Predictive Smart Router:** Automated machine-learning priority routing to dispatch tickets directly to corresponding administrative wings (PWD, Waste Management, Electricity, Water Board).
+*   **VisionEye Anomaly Detection:** Spatial grid damage parsing powered by EfficientNetB0, classifying visual anomalies across 8 categories (roads, drainage, garbage, water, streetlight, electricity, safety, traffic) instantly.
+*   **ContextAI Multimodal Analyzer:** Image context extraction using **BLIP (Salesforce)** to generate automatic, descriptive summaries and tagging parameters for submitted imagery.
+*   **PolyglotNLP Dialect Core:** Multilingual feedback processing leveraging **Google MuRIL (Multilingual Representations for Indian Languages)** transformer, supporting Telugu-English code-mixed text, Hindi, and regional dialects to democratize accessibility.
+*   **Vision-Text Fusion Layer:** A true multimodal architecture that concatenates EfficientNetB0 visual features with MuRIL text embeddings through a learned fusion layer, then predicts both **department (8 classes)** and **priority (low/medium/high)** simultaneously.
+*   **CivicVoice Transcriber:** Fast, seamless dictation interface leveraging **OpenAI Whisper (tiny)** for voice-based grievance registrations in Telugu, Hindi, and English.
+*   **LLM Action Synthesizer:** Advanced municipal briefing generator that writes detailed maintenance instructions and outputs department priorities via OpenRouter/GPT-4o-mini.
+*   **Predictive Smart Router:** Automated ML-powered priority routing to dispatch tickets directly to corresponding administrative wings (Roads, Drainage, Sanitation, Water Works, Electrical, Power, Safety, Traffic).
 
 ### 2. 🌌 High-Fidelity 3D Visual Experience
 *   **Interactive 3D WebGL Canvas:** A dynamic Three.js + React Three Fiber backdrop containing dynamic particle systems representing a neural city net that floats and warps dynamically.
@@ -107,6 +108,11 @@ graph TD
 | **Scrolling Physics**| Lenis 1.3 | Fluid, high-precision inertial scroll smoothing |
 | **Dynamic Video** | Hls.js | Low-latency HLS stream player integration |
 | **Icons & Elements** | Lucide React, Shadcn UI (Base elements) | Harmonized UI library assets |
+| **Vision Model** | EfficientNetB0 (PyTorch) | Image feature extraction for 8-class civic issue classification |
+| **Text Model** | Google MuRIL (Transformers) | Multilingual Telugu/English/Hindi text understanding |
+| **Fusion Architecture** | Custom multimodal fusion layer | Concatenated vision + text features → department + priority heads |
+| **Image Captioning** | Salesforce BLIP | Automatic image description generation |
+| **Voice Transcription** | OpenAI Whisper (tiny) | Voice-to-text for grievance registration in Indian languages |
 
 ---
 

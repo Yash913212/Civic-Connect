@@ -43,3 +43,4 @@ backend/venv/
 **/__pycache__/
 backend/*.db
 backend/uploads/
+backend/civic_model_multimodal.pth

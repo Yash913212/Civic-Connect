@@ -5,6 +5,8 @@ import shutil
 import os
 from dotenv import load_dotenv
 from app.ai.predict import predict_issue
+from app.ai.captioning import generate_caption
+from app.ai.transcriber import transcribe_audio, transcribe_audio_file
 load_dotenv()
 
 from app.database.database import engine, Base, get_db
@@ -38,7 +40,8 @@ app.add_middleware(
         "http://localhost:3001",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
-        "https://civic-connect-self.vercel.app"
+        "https://civic-connect-self.vercel.app",
+        "https://civic-connect-self.vercel.app/",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -360,14 +363,14 @@ async def analyze_image(
         )
 
     result = predict_issue(
-        file_path
+        file_path, description=description
     )
     result["citizen_description"] = description
 
-    return {
-    **result,
-    "citizen_description": description
-}
+    caption = generate_caption(file_path)
+    result["ai_caption"] = caption
+
+    return result
 
 @app.post("/analyze_text")
 def analyze_text(request: TextAnalysisRequest):
@@ -430,6 +433,32 @@ def analyze_text(request: TextAnalysisRequest):
         }
         
     return {"analysis": analysis}
+
+@app.post("/ai/caption")
+async def caption_image(file: UploadFile = File(...)):
+    contents = await file.read()
+    filepath = os.path.join(UPLOAD_DIR, f"caption_{file.filename}")
+    with open(filepath, "wb") as f:
+        f.write(contents)
+
+    caption = generate_caption(filepath)
+
+    return {
+        "filename": file.filename,
+        "caption": caption,
+    }
+
+
+@app.post("/ai/transcribe")
+async def transcribe_audio_endpoint(file: UploadFile = File(...), language: str = Form("te")):
+    contents = await file.read()
+    text = transcribe_audio(contents, language=language)
+
+    return {
+        "transcription": text,
+        "language": language,
+    }
+
 
 @app.post("/complaint")
 def create_complaint(complaint: Complaint, db: Session = Depends(get_db)):

@@ -1,147 +1,103 @@
 import os
 import sys
-
-# Ensure the local virtual environment's site-packages are preferred
-venv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'venv')
-if os.path.exists(venv_path):
-    lib_dir = os.path.join(venv_path, 'lib')
-    if os.path.exists(lib_dir):
-        for py_dir in os.listdir(lib_dir):
-            site_packages = os.path.join(lib_dir, py_dir, 'site-packages')
-            if os.path.exists(site_packages) and site_packages not in sys.path:
-                sys.path.insert(0, site_packages)
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets, transforms, models
 from torch.utils.data import DataLoader, random_split
 
-# Dataset path
 dataset_path = "dataset"
 
-# Image transformations
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.RandomHorizontalFlip(),
-    transforms.ToTensor()
+train_transform = transforms.Compose([
+    transforms.Resize((256, 256)),
+    transforms.RandomCrop((224, 224)),
+    transforms.RandomHorizontalFlip(p=0.5),
+    transforms.RandomRotation(20),
+    transforms.ColorJitter(brightness=0.25, contrast=0.25, saturation=0.2, hue=0.05),
+    transforms.RandomAffine(degrees=0, translate=(0.1, 0.1), scale=(0.9, 1.1)),
+    transforms.RandomPerspective(distortion_scale=0.1, p=0.3),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
-# Load dataset
-dataset = datasets.ImageFolder(
-    dataset_path,
-    transform=transform
-)
+eval_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
 
-print("Classes:", dataset.classes)
+full_dataset = datasets.ImageFolder(dataset_path)
+print("Classes:", full_dataset.classes)
+print(f"Total classes: {len(full_dataset.classes)}")
+print("Samples per class:")
+for i, cls in enumerate(full_dataset.classes):
+    count = len([1 for _, y in full_dataset.samples if y == i])
+    print(f"  {i}: {cls} — {count}")
 
-# Split dataset
-train_size = int(0.8 * len(dataset))
-test_size = len(dataset) - train_size
+train_size = int(0.8 * len(full_dataset))
+test_size = len(full_dataset) - train_size
 
-train_dataset, test_dataset = random_split(
-    dataset,
-    [train_size, test_size]
-)
+train_dataset, test_dataset = random_split(full_dataset, [train_size, test_size])
+train_dataset.dataset = full_dataset
+train_dataset.transform = train_transform
+test_dataset.dataset = full_dataset
+test_dataset.transform = eval_transform
 
-# Data loaders
-train_loader = DataLoader(
-    train_dataset,
-    batch_size=16,
-    shuffle=True
-)
+train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
-test_loader = DataLoader(
-    test_dataset,
-    batch_size=16,
-    shuffle=False
-)
+model = models.efficientnet_b0(weights="DEFAULT")
+num_classes = len(full_dataset.classes)
+model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
 
-# Load EfficientNetB0
-model = models.efficientnet_b0(
-    weights="DEFAULT"
-)
-
-# Modify output layer
-num_classes = len(dataset.classes)
-
-model.classifier[1] = nn.Linear(
-    model.classifier[1].in_features,
-    num_classes
-)
-
-# Device setup
-device = torch.device(
-    "cuda" if torch.cuda.is_available()
-    else "cpu"
-)
-
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 
-# Loss and optimizer
 criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-optimizer = optim.Adam(
-    model.parameters(),
-    lr=0.001
-)
-
-# Training
-epochs = 10
+epochs = 30
+best_acc = 0.0
 
 for epoch in range(epochs):
-
     model.train()
-
-    running_loss = 0
+    running_loss = 0.0
     correct = 0
     total = 0
 
     for images, labels in train_loader:
-
-        images = images.to(device)
-        labels = labels.to(device)
-
+        images, labels = images.to(device), labels.to(device)
         optimizer.zero_grad()
-
         outputs = model(images)
-
-        loss = criterion(
-            outputs,
-            labels
-        )
-
+        loss = criterion(outputs, labels)
         loss.backward()
-
         optimizer.step()
-
         running_loss += loss.item()
-
-        _, predicted = torch.max(
-            outputs,
-            1
-        )
-
+        _, predicted = torch.max(outputs, 1)
         total += labels.size(0)
+        correct += (predicted == labels).sum().item()
 
-        correct += (
-            predicted == labels
-        ).sum().item()
+    train_acc = 100 * correct / total
 
-    accuracy = (
-        100 * correct / total
-    )
+    model.eval()
+    val_correct = 0
+    val_total = 0
+    with torch.no_grad():
+        for images, labels in test_loader:
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            _, predicted = torch.max(outputs, 1)
+            val_total += labels.size(0)
+            val_correct += (predicted == labels).sum().item()
 
-    print(
-        f"Epoch [{epoch+1}/{epochs}] "
-        f"Loss: {running_loss:.4f} "
-        f"Accuracy: {accuracy:.2f}%"
-    )
+    val_acc = 100 * val_correct / val_total
 
-# Save trained model
-torch.save(
-    model.state_dict(),
-    "civic_model.pth"
-)
+    print(f"Epoch [{epoch+1}/{epochs}] Loss: {running_loss:.4f} Train: {train_acc:.2f}% Val: {val_acc:.2f}%")
 
-print("Model saved successfully!")
+    if val_acc > best_acc:
+        best_acc = val_acc
+        torch.save(model.state_dict(), "civic_model.pth")
+        print(f"  -> Saved (val_acc: {val_acc:.2f}%)")
+
+print(f"\nTraining done! Best val acc: {best_acc:.2f}%")
+print(f"Classes ({num_classes}): {full_dataset.classes}")
