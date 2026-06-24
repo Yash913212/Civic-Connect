@@ -85,15 +85,23 @@ graph TD
 
 ### 2. 🌌 High-Fidelity 3D Visual Experience
 *   **Interactive 3D WebGL Canvas:** A dynamic Three.js + React Three Fiber backdrop containing dynamic particle systems representing a neural city net that floats and warps dynamically.
-*   **WebGL Smart City Heatmap:** A visual WebGL plane showcasing active municipal complaints (hotspots for Potholes, Water Leaks, and Waste Clusters) that updates interactively with custom rendering blending.
-*   **GSAP Scroll-Driven Transitions:** A comprehensive scrolling experience leveraging GreenSock ScrollTrigger and Lenis smooth scrolling that alters scale, blur, brightness, and color temperature of the entire platform relative to the scroll-depth.
-*   **HLS Cinematic Background:** A fluid, custom ambient video player that utilizes Mux's adaptive streaming network (`hls.js`) to stream high-density cinematic startup imagery without choking thread bandwidth.
+*   **WebGL Smart City Heatmap:** A visual WebGL plane with 30+ pulsating hotspots, undulating terrain grid, connection lines between nearby clusters, and orbital camera sweep — showcasing municipal complaints for Potholes, Water Leaks, and Waste Clusters.
+*   **Orbital Resolution Engine:** Autonomous 8-stage pipeline visualized as a 3D central core with orbiting indicator spheres, data packet animations, and mouse-driven parallax.
+*   **GSAP Scroll-Driven Transitions:** A comprehensive scrolling experience leveraging GreenSock ScrollTrigger with pinned horizontal and vertical scroll sections, scroll-linked timeline dot animations, and progress bars.
+*   **3D Holographic Command Center:** Animated bar charts with scroll-triggered growth, auto-rotating live alert feed, and staggered card entrance animations.
 
-### 3. 👤 Dynamic RBAC Authentication & Profile
-*   **Dual-Role Toggling Hub:** Integrated, pre-filled credential selector supporting **Smart City Lead Administrators** and **Validated Citizens**.
-*   **Double CanvasRevealEffect Matrix:** Real-time WebGL shader matrices tracking entering steps, complete with reverse animation shaders that fade back out on successful auth.
-*   **Spatial WarpTransition:** Interstellar warp effect using SVG masks and Framer Motion, easing users between the login screen and the live city grid.
-*   **Interactive Terminal Logs:** Real-time visual debugger rendering mock SHA-256 digital handshakes, neural weight updates, and server events inside a retro-cyber glassmorphic terminal.
+### 3. 👤 Dynamic RBAC Authentication & Profiles
+*   **Role-Based Dashboards:** Segregated portals for **Citizen**, **Officer**, and **Admin** roles with tailored interfaces — complaint registration, task management, and city-wide analytics respectively.
+*   **Smart Routing & Guards:** Auth-protected routes with `withRoleGuard` and `withAuthGuard` HOCs ensuring proper access control across all dashboards.
+*   **Citizen Profile Panel:** Interactive configuration dashboard with notification preferences, security logs, and activity history tracking.
+*   **User Feedback System:** Dedicated `/feedback` page with 5-star rating, category selector (Bug, Feature, General, Compliment, Security), and submission toast notifications — accessible from the navbar, footer, and user dropdown.
+
+### 4. 🎨 Immersive UI/UX
+*   **Animated Preloader:** Full-screen cyberpunk-style loading sequence with word animations, progress bar, and ambient grid — replaced the basic spinner for a premium first impression.
+*   **Live AI Demo Sandbox:** Interactive multimodal playground supporting image upload, voice recording, and AI classification with real-time animated results, scan overlays, and shimmer effects.
+*   **Technology Showcase Cards:** 6 glassmorphism feature cards with staggered scroll-reveal animations, unique icons, colored hover glows, and background image blending.
+*   **Team Section:** 3D tilt-perspective member cards with per-accent gradients, social links, animated counters, and hover parallax.
+*   **Animated Impact Counters:** Smooth `requestAnimationFrame`-driven number counters with easing for KPIs like accuracy, complaints processed, and resolution speed.
 
 ---
 
@@ -103,11 +111,10 @@ graph TD
 | :--- | :--- | :--- |
 | **Core Architecture** | Next.js 16.2.6 (App Router), React 19.2.4, TypeScript | Server and Client rendering pipeline |
 | **3D Graphics** | `@react-three/fiber`, `@react-three/drei`, Three.js | High-performance WebGL particulate canvas |
-| **Styling** | Tailwind CSS v4, Vanilla CSS Custom Tokens | Modern layout utility structure |
+| **Styling** | Tailwind CSS v4, Shadcn UI Tokens | Modern utility-first styling system |
 | **Motion Physics** | GSAP 3.15.0, ScrollTrigger, Framer Motion 12 | Fluid transitions & scroll-bound timelines |
-| **Scrolling Physics**| Lenis 1.3 | Fluid, high-precision inertial scroll smoothing |
-| **Dynamic Video** | Hls.js | Low-latency HLS stream player integration |
-| **Icons & Elements** | Lucide React, Shadcn UI (Base elements) | Harmonized UI library assets |
+| **Scrolling Physics**| Lenis 1.3 | Smooth, high-precision inertial scroll |
+| **Icons** | Lucide React | Harmonized icon library |
 | **Vision Model** | EfficientNetB0 (PyTorch) | Image feature extraction for 8-class civic issue classification |
 | **Text Model** | Google MuRIL (Transformers) | Multilingual Telugu/English/Hindi text understanding |
 | **Fusion Architecture** | Custom multimodal fusion layer | Concatenated vision + text features → department + priority heads |
@@ -119,22 +126,38 @@ graph TD
 ## 📂 Repository Blueprint
 
 ```bash
-AnotherCivic/
-├── public/                 # Static visual assets (logos, ambient images)
-├── src/
-│   ├── app/                # Next.js App Router Tree
-│   │   ├── globals.css     # Global variables and scroll resets
-│   │   ├── layout.tsx      # Main wrapper rendering GlobalBackground & Navbar
-│   │   ├── page.tsx        # Login entrance (SignInPage)
-│   │   ├── home/           # Main landing dashboard
-│   │   └── profile/        # Interactive security/activity dashboard
-│   ├── components/         # Shared components and visual zones
-│   │   ├── canvas/         # R3F Canvas components (NeuralNetwork)
-│   │   ├── sections/       # Feature sections (Hero, Technology, Heatmap, CommandCenter)
-│   │   ├── ui/             # High fidelity UI controls (CinematicVideo, WarpTransition)
-│   │   ├── Navbar.tsx      # Dropdown-embedded authentication monitor
-│   │   └── SmoothScroll.tsx # Lenis wrapper initialization
-│   └── lib/                # Code utility tools
+src/
+├── app/                          # Next.js App Router
+│   ├── layout.tsx                # Root layout (Navbar, Auth, Theme providers)
+│   ├── page.tsx                  # Login entrance (SignInPage)
+│   ├── home/                     # Landing page with all sections
+│   ├── feedback/                 # User feedback form (5-star rating, categories)
+│   ├── citizen/
+│   │   ├── dashboard/            # Citizen landing dashboard
+│   │   ├── complaint/            # Complaint registration with map picker
+│   │   └── profile/              # Profile settings, security logs
+│   ├── officer/
+│   │   └── dashboard/            # Officer task management + map view
+│   ├── admin/
+│   │   └── dashboard/            # Admin analytics, department management
+│   ├── profile/                  # Generic profile page
+│   ├── forgot-password/
+│   ├── reset-password/
+│   ├── loading.tsx               # Animated preloader with brand glow
+│   └── error.tsx                 # Error boundary with retry/home actions
+├── components/
+│   ├── sections/                 # Feature sections (Hero, Technology, Solution, etc.)
+│   ├── map/                      # Map-based components (ComplaintForm, MapPicker)
+│   ├── canvas/                   # R3F canvas components (NeuralNetwork)
+│   ├── ui/                       # Reusable UI (buttons, toasts, notifications)
+│   ├── auth/                     # Auth screen, forms, dashboard preview
+│   ├── Navbar.tsx                # Responsive navbar with user dropdown
+│   ├── GlobalBackground.tsx      # Ambient background effects
+│   ├── SmoothScroll.tsx          # Lenis scroll wrapper
+│   └── ThemeProvider.tsx         # Dark/light theme provider
+├── auth/                         # Auth context, service, API client
+├── middleware/                    # Role & auth guard HOCs
+└── hooks/                        # Custom React hooks (useAuth)
 ```
 
 ---
@@ -146,12 +169,13 @@ Make sure you have Node.js 18+ and npm installed on your system.
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yash/AnotherCivic.git
-cd AnotherCivic
+git clone https://github.com/Yash913212/CivicConnect.git
+cd CivicConnect
 ```
 
 ### 2. Install Dependencies
 ```bash
+cd frontend
 npm install
 ```
 
@@ -159,6 +183,7 @@ npm install
 ```bash
 npm run dev
 ```
+
 Open [http://localhost:3000](http://localhost:3000) on your local browser to experience the platform.
 
 ### 4. Build Production Bundle
@@ -171,12 +196,18 @@ npm run start
 
 ## 🔐 Credentials & Profiles Reference
 
-To bypass authentication during testing, the login panel contains a segmented switch. You can also sign in manually using the default developer profile parameters:
+The login panel contains a segmented role switch (Citizen / Officer / Admin). You can sign in using:
 
-*   **Default Dev Profile:**
-    *   **Name:** `Yash`
-    *   **Email:** `yash@civicai.org` (Treated as **Smart City Lead** admin)
-    *   **Fallback Citizen Profile:** Any email that does not contain `"admin"` or `"yash"` (Treated as **Validated Citizen**)
+| Role | Email | Name |
+| :--- | :--- | :--- |
+| **Citizen** | any email not containing `admin` or `yash` | Any name |
+| **Admin / Smart City Lead** | `yash@civicai.org` | Amjuri Yaswanth |
 
 > [!TIP]
-> Navigating to `/profile` unlocks a dedicated interactive debugger terminal demonstrating real-time model weights uploading, citizen activity records, and certificate handshakes!
+> Submit feedback at `/feedback` — rate your experience, select a category, and tell us how to improve!
+
+---
+
+## 📬 Feedback & Contributions
+
+Found a bug or have a feature request? Open an issue or submit feedback directly via the in-app form at `/feedback`. Pull requests are welcome.

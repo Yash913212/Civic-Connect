@@ -127,7 +127,7 @@ function OfficerDashboard() {
               })}
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-white/[0.02] shadow-sm dark:shadow-none border border-black/10 dark:border-white/10">
+            <div className="p-5 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10">
                <h4 className="text-xs font-bold uppercase text-slate-500 dark:text-white/50 mb-4">Quick Stats</h4>
                <div className="space-y-4">
                   <div className="flex justify-between items-center">
@@ -203,7 +203,7 @@ function OfficerDashboard() {
                           className={`p-4 rounded-xl border cursor-pointer transition-all ${
                             selectedTask === task.id 
                               ? 'bg-cyan-50 dark:bg-cyan-500/10 border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.15)]' 
-                              : 'bg-white dark:bg-white/[0.02] border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/30 shadow-sm dark:shadow-none'
+                              : 'bg-white/70 dark:bg-black/50 backdrop-blur-xl border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/30'
                           }`}
                         >
                           <div className="flex justify-between items-start mb-2">
@@ -230,7 +230,7 @@ function OfficerDashboard() {
                     </motion.div>
 
                     {/* Task Details Panel */}
-                    <div className="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 h-full flex flex-col shadow-sm dark:shadow-none">
+                    <div className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-slate-200 dark:border-white/10 h-full flex flex-col">
                       {selectedTask ? (
                         <>
                           <div className="flex justify-between items-start mb-6">
@@ -375,7 +375,7 @@ function OfficerDashboard() {
                   </motion.div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none h-80">
+                    <div className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-slate-200 dark:border-white/10 h-80">
                       <h4 className="text-sm font-bold text-slate-700 dark:text-white/80 mb-4">Daily Workload Trend</h4>
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={workloadData}>
@@ -394,7 +394,7 @@ function OfficerDashboard() {
                       </ResponsiveContainer>
                     </div>
 
-                    <div className="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none h-80">
+                    <div className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-slate-200 dark:border-white/10 h-80">
                       <h4 className="text-sm font-bold text-slate-700 dark:text-white/80 mb-4">Resolution vs Target (Weekly)</h4>
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={performanceData}>

@@ -107,7 +107,7 @@ export default function Technology() {
               variants={cardVariants}
               whileHover={{ y: -6 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className={`${tech.size} relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-slate-50 to-slate-100 dark:from-[#0c1220] dark:via-[#050810] dark:to-[#020306] border border-black/5 dark:border-[#1e293b] hover:border-primary/50 dark:hover:border-primary/40 p-6 md:p-8 flex flex-col justify-end group transition-all duration-500 shadow-xl dark:shadow-[0_4px_30px_rgba(0,0,0,0.8)] hover:shadow-primary/10 dark:hover:shadow-[0_0_30px_rgba(var(--primary),0.12)] min-h-[240px] md:min-h-0`}
+              className={`${tech.size} relative overflow-hidden rounded-3xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 hover:border-primary/50 dark:hover:border-primary/40 p-6 md:p-8 flex flex-col justify-end group transition-all duration-500 shadow-sm hover:shadow-primary/10 dark:hover:shadow-[0_0_30px_rgba(var(--primary),0.12)] min-h-[240px] md:min-h-0`}
             >
               {/* Category Badge */}
               <div className="absolute top-6 left-6 z-20">

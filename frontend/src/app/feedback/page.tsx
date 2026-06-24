@@ -80,8 +80,17 @@ function FeedbackPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-10"
         >
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-semibold uppercase tracking-wider mb-4">
-            <MessageSquare className="w-3 h-3" /> We value your input
+          <div className="flex items-center gap-3 mb-4">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-semibold uppercase tracking-wider">
+              <MessageSquare className="w-3 h-3" /> We value your input
+            </div>
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-semibold uppercase tracking-wider">
+              <span className="relative flex w-1.5 h-1.5">
+                <span className="animate-ping absolute inline-flex w-full h-full rounded-full bg-emerald-500 opacity-75" />
+                <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              </span>
+              AI System Online
+            </span>
           </div>
           <h1 className="text-3xl md:text-5xl font-heading font-bold text-slate-900 dark:text-white mb-3">
             Send{" "}

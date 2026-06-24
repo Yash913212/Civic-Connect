@@ -8,140 +8,162 @@ export default function Heatmap() {
 
   useEffect(() => {
     if (!mountRef.current) return;
-
-    // Premium Three.js Dynamic Digital Twin Heatmap
     const scene = new THREE.Scene();
-    
-    // Set safe dimensions
-    const width = mountRef.current.clientWidth || window.innerWidth;
-    const height = mountRef.current.clientHeight || 500;
-    
-    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+    const container = mountRef.current;
+    const width = container.clientWidth || window.innerWidth;
+    const height = container.clientHeight || 500;
+    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(width, height);
-    mountRef.current.appendChild(renderer.domElement);
+    container.appendChild(renderer.domElement);
 
     // Glowing Holographic Terrain Grid
-    const geometry = new THREE.PlaneGeometry(30, 30, 40, 40);
-    const material = new THREE.MeshBasicMaterial({ 
-      color: 0x0891b2, // Glowing Cyan
-      wireframe: true, 
-      transparent: true, 
+    const geo = new THREE.PlaneGeometry(30, 30, 40, 40);
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0x0891b2,
+      wireframe: true,
+      transparent: true,
       opacity: 0.15,
-      side: THREE.DoubleSide 
+      side: THREE.DoubleSide,
     });
-    
-    const plane = new THREE.Mesh(geometry, material);
-    plane.rotation.x = -Math.PI / 2; // Lie flat
+    const plane = new THREE.Mesh(geo, mat);
+    plane.rotation.x = -Math.PI / 2;
     scene.add(plane);
 
-    // Municipal Hotspots Group
+    // Animated undulating overlay
+    const overlayGeo = new THREE.PlaneGeometry(30, 30, 60, 60);
+    const overlayMat = new THREE.MeshBasicMaterial({
+      color: 0x06b6d4,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.05,
+      side: THREE.DoubleSide,
+    });
+    const overlay = new THREE.Mesh(overlayGeo, overlayMat);
+    overlay.rotation.x = -Math.PI / 2;
+    overlay.position.y = 0.05;
+    scene.add(overlay);
+    const overlayPos = overlayGeo.attributes.position.array;
+
+    // Municipal Hotspots
     const hotspotsGroup = new THREE.Group();
     scene.add(hotspotsGroup);
+    const hotspotData: { mesh: THREE.Mesh; ring: THREE.Mesh; pillar: THREE.Mesh; phase: number; speed: number; baseY: number }[] = [];
 
-    const hotspotTypes = [
-      { color: 0x3b82f6, count: 12, yOffset: 0.25 }, // Pothole Hotspots (blue)
-      { color: 0xf59e0b, count: 8, yOffset: 0.3 },   // Garbage Overflow (yellow)
-      { color: 0x06b6d4, count: 10, yOffset: 0.25 }  // Water Leaks (cyan)
+    const types = [
+      { color: 0x3b82f6, count: 12, radius: 0.2 },
+      { color: 0xf59e0b, count: 8, radius: 0.18 },
+      { color: 0x06b6d4, count: 10, radius: 0.15 },
     ];
 
-    const hotspotMeshes: { mesh: THREE.Mesh; baseScale: number; pulseSpeed: number; rx: number; rz: number }[] = [];
+    types.forEach((type) => {
+      for (let j = 0; j < type.count; j++) {
+        const x = (Math.random() - 0.5) * 24;
+        const z = (Math.random() - 0.5) * 24;
+        const y = 0.15;
 
-    hotspotTypes.forEach((type) => {
-      // Create glowing sphere geometry for hotspots
-      const geom = new THREE.SphereGeometry(0.12, 16, 16);
-      const mat = new THREE.MeshBasicMaterial({
-        color: type.color,
-        transparent: true,
-        opacity: 0.9,
-      });
+        const sphere = new THREE.Mesh(
+          new THREE.SphereGeometry(type.radius, 16, 16),
+          new THREE.MeshBasicMaterial({ color: type.color, transparent: true, opacity: 0.8 })
+        );
+        sphere.position.set(x, y, z);
+        hotspotsGroup.add(sphere);
 
-      for (let i = 0; i < type.count; i++) {
-        const mesh = new THREE.Mesh(geom, mat);
-        
-        // Distribute randomly across the terrain
-        const rx = (Math.random() - 0.5) * 22;
-        const rz = (Math.random() - 0.5) * 22;
-        mesh.position.set(rx, 0, rz);
-        
-        hotspotsGroup.add(mesh);
-        
-        // Add concentric pulsing glowing halo ring
-        const ringGeom = new THREE.RingGeometry(0.18, 0.28, 32);
-        const ringMat = new THREE.MeshBasicMaterial({
-          color: type.color,
-          side: THREE.DoubleSide,
-          transparent: true,
-          opacity: 0.45,
-        });
-        const ring = new THREE.Mesh(ringGeom, ringMat);
-        ring.rotation.x = Math.PI / 2;
-        mesh.add(ring);
+        const ring = new THREE.Mesh(
+          new THREE.RingGeometry(type.radius * 1.5, type.radius * 2.2, 32),
+          new THREE.MeshBasicMaterial({ color: type.color, transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false })
+        );
+        ring.position.set(x, y, z);
+        ring.rotation.x = -Math.PI / 2;
+        hotspotsGroup.add(ring);
 
-        hotspotMeshes.push({
-          mesh,
-          baseScale: 0.7 + Math.random() * 0.6,
-          pulseSpeed: 1.5 + Math.random() * 2.0,
-          rx,
-          rz
+        // Pillar beam from ground to hotspot
+        const pillarGeo = new THREE.CylinderGeometry(0.02, 0.04, y, 6);
+        const pillarMat = new THREE.MeshBasicMaterial({ color: type.color, transparent: true, opacity: 0.15 });
+        const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+        pillar.position.set(x, y / 2, z);
+        hotspotsGroup.add(pillar);
+
+        hotspotData.push({
+          mesh: sphere,
+          ring,
+          pillar,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.5 + Math.random() * 1.5,
+          baseY: y,
         });
       }
     });
 
-    // Setup camera position
-    camera.position.set(0, 7, 10);
+    // Connection lines between nearby hotspots
+    const lineMat = new THREE.LineBasicMaterial({
+      color: 0x22d3ee,
+      transparent: true,
+      opacity: 0.06,
+    });
+
+    const allPositions = hotspotData.map((h) => h.mesh.position);
+    for (let i = 0; i < allPositions.length; i++) {
+      for (let j = i + 1; j < allPositions.length; j++) {
+        const dist = allPositions[i].distanceTo(allPositions[j]);
+        if (dist < 5) {
+          const lineGeo = new THREE.BufferGeometry().setFromPoints([
+            allPositions[i].clone(),
+            allPositions[j].clone(),
+          ]);
+          const line = new THREE.Line(lineGeo, lineMat);
+          hotspotsGroup.add(line);
+        }
+      }
+    }
+
+    // Camera — isometric angled view
+    camera.position.set(18, 14, 18);
     camera.lookAt(0, 0, 0);
 
-    const startTime = performance.now();
-    let frameId: number;
-
+    let time = 0;
     const animate = () => {
-      frameId = requestAnimationFrame(animate);
-      
-      const elapsedTime = (performance.now() - startTime) / 1000;
+      requestAnimationFrame(animate);
+      time += 0.01;
 
-      // 1. Dynamic Undulating Grid (Topography Simulation)
-      const position = plane.geometry.attributes.position;
-      for (let i = 0; i < position.count; i++) {
-        const x = position.getX(i);
-        const y = position.getY(i);
-        
-        // Create an organic waving digital landscape moving towards the viewer
-        const waveSpeed = elapsedTime * 1.5;
-        const z = Math.sin(x * 0.3 + waveSpeed * 0.8) * Math.cos(y * 0.3 + waveSpeed) * 1.2;
-        position.setZ(i, z);
+      // Undulate grid
+      const pos = geo.attributes.position.array;
+      for (let i = 0; i < pos.length; i += 3) {
+        const x = pos[i];
+        const z = pos[i + 1];
+        pos[i + 2] = Math.sin(x * 0.5 + time) * 0.3 + Math.cos(z * 0.5 + time * 0.7) * 0.3;
       }
-      plane.geometry.attributes.position.needsUpdate = true;
+      geo.attributes.position.needsUpdate = true;
 
-      // 2. Animate Hotspots (Pulse & Follow undulating grid height)
-      hotspotMeshes.forEach((item) => {
-        const timeFactor = elapsedTime * item.pulseSpeed;
-        const scale = item.baseScale * (1.0 + Math.sin(timeFactor) * 0.3);
-        item.mesh.scale.set(scale, scale, scale);
+      // Undulate overlay
+      for (let i = 0; i < overlayPos.length; i += 3) {
+        const x = overlayPos[i];
+        const z = overlayPos[i + 1];
+        overlayPos[i + 2] = Math.sin(x * 0.7 + time * 1.3) * 0.4 + Math.cos(z * 0.6 + time * 0.9) * 0.4;
+      }
+      overlayGeo.attributes.position.needsUpdate = true;
 
-        // Track terrain Z height (mapped to Y in scene coordinate rotation)
-        const waveSpeed = elapsedTime * 1.5;
-        const terrainHeight = Math.sin(item.rx * 0.3 + waveSpeed * 0.8) * Math.cos(item.rz * 0.3 + waveSpeed) * 1.2;
-        item.mesh.position.y = terrainHeight + 0.2;
-
-        // Rotate the ring inside the hotspot
-        if (item.mesh.children[0]) {
-          const ring = item.mesh.children[0] as THREE.Mesh;
-          ring.rotation.z += 0.015;
-          (ring.material as THREE.MeshBasicMaterial).opacity = 0.4 + Math.sin(timeFactor) * 0.25;
-        }
+      // Animate hotspots
+      hotspotData.forEach((h) => {
+        const pulse = Math.sin(time * h.speed + h.phase) * 0.5 + 0.5;
+        (h.mesh.material as THREE.MeshBasicMaterial).opacity = 0.4 + pulse * 0.6;
+        h.mesh.position.y = h.baseY + pulse * 0.3;
+        h.ring.position.y = h.mesh.position.y;
+        h.ring.scale.setScalar(1 + pulse * 0.6);
+        (h.ring.material as THREE.MeshBasicMaterial).opacity = 0.1 + pulse * 0.5;
+        h.pillar.scale.y = 1 + pulse * 0.5;
+        h.pillar.position.y = (h.baseY + pulse * 0.3) / 2;
+        (h.pillar.material as THREE.MeshBasicMaterial).opacity = 0.08 + pulse * 0.15;
       });
 
-      // 3. Cinematic Camera Orbital Sweep & Group Rotation
-      hotspotsGroup.rotation.y = elapsedTime * 0.05;
-      plane.rotation.z = elapsedTime * 0.02;
-
-      camera.position.x = Math.sin(elapsedTime * 0.1) * 14;
-      camera.position.z = Math.cos(elapsedTime * 0.1) * 14;
-      camera.position.y = 8 + Math.sin(elapsedTime * 0.2) * 3;
-      camera.lookAt(0, -1, 0);
+      // Camera orbits with a gentle tilt — stays close for immersion
+      const orbitRadius = 20;
+      const speed = 0.06;
+      camera.position.x = Math.sin(time * speed) * orbitRadius;
+      camera.position.z = Math.cos(time * speed) * orbitRadius;
+      camera.position.y = 12 + Math.sin(time * 0.04) * 3;
+      camera.lookAt(0, 0, 0);
 
       renderer.render(scene, camera);
     };
@@ -151,50 +173,71 @@ export default function Heatmap() {
       if (!mountRef.current) return;
       const w = mountRef.current.clientWidth || window.innerWidth;
       const h = mountRef.current.clientHeight || 500;
-      
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     };
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(frameId);
-      if (mountRef.current && renderer.domElement.parentNode) {
-        mountRef.current.removeChild(renderer.domElement);
-      }
-      geometry.dispose();
-      material.dispose();
-      
-      // Dispose hotspots
-      hotspotMeshes.forEach((item) => {
-        item.mesh.geometry.dispose();
-        (item.mesh.material as THREE.Material).dispose();
-        if (item.mesh.children[0]) {
-          const ring = item.mesh.children[0] as THREE.Mesh;
-          ring.geometry.dispose();
-          (ring.material as THREE.Material).dispose();
+      window.removeEventListener("resize", handleResize);
+      geo.dispose();
+      mat.dispose();
+      overlayGeo.dispose();
+      overlayMat.dispose();
+      hotspotData.forEach((h) => {
+        h.mesh.geometry.dispose();
+        (h.mesh.material as THREE.Material).dispose();
+        h.ring.geometry.dispose();
+        (h.ring.material as THREE.Material).dispose();
+        h.pillar.geometry.dispose();
+        (h.pillar.material as THREE.Material).dispose();
+      });
+      hotspotsGroup.traverse((child) => {
+        if (child instanceof THREE.Line) {
+          child.geometry.dispose();
+          (child.material as THREE.Material).dispose();
         }
       });
+      if (mountRef.current) mountRef.current.removeChild(renderer.domElement);
+      renderer.dispose();
     };
   }, []);
 
   return (
-    <section id="use-cases" className="relative w-full min-h-[60vh] md:h-[80vh] bg-transparent overflow-hidden border-y border-white/5">
+    <section
+      id="use-cases"
+      className="relative w-full min-h-[70vh] md:h-[90vh] bg-transparent overflow-hidden border-y border-white/5"
+    >
       <div className="absolute inset-0 z-0" ref={mountRef} />
-
-      <div className="relative z-10 p-6 md:p-24 max-w-7xl mx-auto h-full flex flex-col justify-between pointer-events-none gap-8">
-        <div>
-          <h2 className="text-3xl md:text-5xl font-heading font-bold text-slate-900 dark:text-white mb-4">Smart City Heatmap</h2>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl">Real-time visualization of civic anomalies powered by predictive clustering.</p>
+      <div className="relative z-10 p-6 md:p-16 max-w-7xl mx-auto h-full flex flex-col justify-between gap-6">
+        <div className="pointer-events-none">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-semibold uppercase tracking-wider mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            Live Monitoring
+          </div>
+          <h2 className="text-3xl md:text-6xl font-heading font-bold text-slate-900 dark:text-white mb-3">
+            Smart City{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+              Heatmap
+            </span>
+          </h2>
+          <p className="text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed">
+            Real-time 3D visualization of civic anomalies powered by predictive clustering and AI routing intelligence.
+          </p>
         </div>
-
-        <div className="flex flex-wrap gap-4">
-          {['Pothole Hotspots', 'Garbage Overflow', 'Water Leaks'].map((item, i) => (
-            <div key={i} className="bg-background/80 backdrop-blur-md border border-black/5 dark:border-white/10 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-primary' : i === 1 ? 'bg-yellow-500' : 'bg-cyan-500'}`} />
-              {item}
+        <div className="flex flex-wrap gap-3 pointer-events-none">
+          {[
+            { label: "Pothole Hotspots", color: "bg-primary" },
+            { label: "Garbage Overflow", color: "bg-yellow-500" },
+            { label: "Water Leaks", color: "bg-cyan-500" },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className="bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 px-4 py-2 rounded-full text-xs font-medium flex items-center gap-2 shadow-sm"
+            >
+              <span className={`w-2 h-2 rounded-full ${item.color}`} />
+              {item.label}
             </div>
           ))}
         </div>

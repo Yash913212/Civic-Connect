@@ -53,23 +53,23 @@ export default function Hero() {
           </Link>
           <button 
             onClick={() => document.getElementById('use-cases')?.scrollIntoView({ behavior: 'smooth' })}
-            className="px-8 py-4 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 text-slate-900 dark:text-white rounded-full font-medium backdrop-blur-md hover:bg-black/5 dark:bg-white/10 transition-colors duration-300 w-full sm:w-auto text-center"
+            className="px-8 py-4 bg-white/70 dark:bg-black/50 border border-black/10 dark:border-white/10 text-slate-900 dark:text-white rounded-full font-medium backdrop-blur-xl hover:bg-white/80 dark:hover:bg-black/60 transition-all duration-300 w-full sm:w-auto text-center"
           >
             Watch AI Demo
           </button>
         </div>
       </div>
 
-      {/* Floating Glass Cards positioned relative to the flex container */}
-      <div className="relative z-20 container mx-auto px-6 hidden md:grid grid-cols-3 gap-4 lg:gap-6 w-full max-w-4xl mt-auto pt-8">
+      {/* Floating Glass Cards */}
+      <div className="relative z-20 container mx-auto px-6 grid grid-cols-3 gap-3 md:gap-4 lg:gap-6 w-full max-w-4xl mt-6 md:mt-auto pt-4 md:pt-8">
         {[
           { value: "96.4%", label: "Accuracy" },
           { value: "15+", label: "Departments" },
           { value: "50K+", label: "Complaints Processed" },
         ].map((stat, i) => (
-          <div key={i} className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-6 backdrop-blur-md hover:-translate-y-2 transition-transform duration-300 shadow-xl text-center">
-            <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-2">{stat.value}</div>
-            <div className="text-sm text-muted-foreground">{stat.label}</div>
+          <div key={i} className="bg-white/70 dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl md:rounded-2xl p-3 md:p-6 backdrop-blur-xl hover:-translate-y-2 transition-transform duration-300 shadow-sm text-center">
+            <div className="text-base md:text-3xl font-bold text-slate-900 dark:text-white mb-0.5 md:mb-2">{stat.value}</div>
+            <div className="text-[10px] md:text-sm text-muted-foreground">{stat.label}</div>
           </div>
         ))}
       </div>
