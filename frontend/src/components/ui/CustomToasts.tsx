@@ -8,7 +8,6 @@ import {
   Cpu, 
   CheckCircle2, 
   AlertTriangle, 
-  ShieldAlert, 
   Check, 
   Loader2, 
   ScanLine,

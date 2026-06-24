@@ -6,7 +6,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Canvas } from "@react-three/fiber";
 import { useTheme } from "next-themes";
 import NeuralNetwork from "@/components/canvas/NeuralNetwork";
-import LightNetwork from "@/components/canvas/LightNetwork";
 import CinematicVideo from "@/components/ui/CinematicVideo";
 
 export default function GlobalBackground() {

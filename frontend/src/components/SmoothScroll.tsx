@@ -24,17 +24,16 @@ export default function SmoothScroll({
     gsap.registerPlugin(ScrollTrigger);
     lenis.on('scroll', ScrollTrigger.update);
 
-    gsap.ticker.add((time)=>{
+    const tickerCallback = (time: number) => {
       lenis.raf(time * 1000);
-    });
+    };
 
+    gsap.ticker.add(tickerCallback);
     gsap.ticker.lagSmoothing(0);
 
     return () => {
       lenis.destroy();
-      gsap.ticker.remove((time)=>{
-        lenis.raf(time * 1000);
-      });
+      gsap.ticker.remove(tickerCallback);
     };
   }, []);
 

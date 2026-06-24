@@ -14,12 +14,10 @@ import FutureRoadmap from "@/components/sections/FutureRoadmap";
 import ImpactMetrics from "@/components/sections/ImpactMetrics";
 import Team from "@/components/sections/Team";
 import CTA from "@/components/sections/CTA";
-import Navbar from "@/components/Navbar";
 
 function CitizenDashboard() {
   return (
     <main className="bg-transparent text-foreground relative w-full min-h-screen select-none">
-      <Navbar />
       <div className="relative z-10 w-full">
         <Hero />
         <TheProblem />

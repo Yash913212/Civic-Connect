@@ -6,13 +6,13 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Building2, Users, FileText, Map, Settings, AlertTriangle, 
-  CheckCircle, FolderOpen, Briefcase, Activity, Clock, Bell,
-  LogOut, Download, Filter, Search, ChevronRight, Database,
-  TrendingUp, TrendingDown, Zap, Shield, BarChart3, RefreshCw
+  CheckCircle, FolderOpen, Activity, Clock, Bell,
+  LogOut, Download, Filter, Search, Database,
+  TrendingUp, Zap, Shield, BarChart3, RefreshCw
 } from "lucide-react";
 import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Legend, AreaChart, Area, PieChart, Pie, Cell
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell
 } from "recharts";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/sections/Footer";
@@ -268,10 +268,10 @@ function AdminDashboard() {
                       { icon: AlertTriangle, label: "Open", value: 1240, suffix: "", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/5", accent: "text-amber-500/10" },
                       { icon: CheckCircle, label: "Closed", value: 10850, suffix: "", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/5", accent: "text-emerald-500/10" },
                       { icon: TrendingUp, label: "Resolution Rate", value: 87, suffix: "%", color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-500/5", accent: "text-cyan-500/10" },
-                    ].map((kpi, i) => {
+                    ].map((kpi) => {
                       const Icon = kpi.icon;
                       return (
-                        <motion.div key={i} variants={{ hidden: { opacity: 0, scale: 0.95 }, show: { opacity: 1, scale: 1 } }}
+                        <motion.div key={kpi.label} variants={{ hidden: { opacity: 0, scale: 0.95 }, show: { opacity: 1, scale: 1 } }}
                           className={`p-5 rounded-2xl ${kpi.bg} border border-black/10 dark:border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform cursor-default`}>
                           <Icon className={`absolute top-4 right-4 w-12 h-12 ${kpi.accent} group-hover:scale-110 transition-transform`} />
                           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block relative z-10">{kpi.label}</span>
@@ -346,10 +346,10 @@ function AdminDashboard() {
                           { label: "Generate Report", icon: FileText, color: "from-rose-500/20 to-rose-600/5 text-rose-400" },
                           { label: "Assign Officers", icon: Users, color: "from-cyan-500/20 to-cyan-600/5 text-cyan-400" },
                           { label: "Sync Data", icon: RefreshCw, color: "from-emerald-500/20 to-emerald-600/5 text-emerald-400" },
-                        ].map((a, i) => {
+                        ].map((a) => {
                           const Icon = a.icon;
                           return (
-                            <motion.button key={i} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                            <motion.button key={a.label} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                               onClick={() => { showSystemStatus(a.label, "Action triggered"); confetti({ particleCount: 30, spread: 40, origin: { y: 0.8 } }); }}
                               className={`p-4 rounded-xl bg-gradient-to-br ${a.color} border border-white/10 hover:shadow-lg transition-all text-left`}>
                               <Icon className="w-6 h-6 mb-2" />
@@ -383,8 +383,8 @@ function AdminDashboard() {
                     {filteredComplaints.length === 0 && (
                       <div className="text-center py-12 text-muted-foreground">No complaints match your search.</div>
                     )}
-                    {filteredComplaints.map((item, idx) => (
-                      <motion.div key={idx} variants={{ hidden: { opacity: 0, x: -20 }, show: { opacity: 1, x: 0 } }}
+                    {filteredComplaints.map((item) => (
+                      <motion.div key={item.id} variants={{ hidden: { opacity: 0, x: -20 }, show: { opacity: 1, x: 0 } }}
                         className="p-4 rounded-xl bg-white dark:bg-white/[0.01] border border-black/10 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-all flex flex-col md:flex-row justify-between items-center gap-4 group hover:shadow-md hover:scale-[1.005]">
                         <div className="flex items-center gap-4 w-full md:w-auto">
                           <motion.div whileHover={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 0.3 }}
@@ -438,7 +438,7 @@ function AdminDashboard() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {deptCards.map((dept, i) => (
-                      <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                      <motion.div key={dept.name} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                         whileHover={{ y: -2, transition: { duration: 0.2 } }}
                         className={`p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all bg-gradient-to-br ${dept.gradient}`}>
                         <div className="flex justify-between items-start mb-4">
@@ -513,7 +513,7 @@ function AdminDashboard() {
                     ].map((r, i) => {
                       const Icon = r.icon;
                       return (
-                        <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
+                        <motion.div key={r.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
                           whileHover={{ y: -4, transition: { duration: 0.2 } }}
                           className="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-black/10 dark:border-white/10 flex flex-col items-center text-center hover:bg-black/5 dark:hover:bg-white/[0.04] transition-all cursor-pointer group">
                           <div className={`w-16 h-16 rounded-full bg-${r.color}-500/10 text-${r.color}-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>

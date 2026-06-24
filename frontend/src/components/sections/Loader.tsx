@@ -11,7 +11,6 @@ export default function Loader() {
     return 0;
   });
   const loaderRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
 
   const words = ["Detect", "Analyze", "Route", "Predict", "Resolve"];
 

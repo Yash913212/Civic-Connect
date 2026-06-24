@@ -51,9 +51,14 @@ export default function Footer() {
 
         <div className="flex flex-col md:items-end">
           <ul className="flex flex-col gap-4 text-right">
-            {['Home', 'Technology', 'Demo', 'Dashboard', 'Contact', 'GitHub'].map((link) => (
+            {['Home', 'Technology', 'Demo', 'Dashboard', 'Feedback', 'Contact', 'GitHub'].map((link) => (
               <li key={link}>
-                <a href="#" className="text-muted-foreground hover:text-slate-900 dark:text-white hover:pl-2 transition-all duration-300">
+                <a
+                  href={link === 'Feedback' ? '/feedback' : '#'}
+                  className={`text-muted-foreground hover:text-slate-900 dark:text-white hover:pl-2 transition-all duration-300 ${
+                    link === 'Feedback' ? 'text-amber-500 hover:text-amber-400' : ''
+                  }`}
+                >
                   {link}
                 </a>
               </li>

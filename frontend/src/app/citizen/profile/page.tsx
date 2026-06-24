@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/sections/Footer";
-import Navbar from "@/components/Navbar";
 import { 
   User, 
   Mail, 
   MapPin, 
-  ShieldCheck, 
   Award, 
   Activity, 
   CheckCircle, 
@@ -18,8 +16,7 @@ import {
   Terminal, 
   Lock, 
   Bell, 
-  Save,
-  Check
+  Save
 } from "lucide-react";
 import { showSystemStatus } from "@/components/ui/CustomToasts";
 
@@ -76,7 +73,6 @@ export default function CitizenProfile() {
 
   return (
     <main className="bg-transparent text-foreground relative w-full min-h-screen pt-32 pb-24 flex flex-col justify-between select-none">
-      <Navbar />
       
       {/* Background static noise and cyber glows */}
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02] mix-blend-overlay pointer-events-none z-0" />

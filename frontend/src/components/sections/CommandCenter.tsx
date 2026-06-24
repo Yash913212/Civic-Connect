@@ -16,8 +16,8 @@ export default function CommandCenter() {
           { title: "Resolved Cases", value: "48,102", icon: CheckCircle, color: "text-green-500" },
           { title: "Active Issues", value: "3,150", icon: Clock, color: "text-yellow-500" },
           { title: "Critical Alerts", value: "240", icon: AlertTriangle, color: "text-destructive" },
-        ].map((stat, i) => (
-          <div key={i} className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-6 backdrop-blur-md hover:bg-black/5 dark:bg-white/10 transition-colors">
+        ].map((stat) => (
+          <div key={stat.title} className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl p-6 backdrop-blur-md hover:bg-black/5 dark:bg-white/10 transition-colors">
             <div className="flex justify-between items-start mb-4">
               <div className="text-sm text-muted-foreground font-medium">{stat.title}</div>
               <stat.icon className={`w-5 h-5 ${stat.color}`} />

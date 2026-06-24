@@ -5,9 +5,9 @@ import { withRoleGuard } from "@/middleware/roleGuard";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  ClipboardList, Map, TrendingUp, Award, Clock, FileText, 
-  CheckCircle, Camera, Search, Filter, AlertTriangle, MessageSquare,
-  LogOut, Bell, Play
+  ClipboardList, Map, Award, Clock, 
+  CheckCircle, Camera, Search, Filter, MessageSquare,
+  LogOut, Bell
 } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -17,9 +17,12 @@ import { useRouter } from "next/navigation";
 import Footer from "@/components/sections/Footer";
 import { CanvasRevealEffect } from "@/components/ui/sign-in-flow-1";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import dynamic from "next/dynamic";
+
+const OfficerMapView = dynamic(() => import("@/components/map/OfficerMapView"), { ssr: false });
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
-import { showUploadProgress, showTextLoading, showResolution, showOfficerAssigned, showAdminAlert } from "@/components/ui/CustomToasts";
+import { showUploadProgress, showTextLoading, showResolution, showAdminAlert } from "@/components/ui/CustomToasts";
 
 const workloadData = [
   { name: 'Mon', tasks: 4 },
@@ -320,37 +323,8 @@ function OfficerDashboard() {
                 >
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white">Field Operations Map</h3>
-                    <div className="flex gap-2">
-                       <button className="px-3 py-1.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-xs text-slate-600 dark:text-white/70">Show My Tasks</button>
-                       <button className="px-3 py-1.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded text-xs text-slate-600 dark:text-white/70">Nearby Units</button>
-                    </div>
                   </div>
-                  <div className="flex-grow rounded-2xl bg-slate-100 dark:bg-black/50 border border-slate-200 dark:border-white/10 relative overflow-hidden flex items-center justify-center">
-                    <Map className="w-24 h-24 text-slate-300 dark:text-white/5 absolute z-0" />
-                    <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] dark:opacity-10 mix-blend-overlay z-0"></div>
-                    
-                    {/* Simulated Map Markers for Officer */}
-                    <div className="absolute top-[40%] left-[50%] w-6 h-6 bg-cyan-500 rounded-full shadow-[0_0_20px_rgba(6,182,212,0.8)] flex items-center justify-center border-2 border-black z-20">
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
-                    </div>
-                    <div className="absolute top-[42%] left-[48%] text-[10px] font-bold text-cyan-400 bg-black/80 px-2 py-0.5 rounded border border-cyan-500/50 z-20">You</div>
-
-                    <div className="absolute top-[30%] left-[40%] w-4 h-4 bg-rose-500 rounded-full shadow-[0_0_15px_rgba(244,63,94,0.8)] animate-pulse z-10" />
-                    <div className="absolute top-[55%] left-[65%] w-4 h-4 bg-amber-500 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.8)] z-10" />
-                    
-                    <div className="z-30 p-6 bg-white/80 dark:bg-black/60 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl max-w-sm text-center">
-                      <h4 className="text-slate-900 dark:text-white font-bold mb-2">GPS Tracking Active</h4>
-                      <p className="text-xs text-slate-600 dark:text-white/60 mb-4">Navigating to assigned tasks. Map auto-centers on your current location.</p>
-                      <button 
-                        onClick={() => {
-                          showTextLoading("Navigating to Task", "Calculating optimal route");
-                        }}
-                        className="px-6 py-2 bg-cyan-500 text-black rounded-lg text-sm font-bold hover:bg-cyan-400 transition-colors flex items-center justify-center gap-2 mx-auto"
-                      >
-                         <Play size={16}/> Start Navigation
-                      </button>
-                    </div>
-                  </div>
+                  <OfficerMapView />
                 </motion.div>
               )}
 

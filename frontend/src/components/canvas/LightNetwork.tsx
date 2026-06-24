@@ -10,9 +10,9 @@ export default function LightNetwork() {
   // Grid size
   const gridSize = 60;
   const spacing = 1.0;
-  const particleCount = gridSize * gridSize;
   
   const { positions, colors } = useMemo(() => {
+    const particleCount = gridSize * gridSize;
     const pos = new Float32Array(particleCount * 3);
     const col = new Float32Array(particleCount * 3);
     

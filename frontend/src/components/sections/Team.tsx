@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { motion } from "framer-motion";
-import { ExternalLink, Mail, Award, Cpu, Globe, Rocket, Users } from "lucide-react";
+import { Mail, Award, Cpu, Globe, Users } from "lucide-react";
 
 interface TeamMember {
   name: string;

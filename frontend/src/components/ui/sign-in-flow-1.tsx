@@ -9,7 +9,7 @@ import { authService } from "@/auth/authService";
 import { cn } from "@/lib/utils";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import WarpTransition from "./WarpTransition";
-import { Lock, Shield, Key, Activity, Loader2, Eye, EyeOff, User, Briefcase, Check, ShieldAlert, Cpu } from "lucide-react";
+import { Lock, Shield, Key, Activity, Loader2, Eye, EyeOff, User, Briefcase, Check } from "lucide-react";
 import { toast } from "sonner";
 import { showTextLoading, showSystemStatus } from "@/components/ui/CustomToasts";
 import confetti from "canvas-confetti";

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Menu, X, User, LogOut, ShieldCheck, Award, Settings, Terminal, Activity } from "lucide-react";
+import { Menu, X, User, LogOut, ShieldCheck, Settings, Terminal, Activity, MessageSquare } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "./ui/NotificationBell";
@@ -110,6 +110,13 @@ export default function Navbar() {
                     {link.name}
                   </a>
                 ))}
+                <div className="w-px h-4 bg-black/10 dark:bg-white/10" />
+                <Link
+                  href="/feedback"
+                  className="text-sm font-medium text-amber-500 hover:text-amber-400 transition-colors"
+                >
+                  Feedback
+                </Link>
               </div>
             )}
 
@@ -205,6 +212,14 @@ export default function Navbar() {
                           <Settings className="w-4 h-4 text-emerald-400" />
                           <span>User Profile</span>
                         </Link>
+                        <Link
+                          href="/feedback"
+                          onClick={() => setDropdownOpen(false)}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-white/70 dark:hover:text-white bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 rounded-xl border border-black/5 dark:border-white/10 transition-all text-left"
+                        >
+                          <MessageSquare className="w-4 h-4 text-amber-400" />
+                          <span>Send Feedback</span>
+                        </Link>
                         <button
                           onClick={handleSignOut}
                           className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-white bg-rose-500/10 hover:bg-rose-500/20 dark:bg-rose-500/5 dark:hover:bg-rose-500/20 rounded-xl border border-rose-500/20 dark:border-rose-500/10 hover:border-rose-500/30 transition-all text-left"
@@ -268,6 +283,13 @@ export default function Navbar() {
                     {link.name}
                   </a>
                 ))}
+                <Link
+                  href="/feedback"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-2xl font-heading font-medium text-amber-400 hover:text-amber-300"
+                >
+                  Feedback
+                </Link>
               </div>
             )}
 
@@ -296,14 +318,22 @@ export default function Navbar() {
                     <Activity className="w-4 h-4 text-cyan-400" />
                     {user.role === 'ADMIN' ? 'Admin Portal' : user.role === 'OFFICER' ? 'Officer Portal' : 'Citizen Portal'}
                   </Link>
-                  <Link
-                    href="/citizen/profile"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
-                  >
-                    <Settings className="w-4 h-4 text-emerald-400" />
-                    User Profile
-                  </Link>
+                    <Link
+                      href="/citizen/profile"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+                    >
+                      <Settings className="w-4 h-4 text-emerald-400" />
+                      User Profile
+                    </Link>
+                    <Link
+                      href="/feedback"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+                    >
+                      <MessageSquare className="w-4 h-4 text-amber-400" />
+                      Send Feedback
+                    </Link>
 
                   <button
                     onClick={handleSignOut}

@@ -8,7 +8,6 @@ import {
   User, 
   Mail, 
   MapPin, 
-  ShieldCheck, 
   Award, 
   Activity, 
   CheckCircle, 

@@ -39,7 +39,7 @@ export default function TheProblem() {
     });
 
     return () => mm.revert();
-  }, []);
+  }, [steps]);
 
 
 

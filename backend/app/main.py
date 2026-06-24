@@ -31,6 +31,14 @@ try:
         conn.execute(text("ALTER TABLE complaints ALTER COLUMN status TYPE VARCHAR USING status::VARCHAR"))
 except Exception as e:
     pass
+
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE complaints ADD COLUMN latitude VARCHAR"))
+        conn.execute(text("ALTER TABLE complaints ADD COLUMN longitude VARCHAR"))
+        conn.execute(text("ALTER TABLE complaints ADD COLUMN address VARCHAR"))
+except Exception as e:
+    pass
 app = FastAPI(title="CivicConnect API")
 
 app.add_middleware(
@@ -59,6 +67,9 @@ class Complaint(BaseModel):
     title: str
     description: str
     location: str
+    latitude: str | None = None
+    longitude: str | None = None
+    address: str | None = None
     department: str = "General"
     priority: str = "Low"
     image_url: str | None = None
@@ -467,6 +478,9 @@ def create_complaint(complaint: Complaint, db: Session = Depends(get_db)):
             title=complaint.title,
             description=complaint.description,
             location=complaint.location,
+            latitude=complaint.latitude,
+            longitude=complaint.longitude,
+            address=complaint.address,
             department=complaint.department,
             priority=complaint.priority,
             image_url=complaint.image_url
@@ -482,13 +496,15 @@ def create_complaint(complaint: Complaint, db: Session = Depends(get_db)):
 @app.get("/complaints")
 def get_complaints(db: Session = Depends(get_db)):
     complaints = db.query(DBComplaint).order_by(DBComplaint.created_at.desc()).all()
-    # Format datetime objects for JSON serialization and return simple list
     return [
         {
             "id": str(c.id),
             "title": c.title,
             "description": c.description,
             "location": c.location,
+            "latitude": c.latitude,
+            "longitude": c.longitude,
+            "address": c.address,
             "dept": c.department,
             "priority": c.priority,
             "status": c.status.value if hasattr(c.status, 'value') else c.status,
