@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Form
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import shutil
@@ -15,6 +15,10 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 from fastapi.staticfiles import StaticFiles
 from app.auth.routes import router as auth_router
+from app.auth.dependencies import get_current_user
+from app.database.models import User, RoleEnum, ComplaintStatus, Notification, NotificationType, Department
+from jose import jwt, JWTError
+from app.core.config import settings
 
 Base.metadata.create_all(bind=engine)
 
@@ -39,6 +43,29 @@ try:
         conn.execute(text("ALTER TABLE complaints ADD COLUMN address VARCHAR"))
 except Exception as e:
     pass
+
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE complaints ADD COLUMN user_id VARCHAR"))
+except Exception as e:
+    pass
+
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE complaints ADD COLUMN assigned_to VARCHAR"))
+except Exception as e:
+    pass
+
+try:
+    Base.metadata.tables["notifications"].create(bind=engine, checkfirst=True)
+except Exception as e:
+    pass
+
+try:
+    Base.metadata.tables["departments"].create(bind=engine, checkfirst=True)
+except Exception as e:
+    pass
+
 app = FastAPI(title="CivicConnect API")
 
 app.add_middleware(
@@ -73,6 +100,42 @@ class Complaint(BaseModel):
     department: str = "General"
     priority: str = "Low"
     image_url: str | None = None
+
+class StatusUpdateRequest(BaseModel):
+    status: str
+
+class AssignRequest(BaseModel):
+    officer_id: str | None = None
+
+class RoleUpdateRequest(BaseModel):
+    role: str
+
+class ComplaintUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    location: str | None = None
+    latitude: str | None = None
+    longitude: str | None = None
+    address: str | None = None
+    department: str | None = None
+    priority: str | None = None
+    image_url: str | None = None
+
+def get_optional_user(
+    authorization: str | None = None,
+    db: Session = Depends(get_db)
+):
+    if not authorization:
+        return None
+    try:
+        token = authorization.replace("Bearer ", "")
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id:
+            return db.query(User).filter(User.id == user_id).first()
+    except JWTError:
+        pass
+    return None
 
 @app.get("/")
 @app.head("/")
@@ -471,9 +534,15 @@ async def transcribe_audio_endpoint(file: UploadFile = File(...), language: str 
     }
 
 
+@app.post("/complaints")
 @app.post("/complaint")
-def create_complaint(complaint: Complaint, db: Session = Depends(get_db)):
+def create_complaint(
+    complaint: Complaint,
+    db: Session = Depends(get_db),
+    authorization: str | None = Header(None),
+):
     try:
+        user = get_optional_user(authorization, db)
         db_complaint = DBComplaint(
             title=complaint.title,
             description=complaint.description,
@@ -483,33 +552,458 @@ def create_complaint(complaint: Complaint, db: Session = Depends(get_db)):
             address=complaint.address,
             department=complaint.department,
             priority=complaint.priority,
-            image_url=complaint.image_url
+            image_url=complaint.image_url,
+            user_id=user.id if user else None
         )
         db.add(db_complaint)
+        db.flush()
+
+        if user:
+            _create_notification(db, user.id,
+                "Complaint Submitted",
+                f"Your complaint '{db_complaint.title}' has been submitted successfully.",
+                NotificationType.COMPLAINT_SUBMITTED, db_complaint.id)
+
         db.commit()
         db.refresh(db_complaint)
-        return {"message": "Complaint Submitted Successfully", "id": db_complaint.id}
+
+        return {"message": "Complaint Submitted Successfully", "id": str(db_complaint.id)}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+def _complaint_to_dict(c: DBComplaint, db: Session) -> dict:
+    assigned_name = None
+    if c.assigned_to:
+        officer = db.query(User).filter(User.id == c.assigned_to).first()
+        assigned_name = officer.full_name if officer else None
+    return {
+        "id": str(c.id),
+        "title": c.title,
+        "description": c.description,
+        "location": c.location,
+        "latitude": c.latitude,
+        "longitude": c.longitude,
+        "address": c.address,
+        "dept": c.department,
+        "priority": c.priority,
+        "status": c.status.value if hasattr(c.status, 'value') else c.status,
+        "image_url": c.image_url,
+        "user_id": str(c.user_id) if c.user_id else None,
+        "assigned_to": str(c.assigned_to) if c.assigned_to else None,
+        "assigned_name": assigned_name,
+        "time": c.created_at.isoformat() if c.created_at else "Just now"
+    }
+
 @app.get("/complaints")
-def get_complaints(db: Session = Depends(get_db)):
+def get_complaints(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     complaints = db.query(DBComplaint).order_by(DBComplaint.created_at.desc()).all()
+    return [_complaint_to_dict(c, db) for c in complaints]
+
+@app.get("/complaints/my")
+def get_my_complaints(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    complaints = db.query(DBComplaint).filter(
+        DBComplaint.user_id == current_user.id
+    ).order_by(DBComplaint.created_at.desc()).all()
+    return [_complaint_to_dict(c, db) for c in complaints]
+
+@app.get("/officers")
+def list_officers(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != RoleEnum.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can list officers")
+
+    officers = db.query(User).filter(User.role == RoleEnum.OFFICER, User.is_active == True).all()
     return [
         {
-            "id": str(c.id),
-            "title": c.title,
-            "description": c.description,
-            "location": c.location,
-            "latitude": c.latitude,
-            "longitude": c.longitude,
-            "address": c.address,
-            "dept": c.department,
-            "priority": c.priority,
-            "status": c.status.value if hasattr(c.status, 'value') else c.status,
-            "image_url": c.image_url,
-            "time": c.created_at.isoformat() if c.created_at else "Just now"
+            "id": str(o.id),
+            "full_name": o.full_name,
+            "email": o.email,
         }
-        for c in complaints
+        for o in officers
     ]
+
+def _create_notification(db: Session, user_id, title: str, message: str, ntype: NotificationType, complaint_id=None):
+    notif = Notification(
+        user_id=user_id,
+        title=title,
+        message=message,
+        type=ntype,
+        complaint_id=complaint_id,
+    )
+    db.add(notif)
+    db.flush()
+
+@app.get("/notifications")
+def get_notifications(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    notifs = db.query(Notification).filter(
+        Notification.user_id == current_user.id
+    ).order_by(Notification.created_at.desc()).limit(50).all()
+    return [
+        {
+            "id": str(n.id),
+            "title": n.title,
+            "message": n.message,
+            "type": n.type.value if hasattr(n.type, 'value') else n.type,
+            "complaint_id": str(n.complaint_id) if n.complaint_id else None,
+            "is_read": n.is_read,
+            "time": n.created_at.isoformat() if n.created_at else "Just now"
+        }
+        for n in notifs
+    ]
+
+@app.get("/notifications/unread-count")
+def unread_notification_count(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    count = db.query(Notification).filter(
+        Notification.user_id == current_user.id,
+        Notification.is_read == False
+    ).count()
+    return {"count": count}
+
+@app.patch("/notifications/{notification_id}/read")
+def mark_notification_read(
+    notification_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    notif = db.query(Notification).filter(
+        Notification.id == notification_id,
+        Notification.user_id == current_user.id
+    ).first()
+    if not notif:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    notif.is_read = True
+    db.commit()
+    return {"message": "Marked as read"}
+
+@app.patch("/notifications/read-all")
+def mark_all_notifications_read(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db.query(Notification).filter(
+        Notification.user_id == current_user.id,
+        Notification.is_read == False
+    ).update({"is_read": True})
+    db.commit()
+    return {"message": "All notifications marked as read"}
+
+# ── Admin: User Management ──────────────────────────────────
+
+@app.get("/users")
+def list_users(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != RoleEnum.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can list users")
+    users = db.query(User).order_by(User.created_at.desc()).all()
+    return [
+        {
+            "id": str(u.id),
+            "full_name": u.full_name,
+            "email": u.email,
+            "phone_number": u.phone_number,
+            "role": u.role.value if hasattr(u.role, 'value') else u.role,
+            "is_active": u.is_active,
+            "created_at": u.created_at.isoformat() if u.created_at else None,
+        }
+        for u in users
+    ]
+
+@app.patch("/users/{user_id}/role")
+def update_user_role(
+    user_id: str,
+    request: RoleUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != RoleEnum.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can change roles")
+    if current_user.id == user_id:
+        raise HTTPException(status_code=400, detail="Cannot change your own role")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    try:
+        user.role = RoleEnum(request.role)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {', '.join(r.value for r in RoleEnum)}")
+    db.commit()
+    return {"message": f"User role updated to {request.role}"}
+
+@app.patch("/users/{user_id}/toggle-active")
+def toggle_user_active(
+    user_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != RoleEnum.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can toggle user status")
+    if current_user.id == user_id:
+        raise HTTPException(status_code=400, detail="Cannot disable your own account")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.is_active = not user.is_active
+    db.commit()
+    return {"message": f"User {'activated' if user.is_active else 'deactivated'}", "is_active": user.is_active}
+
+# ── Admin: Department CRUD ─────────────────────────────────
+
+class DepartmentCreate(BaseModel):
+    name: str
+    description: str = ""
+
+class DepartmentUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    is_active: bool | None = None
+
+@app.get("/departments")
+def list_departments(db: Session = Depends(get_db)):
+    depts = db.query(Department).order_by(Department.name).all()
+    return [
+        {
+            "id": str(d.id),
+            "name": d.name,
+            "description": d.description,
+            "is_active": d.is_active,
+            "created_at": d.created_at.isoformat() if d.created_at else None,
+        }
+        for d in depts
+    ]
+
+@app.post("/departments")
+def create_department(
+    request: DepartmentCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != RoleEnum.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can create departments")
+    existing = db.query(Department).filter(Department.name == request.name).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Department already exists")
+    dept = Department(name=request.name, description=request.description)
+    db.add(dept)
+    db.commit()
+    db.refresh(dept)
+    return {"id": str(dept.id), "name": dept.name, "description": dept.description, "is_active": dept.is_active}
+
+@app.patch("/departments/{department_id}")
+def update_department(
+    department_id: str,
+    request: DepartmentUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != RoleEnum.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can update departments")
+    dept = db.query(Department).filter(Department.id == department_id).first()
+    if not dept:
+        raise HTTPException(status_code=404, detail="Department not found")
+    if request.name is not None:
+        dept.name = request.name
+    if request.description is not None:
+        dept.description = request.description
+    if request.is_active is not None:
+        dept.is_active = request.is_active
+    db.commit()
+    db.refresh(dept)
+    return {"id": str(dept.id), "name": dept.name, "description": dept.description, "is_active": dept.is_active}
+
+@app.delete("/departments/{department_id}")
+def delete_department(
+    department_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != RoleEnum.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can delete departments")
+    dept = db.query(Department).filter(Department.id == department_id).first()
+    if not dept:
+        raise HTTPException(status_code=404, detail="Department not found")
+    db.delete(dept)
+    db.commit()
+    return {"message": "Department deleted"}
+
+# ── Assignment / Status ────────────────────────────────────
+
+@app.patch("/complaints/{complaint_id}/assign")
+def assign_officer(
+    complaint_id: str,
+    request: AssignRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != RoleEnum.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can assign officers")
+
+    complaint = db.query(DBComplaint).filter(DBComplaint.id == complaint_id).first()
+    if not complaint:
+        raise HTTPException(status_code=404, detail="Complaint not found")
+
+    if request.officer_id:
+        officer = db.query(User).filter(
+            User.id == request.officer_id,
+            User.role == RoleEnum.OFFICER,
+            User.is_active == True
+        ).first()
+        if not officer:
+            raise HTTPException(status_code=404, detail="Officer not found")
+        complaint.assigned_to = officer.id
+        if complaint.status == ComplaintStatus.UNASSIGNED:
+            complaint.status = ComplaintStatus.ASSIGNED
+
+        _create_notification(db, officer.id,
+            "New Assignment",
+            f"Complaint '{complaint.title}' has been assigned to you.",
+            NotificationType.ASSIGNMENT, complaint.id)
+
+        if complaint.user_id:
+            _create_notification(db, complaint.user_id,
+                "Officer Assigned",
+                f"Officer {officer.full_name} has been assigned to your complaint '{complaint.title}'.",
+                NotificationType.ASSIGNMENT, complaint.id)
+    else:
+        complaint.assigned_to = None
+
+    db.commit()
+    db.refresh(complaint)
+
+    officer_name = None
+    if complaint.assigned_to:
+        officer = db.query(User).filter(User.id == complaint.assigned_to).first()
+        officer_name = officer.full_name if officer else None
+
+    return {
+        "id": str(complaint.id),
+        "assigned_to": str(complaint.assigned_to) if complaint.assigned_to else None,
+        "assigned_name": officer_name,
+        "status": complaint.status.value if hasattr(complaint.status, 'value') else complaint.status,
+        "message": f"Assigned to {officer_name}" if officer_name else "Officer unassigned"
+    }
+
+@app.patch("/complaints/{complaint_id}/status")
+def update_complaint_status(
+    complaint_id: str,
+    request: StatusUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role not in [RoleEnum.OFFICER, RoleEnum.ADMIN]:
+        raise HTTPException(status_code=403, detail="Only officers and admins can change complaint status")
+
+    complaint = db.query(DBComplaint).filter(DBComplaint.id == complaint_id).first()
+    if not complaint:
+        raise HTTPException(status_code=404, detail="Complaint not found")
+
+    valid_statuses = [s.value for s in ComplaintStatus]
+    if request.status not in valid_statuses:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}"
+        )
+
+    old_status = complaint.status
+    complaint.status = ComplaintStatus(request.status)
+    db.flush()
+
+    new_status = complaint.status.value if hasattr(complaint.status, 'value') else complaint.status
+
+    if complaint.user_id and complaint.user_id != current_user.id:
+        _create_notification(db, complaint.user_id,
+            "Status Update",
+            f"Your complaint '{complaint.title}' is now '{new_status}'.",
+            NotificationType.STATUS_UPDATE, complaint.id)
+
+    if new_status == "Resolved" and complaint.user_id:
+        _create_notification(db, complaint.user_id,
+            "Complaint Resolved",
+            f"Your complaint '{complaint.title}' has been resolved!",
+            NotificationType.COMPLAINT_RESOLVED, complaint.id)
+
+    if complaint.assigned_to and complaint.assigned_to != current_user.id:
+        _create_notification(db, complaint.assigned_to,
+            "Status Update",
+            f"Complaint '{complaint.title}' updated to '{new_status}'.",
+            NotificationType.STATUS_UPDATE, complaint.id)
+
+    db.commit()
+    db.refresh(complaint)
+
+    return {
+        "id": str(complaint.id),
+        "title": complaint.title,
+        "status": new_status,
+        "message": f"Complaint status updated to '{new_status}'"
+    }
+
+@app.put("/complaints/{complaint_id}")
+def update_complaint(
+    complaint_id: str,
+    request: ComplaintUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    complaint = db.query(DBComplaint).filter(DBComplaint.id == complaint_id).first()
+    if not complaint:
+        raise HTTPException(status_code=404, detail="Complaint not found")
+
+    is_owner = complaint.user_id and str(complaint.user_id) == str(current_user.id)
+    is_admin = current_user.role == RoleEnum.ADMIN
+    is_assigned = complaint.assigned_to and str(complaint.assigned_to) == str(current_user.id)
+
+    if not (is_owner or is_admin or is_assigned):
+        raise HTTPException(status_code=403, detail="Not authorized to update this complaint")
+
+    if request.title is not None: complaint.title = request.title
+    if request.description is not None: complaint.description = request.description
+    if request.location is not None: complaint.location = request.location
+    if request.latitude is not None: complaint.latitude = request.latitude
+    if request.longitude is not None: complaint.longitude = request.longitude
+    if request.address is not None: complaint.address = request.address
+    if request.department is not None: complaint.department = request.department
+    if request.priority is not None: complaint.priority = request.priority
+    if request.image_url is not None: complaint.image_url = request.image_url
+
+    db.commit()
+    db.refresh(complaint)
+
+    return _complaint_to_dict(complaint, db)
+
+@app.delete("/complaints/{complaint_id}")
+def delete_complaint(
+    complaint_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    complaint = db.query(DBComplaint).filter(DBComplaint.id == complaint_id).first()
+    if not complaint:
+        raise HTTPException(status_code=404, detail="Complaint not found")
+
+    is_owner = complaint.user_id and str(complaint.user_id) == str(current_user.id)
+    is_admin = current_user.role == RoleEnum.ADMIN
+
+    if not (is_owner or is_admin):
+        raise HTTPException(status_code=403, detail="Not authorized to delete this complaint")
+
+    db.delete(complaint)
+    db.commit()
+
+    return {"message": "Complaint deleted", "id": str(complaint_id)}

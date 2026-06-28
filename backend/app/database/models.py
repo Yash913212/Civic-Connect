@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Boolean, DateTime, Enum, func
+from sqlalchemy import Column, String, Boolean, DateTime, Enum, func, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from app.database.database import Base
 import enum
@@ -22,6 +22,12 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+class NotificationType(str, enum.Enum):
+    STATUS_UPDATE = "status_update"
+    ASSIGNMENT = "assignment"
+    COMPLAINT_SUBMITTED = "complaint_submitted"
+    COMPLAINT_RESOLVED = "complaint_resolved"
+
 class ComplaintStatus(str, enum.Enum):
     UNASSIGNED = "Unassigned"
     ASSIGNED = "Assigned"
@@ -43,5 +49,28 @@ class Complaint(Base):
     priority = Column(String, default="Low")
     status = Column(Enum(ComplaintStatus), default=ComplaintStatus.UNASSIGNED)
     image_url = Column(String, nullable=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+class Department(Base):
+    __tablename__ = "departments"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    name = Column(String, unique=True, nullable=False)
+    description = Column(String, default="")
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    title = Column(String, nullable=False)
+    message = Column(String, nullable=False)
+    type = Column(Enum(NotificationType), nullable=False)
+    complaint_id = Column(UUID(as_uuid=True), nullable=True)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

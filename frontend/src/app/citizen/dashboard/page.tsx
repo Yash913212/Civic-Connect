@@ -1,6 +1,7 @@
 "use client";
 
 import { withRoleGuard } from "@/middleware/roleGuard";
+import { useRouter } from "next/navigation";
 
 import Footer from "@/components/sections/Footer";
 import Hero from "@/components/sections/Hero";
@@ -16,6 +17,7 @@ import Team from "@/components/sections/Team";
 import CTA from "@/components/sections/CTA";
 
 function CitizenDashboard() {
+  const router = useRouter();
   return (
     <main className="bg-transparent text-foreground relative w-full min-h-screen select-none">
       <div className="relative z-10 w-full">
@@ -23,7 +25,7 @@ function CitizenDashboard() {
         <TheProblem />
         <Solution />
         <Technology />
-        <LiveDemo />
+        <LiveDemo onViewMyComplaints={() => router.push('/citizen/complaints')} />
         <Heatmap />
         <CommandCenter />
         <FutureRoadmap />

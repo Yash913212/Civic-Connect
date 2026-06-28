@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Upload, Mic, CheckCircle2, X, Brain, MessageSquareText, MapPin, ArrowRight, Zap, Sparkles, Loader2 } from "lucide-react";
+import { Upload, Mic, CheckCircle2, X, Brain, MessageSquareText, MapPin, ArrowRight, Zap, Sparkles, Loader2, ClipboardList } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -148,7 +148,7 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
   return <span>{display}{suffix}</span>;
 }
 
-export default function LiveDemo() {
+export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: () => void }) {
   const router = useRouter();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -661,6 +661,24 @@ export default function LiveDemo() {
             </motion.div>
           ))}
         </motion.div>
+
+        {onViewMyComplaints && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-8 text-center"
+          >
+            <button
+              onClick={onViewMyComplaints}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-primary/20 rounded-xl text-sm font-semibold text-foreground hover:border-primary/50 hover:shadow-lg transition-all group"
+            >
+              <ClipboardList className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+              View My Complaints
+              <ArrowRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform" />
+            </button>
+          </motion.div>
+        )}
       </div>
     </section>
   );

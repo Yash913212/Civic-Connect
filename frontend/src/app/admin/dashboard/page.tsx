@@ -8,7 +8,7 @@ import {
   Building2, Users, FileText, Map, Settings, AlertTriangle, 
   CheckCircle, FolderOpen, Activity, Clock, Bell,
   LogOut, Download, Filter, Search, Database,
-  TrendingUp, Zap, Shield, BarChart3, RefreshCw
+  TrendingUp, Zap, Shield, BarChart3, RefreshCw, ChevronDown, Trash2
 } from "lucide-react";
 import { 
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -20,6 +20,9 @@ import { CanvasRevealEffect } from "@/components/ui/sign-in-flow-1";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { showTextLoading, showSystemStatus, showOfficerAssigned, showAIFuturistic } from "@/components/ui/CustomToasts";
+import { complaintService, type OfficerData } from "@/services/complaintService";
+import { adminService, type UserData, type DepartmentData } from "@/services/adminService";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 const complaintTrends = [
   { name: 'Mon', new: 120, resolved: 90 },
@@ -139,46 +142,298 @@ function PieChartCard() {
   );
 }
 
-interface ComplaintData { id: string; title: string; dept: string; priority: string; status: string; time: string; }
+interface ComplaintData { id: string; title: string; dept: string; priority: string; status: string; time: string; assigned_to?: string | null; assigned_name?: string | null; }
+
+const STATUS_OPTIONS = ["Unassigned", "Assigned", "In Progress", "Escalated", "Resolved"];
+
+function StatusBadge({ status }: { status: string }) {
+  const colors: Record<string, string> = {
+    Unassigned: "bg-slate-500/15 border-slate-500/30 text-slate-400",
+    Assigned: "bg-cyan-500/15 border-cyan-500/30 text-cyan-400",
+    "In Progress": "bg-amber-500/15 border-amber-500/30 text-amber-400",
+    Escalated: "bg-purple-500/15 border-purple-500/30 text-purple-400",
+    Resolved: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
+  };
+  return (
+    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${colors[status] || colors.Unassigned}`}>
+      {status}
+    </span>
+  );
+}
+
+function StatusDropdown({ current, onChange, disabled }: { current: string; onChange: (s: string) => void; disabled?: boolean }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button onClick={() => !disabled && setOpen(!open)}
+        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50 dark:hover:bg-white/10 cursor-pointer'
+        } bg-white dark:bg-white/5 border-black/10 dark:border-white/10`}>
+        <StatusBadge status={current} />
+        {!disabled && <ChevronDown size={12} />}
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 z-20 bg-white dark:bg-black/90 backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-xl shadow-lg py-1 min-w-[150px]">
+            {STATUS_OPTIONS.map(s => (
+              <button key={s} onClick={() => { onChange(s); setOpen(false); }}
+                className={`w-full text-left px-3 py-2 text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${
+                  s === current ? 'text-primary' : 'text-foreground'
+                }`}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function OfficerAssignDropdown({ officers, currentOfficerId, currentOfficerName, onAssign }: {
+  officers: OfficerData[];
+  currentOfficerId: string | null;
+  currentOfficerName: string | null;
+  onAssign: (officerId: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all hover:bg-slate-50 dark:hover:bg-white/10 cursor-pointer bg-white dark:bg-white/5 border-black/10 dark:border-white/10 whitespace-nowrap">
+        <Users size={12} className="text-muted-foreground" />
+        <span className="max-w-[80px] truncate text-muted-foreground">
+          {currentOfficerName || "Assign"}
+        </span>
+        <ChevronDown size={12} className="text-muted-foreground" />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 z-20 bg-white dark:bg-black/90 backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-xl shadow-lg py-1 min-w-[180px] max-h-[240px] overflow-y-auto">
+            {currentOfficerId && (
+              <button onClick={() => { onAssign(null); setOpen(false); }}
+                className="w-full text-left px-3 py-2 text-xs font-semibold text-rose-400 hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                Unassign
+              </button>
+            )}
+            {officers.length === 0 && (
+              <div className="px-3 py-2 text-xs text-muted-foreground">No officers found</div>
+            )}
+            {officers.map(o => (
+              <button key={o.id} onClick={() => { onAssign(o.id); setOpen(false); }}
+                className={`w-full text-left px-3 py-2 text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex items-center gap-2 ${
+                  o.id === currentOfficerId ? 'text-primary' : 'text-foreground'
+                }`}>
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-white text-[8px] font-bold">
+                  {o.full_name.charAt(0)}
+                </div>
+                {o.full_name}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function UserRow({ user, onUpdate }: { user: UserData; onUpdate: () => void }) {
+  const [roleOpen, setRoleOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const handleRoleChange = async (newRole: string) => {
+    setBusy(true);
+    try {
+      await adminService.updateRole(user.id, newRole);
+      toast.success(`${user.full_name} role → ${newRole}`);
+      onUpdate();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleToggleActive = async () => {
+    setBusy(true);
+    try {
+      await adminService.toggleActive(user.id);
+      toast.success(`${user.full_name} ${user.is_active ? 'deactivated' : 'activated'}`);
+      onUpdate();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <tr className="border-b border-black/5 dark:border-white/5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-white text-[9px] font-bold">
+            {user.full_name.charAt(0)}
+          </div>
+          <span className="font-semibold text-foreground">{user.full_name}</span>
+        </div>
+      </td>
+      <td className="px-4 py-3 text-muted-foreground text-xs">{user.email}</td>
+      <td className="px-4 py-3">
+        <div className="relative">
+          <button onClick={() => !busy && setRoleOpen(!roleOpen)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all hover:bg-slate-50 dark:hover:bg-white/10 bg-white dark:bg-white/5 border-black/10 dark:border-white/10">
+            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+              user.role === 'ADMIN' ? 'bg-purple-500/20 text-purple-400' :
+              user.role === 'OFFICER' ? 'bg-cyan-500/20 text-cyan-400' :
+              'bg-blue-500/20 text-blue-400'
+            }`}>{user.role}</span>
+            <ChevronDown size={12} className="text-muted-foreground" />
+          </button>
+          {roleOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setRoleOpen(false)} />
+              <div className="absolute left-0 top-full mt-1 z-20 bg-white dark:bg-black/90 backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-xl shadow-lg py-1 min-w-[140px]">
+                {['CITIZEN', 'OFFICER', 'ADMIN'].map(r => (
+                  <button key={r} onClick={() => { handleRoleChange(r); setRoleOpen(false); }}
+                    className={`w-full text-left px-3 py-2 text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${
+                      r === user.role ? 'text-primary' : 'text-foreground'
+                    }`}>{r}</button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </td>
+      <td className="px-4 py-3">
+        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+          user.is_active ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
+        }`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${user.is_active ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+          {user.is_active ? 'Active' : 'Inactive'}
+        </span>
+      </td>
+      <td className="px-4 py-3 text-right">
+        <button onClick={handleToggleActive} disabled={busy}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+            user.is_active
+              ? 'bg-rose-500/10 border-rose-500/30 text-rose-400 hover:bg-rose-500/20'
+              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
+          } disabled:opacity-50`}>
+          {user.is_active ? 'Disable' : 'Enable'}
+        </button>
+      </td>
+    </tr>
+  );
+}
 
 function AdminDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"overview" | "complaints" | "departments" | "map" | "reports">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "complaints" | "departments" | "users" | "map" | "reports">("overview");
   const [complaints, setComplaints] = useState<ComplaintData[]>([]);
   const [liveTime, setLiveTime] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
+  const [loadingComplaints, setLoadingComplaints] = useState(true);
+  const [officers, setOfficers] = useState<OfficerData[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [departments, setDepartments] = useState<DepartmentData[]>([]);
+  const [loadingDepts, setLoadingDepts] = useState(false);
+  const [showDeptForm, setShowDeptForm] = useState(false);
+  const [deptFormName, setDeptFormName] = useState("");
+  const [deptFormDesc, setDeptFormDesc] = useState("");
+  const [editingDeptId, setEditingDeptId] = useState<string | null>(null);
+  const [deptDeleteTarget, setDeptDeleteTarget] = useState<DepartmentData | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setLiveTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
+  const loadComplaints = () => {
+    setLoadingComplaints(true);
     const toastId = showTextLoading("Admin Sync", "Connecting to Civic DB");
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api$/, '') : "http://localhost:8000";
-    fetch(`${baseUrl}/complaints`)
-      .then(res => res.json())
+    complaintService.getAll()
       .then(data => {
-        const backendComplaints = data.map((c: any) => ({
-          id: c.id?.substring(0, 8).toUpperCase() || "—",
+        const mapped = data.map((c: any) => ({
+          id: c.id,
           title: c.title,
           dept: c.dept,
           priority: c.priority,
           status: c.status,
           time: c.time?.split('T')[0] || c.time || "—",
+          assigned_to: c.assigned_to,
+          assigned_name: c.assigned_name,
         }));
-        setComplaints([...backendComplaints, ...complaintFallbacks]);
+        setComplaints([...mapped, ...complaintFallbacks] as ComplaintData[]);
         toast.dismiss(toastId);
         showSystemStatus("Database Sync", "Complaints loaded successfully");
+        setLoadingComplaints(false);
       })
       .catch(() => {
         setComplaints(complaintFallbacks);
         toast.dismiss(toastId);
         showSystemStatus("Sync Error", "Loaded offline data. Server unavailable.", true);
+        setLoadingComplaints(false);
       });
+  };
+
+  useEffect(() => { loadComplaints(); }, []);
+
+  useEffect(() => {
+    complaintService.listOfficers()
+      .then(setOfficers)
+      .catch(() => {});
   }, []);
 
+  const loadUsers = () => {
+    setLoadingUsers(true);
+    adminService.listUsers()
+      .then(data => { setUsers(data); setLoadingUsers(false); })
+      .catch(() => { setLoadingUsers(false); });
+  };
+
+  const loadDepartments = () => {
+    setLoadingDepts(true);
+    adminService.listDepartments()
+      .then(data => { setDepartments(data); setLoadingDepts(false); })
+      .catch(() => { setLoadingDepts(false); });
+  };
+
+  useEffect(() => { if (activeTab === "users") loadUsers(); }, [activeTab]);
+  useEffect(() => { if (activeTab === "departments") loadDepartments(); }, [activeTab]);
+
+  const handleStatusChange = async (complaintId: string, displayId: string, newStatus: string) => {
+    try {
+      await complaintService.updateStatus(complaintId, newStatus);
+      setComplaints(prev => prev.map(c =>
+        c.id === complaintId ? { ...c, status: newStatus } : c
+      ));
+      toast.success(`#${displayId} → ${newStatus}`);
+      showSystemStatus("Status Update", `Complaint ${displayId} updated to ${newStatus}`);
+      if (newStatus === "Resolved") confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleAssign = async (complaintId: string, displayId: string, officerId: string | null) => {
+    try {
+      const result = await complaintService.assignOfficer(complaintId, officerId);
+      setComplaints(prev => prev.map(c =>
+        c.id === complaintId ? { ...c, assigned_to: result.assigned_to, assigned_name: result.assigned_name, status: result.status } : c
+      ));
+      toast.success(`#${displayId} → ${result.message}`);
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
   const handleSignOut = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
     sessionStorage.clear();
     document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
     document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
@@ -237,6 +492,7 @@ function AdminDashboard() {
               { id: "overview", icon: Activity, label: "Dashboard Overview" },
               { id: "complaints", icon: FolderOpen, label: "Assignment Center" },
               { id: "departments", icon: Building2, label: "Department Mgmt" },
+              { id: "users", icon: Users, label: "User Management" },
               { id: "map", icon: Map, label: "GIS Analytics" },
               { id: "reports", icon: FileText, label: "Reports & Exports" },
             ].map((tab) => {
@@ -407,19 +663,18 @@ function AdminDashboard() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                        <div className="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap">
                           <PriorityBadge priority={item.priority} />
-                          <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                            item.status === 'Unassigned' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
-                            item.status === 'Escalated' ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' :
-                            item.status === 'In Progress' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
-                            'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
-                          }`}>{item.status}</span>
-                          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                            onClick={() => { showOfficerAssigned(item.dept, "2 Hours"); confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } }); }}
-                            className="px-4 py-2 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 text-xs font-semibold rounded-lg border border-black/10 dark:border-white/10 shadow-sm transition-all">
-                            Manage
-                          </motion.button>
+                          <StatusDropdown
+                            current={item.status}
+                            onChange={(s) => handleStatusChange(item.id, item.id.substring(0, 8).toUpperCase(), s)}
+                          />
+                          <OfficerAssignDropdown
+                            officers={officers}
+                            currentOfficerId={item.assigned_to ?? null}
+                            currentOfficerName={item.assigned_name ?? null}
+                            onAssign={(officerId) => handleAssign(item.id, item.id.substring(0, 8).toUpperCase(), officerId)}
+                          />
                         </div>
                       </motion.div>
                     ))}
@@ -431,46 +686,154 @@ function AdminDashboard() {
                 <motion.div key="departments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white">Department Workloads</h3>
-                    <button onClick={() => { showTextLoading("Provisioning", "Allocating department resources"); setTimeout(() => showSystemStatus("Department Created", "System resources allocated"), 2000); }}
-                      className="px-4 py-2 bg-purple-500 hover:bg-purple-400 text-white font-semibold text-sm rounded-lg transition-all hover:shadow-lg hover:shadow-purple-500/25">
-                      + New Department
-                    </button>
+                    <div className="flex gap-2">
+                      <button onClick={loadDepartments} className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-white/10 transition-colors shadow-sm">
+                        <RefreshCw size={14} />
+                      </button>
+                      <button onClick={() => { setShowDeptForm(true); setEditingDeptId(null); setDeptFormName(""); setDeptFormDesc(""); }}
+                        className="px-4 py-2 bg-purple-500 hover:bg-purple-400 text-white font-semibold text-sm rounded-lg transition-all hover:shadow-lg hover:shadow-purple-500/25">
+                        + New Department
+                      </button>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {deptCards.map((dept, i) => (
-                      <motion.div key={dept.name} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                        whileHover={{ y: -2, transition: { duration: 0.2 } }}
-                        className={`p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all bg-gradient-to-br ${dept.gradient}`}>
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-xl ${dept.color}/20 flex items-center justify-center ${dept.iconColor}`}>
-                              <Building2 size={20} />
-                            </div>
-                            <h4 className="font-bold text-foreground">{dept.name}</h4>
+
+                  {/* Create / Edit Form */}
+                  <AnimatePresence>
+                    {showDeptForm && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                        className="p-5 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-purple-500/30 overflow-hidden">
+                        <h4 className="text-sm font-bold text-foreground mb-3">{editingDeptId ? "Edit Department" : "New Department"}</h4>
+                        <div className="flex gap-3 items-start">
+                          <div className="flex-1 space-y-2">
+                            <input type="text" placeholder="Department name" value={deptFormName} onChange={e => setDeptFormName(e.target.value)}
+                              className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-purple-500/50" />
+                            <input type="text" placeholder="Description (optional)" value={deptFormDesc} onChange={e => setDeptFormDesc(e.target.value)}
+                              className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-purple-500/50" />
                           </div>
-                          <button className="text-muted-foreground hover:text-foreground transition-colors"><Settings size={18}/></button>
-                        </div>
-                        <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                          <span>Officers: <strong className="text-foreground">{dept.officerCount}</strong></span>
-                          <span>Active Cases: <strong className="text-foreground">{dept.activeCases}</strong></span>
-                        </div>
-                        <div className="w-full h-2 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden mt-3">
-                          <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, (dept.activeCases / 350) * 100)}%` }}
-                            transition={{ duration: 1.2, ease: "easeOut", delay: i * 0.1 }}
-                            className={`h-full rounded-full ${dept.color}`} />
-                        </div>
-                        <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-                          <span>Load: {Math.round((dept.activeCases / 350) * 100)}%</span>
-                          <span className="font-mono">{dept.activeCases}/{350} capacity</span>
-                        </div>
-                        <div className="mt-4 flex gap-2">
-                          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                            className="flex-1 py-2 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 rounded-lg text-xs font-semibold transition-colors">Assign Officers</motion.button>
-                          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                            className="flex-1 py-2 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 rounded-lg text-xs font-semibold transition-colors">View Queue</motion.button>
+                          <div className="flex gap-2 pt-1">
+                            <button onClick={async () => {
+                              if (!deptFormName.trim()) return;
+                              try {
+                                if (editingDeptId) {
+                                  await adminService.updateDepartment(editingDeptId, { name: deptFormName.trim(), description: deptFormDesc.trim() });
+                                  toast.success("Department updated");
+                                } else {
+                                  await adminService.createDepartment(deptFormName.trim(), deptFormDesc.trim());
+                                  toast.success("Department created");
+                                }
+                                setShowDeptForm(false);
+                                loadDepartments();
+                              } catch (err: any) { toast.error(err.message); }
+                            }} className="px-4 py-2 bg-purple-500 hover:bg-purple-400 text-white text-sm font-semibold rounded-lg transition-all">
+                              {editingDeptId ? "Save" : "Create"}
+                            </button>
+                            <button onClick={() => setShowDeptForm(false)}
+                              className="px-4 py-2 bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-sm font-semibold rounded-lg hover:bg-black/20 dark:hover:bg-white/20 transition-all">Cancel</button>
+                          </div>
                         </div>
                       </motion.div>
-                    ))}
+                    )}
+                  </AnimatePresence>
+
+                  {loadingDepts ? (
+                    <div className="p-12 text-center text-muted-foreground text-sm">Loading departments...</div>
+                  ) : departments.length === 0 ? (
+                    <div className="p-12 text-center text-muted-foreground text-sm">No departments yet. Create one to get started.</div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {departments.map((dept, i) => {
+                        const caseCount = complaints.filter(c => c.dept.toLowerCase() === dept.name.toLowerCase()).length;
+                        const maxCases = Math.max(1, ...departments.map(d => complaints.filter(c => c.dept.toLowerCase() === d.name.toLowerCase()).length));
+                        const pct = Math.round((caseCount / maxCases) * 100);
+                        const colors = [
+                          { color: "bg-amber-500", gradient: "from-amber-500/20 to-amber-600/5", iconColor: "text-amber-400" },
+                          { color: "bg-cyan-500", gradient: "from-cyan-500/20 to-cyan-600/5", iconColor: "text-cyan-400" },
+                          { color: "bg-emerald-500", gradient: "from-emerald-500/20 to-emerald-600/5", iconColor: "text-emerald-400" },
+                          { color: "bg-blue-500", gradient: "from-blue-500/20 to-blue-600/5", iconColor: "text-blue-400" },
+                          { color: "bg-yellow-500", gradient: "from-yellow-500/20 to-yellow-600/5", iconColor: "text-yellow-400" },
+                          { color: "bg-orange-500", gradient: "from-orange-500/20 to-orange-600/5", iconColor: "text-orange-400" },
+                          { color: "bg-red-500", gradient: "from-red-500/20 to-red-600/5", iconColor: "text-red-400" },
+                          { color: "bg-purple-500", gradient: "from-purple-500/20 to-purple-600/5", iconColor: "text-purple-400" },
+                        ][i % 8];
+                        return (
+                          <motion.div key={dept.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                            whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                            className={`p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all bg-gradient-to-br ${colors.gradient} ${!dept.is_active ? 'opacity-50' : ''}`}>
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-xl ${colors.color}/20 flex items-center justify-center ${colors.iconColor}`}>
+                                  <Building2 size={20} />
+                                </div>
+                                <div>
+                                  <h4 className="font-bold text-foreground">{dept.name}</h4>
+                                  {dept.description && <p className="text-xs text-muted-foreground">{dept.description}</p>}
+                                </div>
+                              </div>
+                              <div className="flex gap-1">
+                                <button onClick={() => {
+                                  setEditingDeptId(dept.id); setDeptFormName(dept.name); setDeptFormDesc(dept.description); setShowDeptForm(true);
+                                }} className="p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all">
+                                  <Settings size={14} />
+                                </button>
+                                <button onClick={() => setDeptDeleteTarget(dept)} className="p-1.5 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-400 transition-all">
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                              <span>Active Cases: <strong className="text-foreground">{caseCount}</strong></span>
+                              <span className={`${dept.is_active ? 'text-emerald-400' : 'text-rose-400'}`}>{dept.is_active ? 'Active' : 'Inactive'}</span>
+                            </div>
+                            <div className="w-full h-2 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden mt-3">
+                              <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }}
+                                transition={{ duration: 1.2, ease: "easeOut", delay: i * 0.1 }}
+                                className={`h-full rounded-full ${colors.color}`} />
+                            </div>
+                            <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                              <span>Load: {pct}%</span>
+                              <span className="font-mono">{caseCount} cases</span>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {activeTab === "users" && (
+                <motion.div key="users" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">User Management</h3>
+                    <button onClick={loadUsers} className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-white/10 transition-colors shadow-sm">
+                      <RefreshCw size={14} /> Refresh
+                    </button>
+                  </div>
+                  <div className="rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 overflow-hidden">
+                    {loadingUsers ? (
+                      <div className="p-12 text-center text-muted-foreground text-sm">Loading users...</div>
+                    ) : users.length === 0 ? (
+                      <div className="p-12 text-center text-muted-foreground text-sm">No users found.</div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-black/10 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
+                              <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">Name</th>
+                              <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">Email</th>
+                              <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">Role</th>
+                              <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">Status</th>
+                              <th className="text-right px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {users.map((u) => (
+                              <UserRow key={u.id} user={u} onUpdate={loadUsers} />
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -535,6 +898,21 @@ function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        open={deptDeleteTarget !== null}
+        title="Delete Department"
+        message={`Are you sure you want to delete "${deptDeleteTarget?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={async () => {
+          if (!deptDeleteTarget) return;
+          try { await adminService.deleteDepartment(deptDeleteTarget.id); toast.success("Department deleted"); loadDepartments(); }
+          catch (err: any) { toast.error(err.message); }
+          finally { setDeptDeleteTarget(null); }
+        }}
+        onCancel={() => setDeptDeleteTarget(null)}
+      />
       <Footer />
     </main>
   );

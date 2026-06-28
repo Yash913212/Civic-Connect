@@ -52,6 +52,7 @@ export default function ComplaintForm() {
     }
     setStatus("submitting");
     try {
+      const token = localStorage.getItem('access_token');
       const payload = {
         title: draft?.title || manualFile?.name || "Civic Issue",
         description: draft?.description || manualDescription || "No description provided",
@@ -65,7 +66,10 @@ export default function ComplaintForm() {
       };
       const res = await fetch(`${API_BASE}/complaint`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

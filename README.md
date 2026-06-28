@@ -96,7 +96,18 @@ graph TD
 *   **Citizen Profile Panel:** Interactive configuration dashboard with notification preferences, security logs, and activity history tracking.
 *   **User Feedback System:** Dedicated `/feedback` page with 5-star rating, category selector (Bug, Feature, General, Compliment, Security), and submission toast notifications — accessible from the navbar, footer, and user dropdown.
 
-### 4. 🎨 Immersive UI/UX
+### 4. 🔔 Real-Time Notification Engine
+*   **Live Notification Bell:** Polling-based notification dropdown (30-second intervals) with unread badge count, search, and mark-read functionality.
+*   **Automatic Event Triggers:** Notifications auto-created on complaint submission, status changes, officer assignments, and resolution — delivered to both citizens and officers.
+*   **Notification API:** Full REST endpoints (`GET /notifications`, `PATCH /notifications/{id}/read`, `PATCH /notifications/read-all`) with unread count endpoint.
+*   **Backend Notification Model:** SQLAlchemy model with `NotificationType` enum (`status_update`, `assignment`, `complaint_submitted`, `complaint_resolved`).
+
+### 5. 🧑‍💼 Admin User & Department Management
+*   **User Administration:** Role-based user management UI with inline role changes (Citizen/Officer/Admin), account enable/disable, and full user listing with search.
+*   **Department CRUD:** Full backend API for department management (`GET`, `POST`, `PATCH`, `DELETE /departments`) with a dedicated `Department` SQLAlchemy model.
+*   **Complaint Lifecycle Management:** Complete update (`PUT /complaints/{id}`) and delete (`DELETE /complaints/{id}`) endpoints with authorization rules (owner/officer/admin).
+
+### 6. 🎨 Immersive UI/UX
 *   **Animated Preloader:** Full-screen cyberpunk-style loading sequence with word animations, progress bar, and ambient grid — replaced the basic spinner for a premium first impression.
 *   **Live AI Demo Sandbox:** Interactive multimodal playground supporting image upload, voice recording, and AI classification with real-time animated results, scan overlays, and shimmer effects.
 *   **Technology Showcase Cards:** 6 glassmorphism feature cards with staggered scroll-reveal animations, unique icons, colored hover glows, and background image blending.
@@ -120,6 +131,10 @@ graph TD
 | **Fusion Architecture** | Custom multimodal fusion layer | Concatenated vision + text features → department + priority heads |
 | **Image Captioning** | Salesforce BLIP | Automatic image description generation |
 | **Voice Transcription** | OpenAI Whisper (tiny) | Voice-to-text for grievance registration in Indian languages |
+| **Backend Framework** | FastAPI (Python) | REST API server with async support |
+| **Database ORM** | SQLAlchemy + PostgreSQL | Complaint, User, Notification, Department models |
+| **Authentication** | JWT (python-jose) + bcrypt | Token-based auth with role guards |
+| **AI Orchestration** | OpenRouter / GPT-4o-mini | Complaint image analysis & priority classification |
 
 ---
 
@@ -160,12 +175,34 @@ src/
 └── hooks/                        # Custom React hooks (useAuth)
 ```
 
+### Backend Structure (`backend/`)
+```bash
+backend/
+├── app/
+│   ├── main.py                   # FastAPI app — all REST endpoints
+│   ├── database/
+│   │   ├── models.py             # SQLAlchemy models (User, Complaint, Notification, Department)
+│   │   └── database.py           # Engine & session config
+│   ├── auth/
+│   │   ├── routes.py             # Auth endpoints (register, login, refresh, password reset)
+│   │   ├── schemas.py            # Pydantic request/response schemas
+│   │   └── dependencies.py       # get_current_user, require_role guards
+│   ├── core/
+│   │   ├── config.py             # Settings via pydantic-settings
+│   │   └── security.py           # JWT create/verify, password hashing
+│   └── ai/                       # ML models (EfficientNet, MuRIL, Whisper, BLIP)
+├── requirements.txt
+└── .env
+```
+
 ---
 
 ## 🚀 Installation & Local Launch
 
 ### Prerequisites
-Make sure you have Node.js 18+ and npm installed on your system.
+- Node.js 18+ and npm
+- Python 3.10+ and pip
+- PostgreSQL database
 
 ### 1. Clone the Repository
 ```bash
@@ -173,20 +210,35 @@ git clone https://github.com/Yash913212/CivicConnect.git
 cd CivicConnect
 ```
 
-### 2. Install Dependencies
+### 2. Frontend Setup
 ```bash
 cd frontend
 npm install
-```
-
-### 3. Launch Development Server
-```bash
 npm run dev
 ```
+Frontend runs at [http://localhost:3000](http://localhost:3000).
 
-Open [http://localhost:3000](http://localhost:3000) on your local browser to experience the platform.
+### 3. Backend Setup
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # or `venv\Scripts\activate` on Windows
+pip install -r requirements.txt
+```
 
-### 4. Build Production Bundle
+Configure your database and API keys in `backend/.env`:
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/civic_connect"
+OPENROUTER_API_KEY="sk-or-v1-..."
+```
+
+Start the backend server:
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+API runs at [http://localhost:8000](http://localhost:8000) — interactive docs at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+### 4. Build Production Bundle (Frontend)
 ```bash
 npm run build
 npm run start

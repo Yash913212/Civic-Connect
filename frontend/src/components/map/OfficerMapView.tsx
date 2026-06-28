@@ -6,8 +6,7 @@ import L from "leaflet";
 import { Search, Loader2, MapPin, Layers } from "lucide-react";
 import "@/lib/leafletSetup";
 import MarkerCluster from "./MarkerCluster";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || "http://localhost:8000";
+import { API_BASE, getAuthHeaders } from "@/services/api";
 const DEFAULT_CENTER: [number, number] = [17.385, 78.4867];
 
 interface Complaint {
@@ -90,7 +89,9 @@ export default function OfficerMapView() {
   const fetchComplaints = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/complaints`);
+      const res = await fetch(`${API_BASE}/complaints`, {
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+      });
       const data = await res.json();
       const valid = data.filter((c: Complaint) => c.latitude && c.longitude && !isNaN(parseFloat(c.latitude)));
       setComplaints((prev) => {
