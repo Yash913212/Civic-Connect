@@ -8,8 +8,8 @@ from PIL import Image
 from .complaint_generator import generate_complaint
 
 CLASS_DEPARTMENTS = [
-    "drainage", "electricity", "garbage", "roads",
-    "safety", "streetlight", "traffic", "water"
+    "drainage",  "garbage", "roads",
+    "water"
 ]
 PRIORITY_LEVELS = ["low", "medium", "high"]
 DEPARTMENT_MAP = {name: i for i, name in enumerate(CLASS_DEPARTMENTS)}
@@ -63,6 +63,7 @@ def _get_vision_model():
 
         if _vision_num_classes is None:
             _vision_num_classes = 4
+        print("Loaded model with", _vision_num_classes, "classes")
 
         model = models.efficientnet_b0(weights=None)
         model.classifier[1] = nn.Linear(model.classifier[1].in_features, _vision_num_classes)
@@ -141,12 +142,12 @@ def predict_issue(image_path, description=""):
 
     vision_confidence = round(confidence.item() * 100, 2)
 
-    if num_classes == 8:
-        predicted_idx = predicted.item()
-        vision_dept = CLASS_DEPARTMENTS[predicted_idx] if predicted_idx < len(CLASS_DEPARTMENTS) else "roads"
-    else:
-        vision_dept = _map_4class_to_8class(predicted.item())
+    predicted_idx = predicted.item()
 
+    if predicted_idx >= len(CLASS_DEPARTMENTS):
+         predicted_idx = 0
+
+    vision_dept = CLASS_DEPARTMENTS[predicted_idx]
     text_scores, _ = analyze_text(description)
     has_text = bool(description.strip())
     text_confidence = 0.0

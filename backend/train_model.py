@@ -26,7 +26,10 @@ eval_transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
-full_dataset = datasets.ImageFolder(dataset_path)
+full_dataset = datasets.ImageFolder(
+    "dataset",
+    transform=train_transform
+)
 print("Classes:", full_dataset.classes)
 print(f"Total classes: {len(full_dataset.classes)}")
 print("Samples per class:")
@@ -37,14 +40,22 @@ for i, cls in enumerate(full_dataset.classes):
 train_size = int(0.8 * len(full_dataset))
 test_size = len(full_dataset) - train_size
 
-train_dataset, test_dataset = random_split(full_dataset, [train_size, test_size])
-train_dataset.dataset = full_dataset
-train_dataset.transform = train_transform
-test_dataset.dataset = full_dataset
-test_dataset.transform = eval_transform
+train_dataset, test_dataset = random_split(
+    full_dataset,
+    [train_size, test_size]
+)
 
-train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
+train_loader = DataLoader(
+    train_dataset,
+    batch_size=16,
+    shuffle=True
+)
+
+test_loader = DataLoader(
+    test_dataset,
+    batch_size=16,
+    shuffle=False
+)
 
 model = models.efficientnet_b0(weights="DEFAULT")
 num_classes = len(full_dataset.classes)
