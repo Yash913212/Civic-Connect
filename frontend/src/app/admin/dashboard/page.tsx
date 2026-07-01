@@ -23,6 +23,7 @@ import { showTextLoading, showSystemStatus, showOfficerAssigned, showAIFuturisti
 import { complaintService, type OfficerData } from "@/services/complaintService";
 import { adminService, type UserData, type DepartmentData } from "@/services/adminService";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import { API_BASE, getAuthHeaders } from "@/services/api";
 
 const defaultComplaintTrends = [
   { name: 'Mon', new: 120, resolved: 90 },
