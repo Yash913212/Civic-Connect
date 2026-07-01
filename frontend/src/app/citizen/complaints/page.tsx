@@ -3,7 +3,7 @@
 import { withRoleGuard } from "@/middleware/roleGuard";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ClipboardList, Clock, AlertTriangle, Building2, Search, MapPin, RefreshCw, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { ClipboardList, Clock, AlertTriangle, Building2, Search, MapPin, RefreshCw, Pencil, Trash2, ArrowLeft, Star, MessageSquare } from "lucide-react";
 import { complaintService, type ComplaintData } from "@/services/complaintService";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -48,6 +48,9 @@ function CitizenComplaints() {
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<ComplaintData | null>(null);
+  const [feedbackTargetId, setFeedbackTargetId] = useState<string | null>(null);
+  const [rating, setRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState("");
 
   const load = () => {
     setLoading(true);
@@ -213,10 +216,17 @@ function CitizenComplaints() {
                     <PriorityBadge priority={c.priority} />
                     <StatusBadge status={c.status} />
                     <div className="flex items-center gap-1 ml-2">
-                      <button onClick={() => startEdit(c)}
-                        className="p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all">
-                        <Pencil size={14} />
-                      </button>
+                      {c.status === 'Resolved' ? (
+                        <button onClick={() => { setFeedbackTargetId(feedbackTargetId === c.id ? null : c.id); setRating(0); setFeedbackComment(""); }}
+                          className="px-2 py-1 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 rounded-lg text-xs font-bold transition-all flex items-center gap-1">
+                          <Star size={12} /> Rate
+                        </button>
+                      ) : (
+                        <button onClick={() => startEdit(c)}
+                          className="p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all">
+                          <Pencil size={14} />
+                        </button>
+                      )}
                       <button onClick={() => handleDelete(c)}
                         className="p-1.5 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-400 transition-all">
                         <Trash2 size={14} />
@@ -224,6 +234,35 @@ function CitizenComplaints() {
                     </div>
                   </div>
                 </div>
+                {feedbackTargetId === c.id && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                    className="mt-4 pt-4 border-t border-black/5 dark:border-white/5">
+                    <h5 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                      <MessageSquare size={14} className="text-emerald-500" /> Rate your resolution experience
+                    </h5>
+                    <div className="flex gap-2 mb-3">
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <button key={star} onClick={() => setRating(star)}
+                          className={`p-1.5 rounded-full transition-all ${
+                            rating >= star ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600 hover:text-amber-400/50'
+                          }`}>
+                          <Star className={rating >= star ? "fill-amber-400" : ""} size={20} />
+                        </button>
+                      ))}
+                    </div>
+                    <textarea placeholder="Leave a comment for the officer (optional)..."
+                      value={feedbackComment} onChange={e => setFeedbackComment(e.target.value)}
+                      className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500/50 resize-none mb-3" rows={2} />
+                    <button onClick={() => {
+                        toast.success("Thank you! Feedback submitted.");
+                        setFeedbackTargetId(null);
+                      }}
+                      disabled={rating === 0}
+                      className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-all">
+                      Submit Feedback
+                    </button>
+                  </motion.div>
+                )}
               </motion.div>
             ))}
           </div>
