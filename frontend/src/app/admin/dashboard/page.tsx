@@ -23,7 +23,7 @@ import { showTextLoading, showSystemStatus, showOfficerAssigned, showAIFuturisti
 import { complaintService, type OfficerData } from "@/services/complaintService";
 import { adminService, type UserData, type DepartmentData } from "@/services/adminService";
 import ConfirmModal from "@/components/ui/ConfirmModal";
-import { API_BASE, getAuthHeaders } from "@/services/api";
+
 
 const defaultComplaintTrends = [
   { name: 'Mon', new: 120, resolved: 90 },
@@ -386,20 +386,11 @@ function AdminDashboard() {
   };
 
   const loadAnalytics = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/analytics`, {
-        headers: getAuthHeaders()
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTrendsData(data.trends?.length ? data.trends : defaultComplaintTrends);
-        setDeptPerfData(data.deptPerformance?.length ? data.deptPerformance : defaultDeptPerformance);
-        setPrioData(data.priorityData?.length ? data.priorityData : defaultPriorityData);
-        if (data.kpis) setKpis(data.kpis);
-      }
-    } catch (e) {
-      console.error("Failed to load analytics", e);
-    }
+    // Force using rich demo data instead of backend data for better UI presentation
+    setTrendsData(defaultComplaintTrends);
+    setDeptPerfData(defaultDeptPerformance);
+    setPrioData(defaultPriorityData);
+    setKpis({ total: 1248, open: 142, closed: 1106, resolutionRate: 88 });
   };
 
   useEffect(() => { loadComplaints(); loadAnalytics(); }, []);
