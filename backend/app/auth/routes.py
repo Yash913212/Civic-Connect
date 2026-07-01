@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database.database import get_db
 from app.auth.schemas import UserRegister, UserLogin, TokenResponse, UserResponse
 from app.database.models import User, RoleEnum
-from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token
+from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, needs_password_rehash
 from app.auth.dependencies import get_current_user
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -43,6 +43,10 @@ def login(user_in: UserLogin, db: Session = Depends(get_db)):
             detail="Incorrect password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+        
+    if needs_password_rehash(user.password_hash):
+        user.password_hash = get_password_hash(user_in.password)
+        db.commit()
         
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
