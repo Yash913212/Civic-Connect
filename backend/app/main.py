@@ -1,8 +1,11 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Form, Header
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form, Header, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import shutil
 import os
+import io
+import json
+from PIL import Image
 from dotenv import load_dotenv
 from app.ai.predict import predict_issue
 from app.ai.captioning import generate_caption
@@ -20,12 +23,18 @@ from app.database.models import User, RoleEnum, ComplaintStatus, Notification, N
 from jose import jwt, JWTError
 from app.core.config import settings
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+limiter = Limiter(key_func=get_remote_address)
+
 Base.metadata.create_all(bind=engine)
 
 from sqlalchemy import text
 try:
     with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE complaints ADD COLUMN image_url VARCHAR"))
+        conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS image_url VARCHAR"))
 except Exception as e:
     pass
 
@@ -38,23 +47,28 @@ except Exception as e:
 
 try:
     with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE complaints ADD COLUMN latitude VARCHAR"))
-        conn.execute(text("ALTER TABLE complaints ADD COLUMN longitude VARCHAR"))
-        conn.execute(text("ALTER TABLE complaints ADD COLUMN address VARCHAR"))
-except Exception as e:
-    pass
+        conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS latitude VARCHAR"))
+except Exception: pass
 
 try:
     with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE complaints ADD COLUMN user_id VARCHAR"))
-except Exception as e:
-    pass
+        conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS longitude VARCHAR"))
+except Exception: pass
 
 try:
     with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE complaints ADD COLUMN assigned_to VARCHAR"))
-except Exception as e:
-    pass
+        conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS address VARCHAR"))
+except Exception: pass
+
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS user_id VARCHAR"))
+except Exception: pass
+
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS assigned_to VARCHAR"))
+except Exception: pass
 
 try:
     Base.metadata.tables["notifications"].create(bind=engine, checkfirst=True)
@@ -67,6 +81,8 @@ except Exception as e:
     pass
 
 app = FastAPI(title="CivicConnect API")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -87,6 +103,46 @@ app.include_router(auth_router)
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: dict[str, list[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, user_id: str):
+        await websocket.accept()
+        if user_id not in self.active_connections:
+            self.active_connections[user_id] = []
+        self.active_connections[user_id].append(websocket)
+
+    def disconnect(self, websocket: WebSocket, user_id: str):
+        if user_id in self.active_connections:
+            self.active_connections[user_id].remove(websocket)
+            if not self.active_connections[user_id]:
+                del self.active_connections[user_id]
+
+    async def send_personal_message(self, message: str, user_id: str):
+        if user_id in self.active_connections:
+            for connection in self.active_connections[user_id]:
+                try:
+                    await connection.send_text(message)
+                except:
+                    pass
+
+    async def broadcast_to_admins(self, message: str, db: Session):
+        admins = db.query(User).filter(User.role == RoleEnum.ADMIN).all()
+        for admin in admins:
+            await self.send_personal_message(message, str(admin.id))
+
+manager = ConnectionManager()
+
+@app.websocket("/ws/notifications/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    await manager.connect(websocket, user_id)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, user_id)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
@@ -142,6 +198,19 @@ def get_optional_user(
 def root():
     return {"message": "Welcome to CivicConnect API"}
 
+def compress_image(contents: bytes, max_size=(1024, 1024), quality=80) -> bytes:
+    try:
+        img = Image.open(io.BytesIO(contents))
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        img.thumbnail(max_size, Image.Resampling.LANCZOS)
+        output = io.BytesIO()
+        img.save(output, format="JPEG", quality=quality, optimize=True)
+        return output.getvalue()
+    except Exception as e:
+        print(f"Image compression failed: {e}")
+        return contents
+
 import base64
 import requests
 import json
@@ -149,15 +218,22 @@ import json
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 
 @app.post("/upload")
-async def upload_image(file: UploadFile = File(...)):
+@limiter.limit("5/minute")
+async def upload_image(request: Request, file: UploadFile = File(...)):
     contents = await file.read()
+    compressed_contents = compress_image(contents)
     
-    filepath = os.path.join(UPLOAD_DIR, file.filename)
+    # Ensure it gets saved as .jpg if it was compressed to jpeg
+    filename = file.filename
+    if not filename.lower().endswith(('.jpg', '.jpeg')):
+        filename = filename.rsplit('.', 1)[0] + '.jpg'
+    
+    filepath = os.path.join(UPLOAD_DIR, filename)
     with open(filepath, "wb") as buffer:
-        buffer.write(contents)
+        buffer.write(compressed_contents)
         
     try:
-        base64_image = base64.b64encode(contents).decode('utf-8')
+        base64_image = base64.b64encode(compressed_contents).decode('utf-8')
         mime_type = file.content_type or "image/jpeg"
         
         headers = {
@@ -418,23 +494,23 @@ async def upload_image(file: UploadFile = File(...)):
 class TextAnalysisRequest(BaseModel):
     text: str
 @app.post("/ai/analyze")
+@limiter.limit("10/minute")
 async def analyze_image(
+    request: Request,
     file: UploadFile = File(...),
     description: str = Form("")
 ):
+    contents = await file.read()
+    compressed_contents = compress_image(contents)
+    
+    filename = file.filename
+    if not filename.lower().endswith(('.jpg', '.jpeg')):
+        filename = filename.rsplit('.', 1)[0] + '.jpg'
+        
+    file_path = os.path.join("uploads", filename)
 
-    file_path = (
-        f"uploads/{file.filename}"
-    )
-
-    with open(
-        file_path,
-        "wb"
-    ) as f:
-
-        f.write(
-            await file.read()
-        )
+    with open(file_path, "wb") as f:
+        f.write(compressed_contents)
 
     result = predict_issue(
         file_path, description=description
@@ -447,7 +523,8 @@ async def analyze_image(
     return result
 
 @app.post("/analyze_text")
-def analyze_text(request: TextAnalysisRequest):
+@limiter.limit("15/minute")
+def analyze_text(request: Request, body: TextAnalysisRequest):
     try:
         headers = {
             "Authorization": f"Bearer {OPENROUTER_API_KEY}",
@@ -455,7 +532,7 @@ def analyze_text(request: TextAnalysisRequest):
         }
         
         prompt = f"""
-        Analyze this civic issue description: "{request.text}"
+        Analyze this civic issue description: "{body.text}"
         Return a JSON response strictly in this format:
         {{
           "title": "Short title of the issue",
@@ -500,7 +577,7 @@ def analyze_text(request: TextAnalysisRequest):
         print(f"AI Text Analysis failed: {e}")
         analysis = {
             "title": "Unknown Issue",
-            "description": request.text,
+            "description": body.text,
             "department": "General",
             "priority": "Low",
             "confidence": "0%"
@@ -543,6 +620,21 @@ def create_complaint(
 ):
     try:
         user = get_optional_user(authorization, db)
+        
+        # Auto-assignment logic
+        officers = db.query(User).filter(User.role == RoleEnum.OFFICER, User.is_active == True).all()
+        best_officer = None
+        if officers:
+            officer_loads = []
+            for officer in officers:
+                active_count = db.query(DBComplaint).filter(
+                    DBComplaint.assigned_to == officer.id,
+                    DBComplaint.status.in_([ComplaintStatus.ASSIGNED, ComplaintStatus.IN_PROGRESS])
+                ).count()
+                officer_loads.append((officer, active_count))
+            officer_loads.sort(key=lambda x: x[1])
+            best_officer = officer_loads[0][0]
+
         db_complaint = DBComplaint(
             title=complaint.title,
             description=complaint.description,
@@ -553,7 +645,9 @@ def create_complaint(
             department=complaint.department,
             priority=complaint.priority,
             image_url=complaint.image_url,
-            user_id=user.id if user else None
+            user_id=user.id if user else None,
+            assigned_to=best_officer.id if best_officer else None,
+            status=ComplaintStatus.ASSIGNED if best_officer else ComplaintStatus.UNASSIGNED
         )
         db.add(db_complaint)
         db.flush()
@@ -563,11 +657,17 @@ def create_complaint(
                 "Complaint Submitted",
                 f"Your complaint '{db_complaint.title}' has been submitted successfully.",
                 NotificationType.COMPLAINT_SUBMITTED, db_complaint.id)
+                
+        if best_officer:
+            _create_notification(db, best_officer.id,
+                "New Assignment",
+                f"You have been assigned to a new complaint: '{db_complaint.title}'.",
+                NotificationType.ASSIGNMENT, db_complaint.id)
 
         db.commit()
         db.refresh(db_complaint)
 
-        return {"message": "Complaint Submitted Successfully", "id": str(db_complaint.id)}
+        return {"message": "Complaint Submitted Successfully", "id": str(db_complaint.id), "assigned_to": str(best_officer.id) if best_officer else None}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -984,6 +1084,21 @@ def update_complaint(
 
     db.commit()
     db.refresh(complaint)
+    
+    # Notify complaint creator via WebSocket
+    try:
+        import asyncio
+        asyncio.create_task(manager.send_personal_message(
+            json.dumps({
+                "type": "STATUS_UPDATE",
+                "complaint_id": str(complaint.id),
+                "status": complaint.status.value,
+                "title": complaint.title
+            }),
+            str(complaint.user_id)
+        ))
+    except:
+        pass
 
     return _complaint_to_dict(complaint, db)
 
@@ -1007,3 +1122,75 @@ def delete_complaint(
     db.commit()
 
     return {"message": "Complaint deleted", "id": str(complaint_id)}
+
+@app.get("/analytics")
+def get_analytics(db: Session = Depends(get_db)):
+    from datetime import datetime, timedelta
+    from sqlalchemy import func, case
+    
+    total = db.query(DBComplaint).count()
+    closed = db.query(DBComplaint).filter(DBComplaint.status == ComplaintStatus.RESOLVED).count()
+    open_cases = total - closed
+    resolution_rate = int((closed / total * 100)) if total > 0 else 0
+    
+    # Priority Data
+    priority_counts = db.query(DBComplaint.priority, func.count(DBComplaint.id)).group_by(DBComplaint.priority).all()
+    priority_map = {p: c for p, c in priority_counts}
+    priority_data = [
+        {"name": "Critical", "value": priority_map.get("Critical", 0), "color": "#ef4444"},
+        {"name": "High", "value": priority_map.get("High", 0), "color": "#f97316"},
+        {"name": "Medium", "value": priority_map.get("Medium", 0), "color": "#eab308"},
+        {"name": "Low", "value": priority_map.get("Low", 0), "color": "#10b981"},
+    ]
+    
+    # Department Performance
+    dept_stats = db.query(
+        DBComplaint.department,
+        func.count(DBComplaint.id).label('total'),
+        func.sum(case((DBComplaint.status == ComplaintStatus.RESOLVED, 1), else_=0)).label('resolved')
+    ).group_by(DBComplaint.department).all()
+    
+    dept_performance = []
+    colors = ['#f59e0b', '#06b6d4', '#10b981', '#3b82f6', '#eab308', '#f97316', '#ef4444', '#a855f7']
+    for i, (dept, d_total, d_resolved) in enumerate(dept_stats):
+        eff = int((d_resolved / d_total * 100)) if d_total > 0 else 0
+        dept_performance.append({
+            "name": dept or "General",
+            "efficiency": eff,
+            "fill": colors[i % len(colors)]
+        })
+        
+    # Daily Trends (Last 7 Days)
+    today = datetime.utcnow().date()
+    trends = []
+    for i in range(6, -1, -1):
+        target_date = today - timedelta(days=i)
+        
+        # New complaints on that day
+        new_count = db.query(DBComplaint).filter(
+            func.date(DBComplaint.created_at) == target_date
+        ).count()
+        
+        # Resolved complaints on that day
+        res_count = db.query(DBComplaint).filter(
+            func.date(DBComplaint.updated_at) == target_date,
+            DBComplaint.status == ComplaintStatus.RESOLVED
+        ).count()
+        
+        trends.append({
+            "name": target_date.strftime("%a"),
+            "new": new_count,
+            "resolved": res_count
+        })
+
+    return {
+        "kpis": {
+            "total": total,
+            "open": open_cases,
+            "closed": closed,
+            "resolutionRate": resolution_rate
+        },
+        "priorityData": priority_data,
+        "deptPerformance": dept_performance,
+        "trends": trends
+    }

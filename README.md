@@ -81,7 +81,8 @@ graph TD
 *   **Vision-Text Fusion Layer:** A true multimodal architecture that concatenates EfficientNetB0 visual features with MuRIL text embeddings through a learned fusion layer, then predicts both **department (8 classes)** and **priority (low/medium/high)** simultaneously.
 *   **CivicVoice Transcriber:** Fast, seamless dictation interface leveraging **OpenAI Whisper (tiny)** for voice-based grievance registrations in Telugu, Hindi, and English.
 *   **LLM Action Synthesizer:** Advanced municipal briefing generator that writes detailed maintenance instructions and outputs department priorities via OpenRouter/GPT-4o-mini.
-*   **Predictive Smart Router:** Automated ML-powered priority routing to dispatch tickets directly to corresponding administrative wings (Roads, Drainage, Sanitation, Water Works, Electrical, Power, Safety, Traffic).
+*   **Predictive Smart Router & Auto-Assignment:** Automated ML-powered priority routing to dispatch tickets directly to corresponding administrative wings. A smart load-balancing algorithm automatically assigns complaints to active officers with the lowest current workload (`IN_PROGRESS` or `ASSIGNED`).
+*   **Media Optimization & Rate Limiting:** All AI inferences and file uploads are protected by **SlowAPI** rate limiters to prevent API abuse. Images undergo dynamic resizing and JPEG compression via **Pillow** before processing, significantly reducing storage footprint.
 
 ### 2. 🌌 High-Fidelity 3D Visual Experience
 *   **Interactive 3D WebGL Canvas:** A dynamic Three.js + React Three Fiber backdrop containing dynamic particle systems representing a neural city net that floats and warps dynamically.
@@ -97,17 +98,19 @@ graph TD
 *   **User Feedback System:** Dedicated `/feedback` page with 5-star rating, category selector (Bug, Feature, General, Compliment, Security), and submission toast notifications — accessible from the navbar, footer, and user dropdown.
 
 ### 4. 🔔 Real-Time Notification Engine
-*   **Live Notification Bell:** Polling-based notification dropdown (30-second intervals) with unread badge count, search, and mark-read functionality.
-*   **Automatic Event Triggers:** Notifications auto-created on complaint submission, status changes, officer assignments, and resolution — delivered to both citizens and officers.
+*   **WebSocket Real-Time Architecture:** Replaced legacy polling with true real-time WebSockets, establishing persistent connections via a central FastAPI `ConnectionManager`.
+*   **Instant Toasts & Alerts:** Notifications auto-created and delivered instantly on complaint submission, status changes, officer assignments, and resolution using `sonner` toasts.
 *   **Notification API:** Full REST endpoints (`GET /notifications`, `PATCH /notifications/{id}/read`, `PATCH /notifications/read-all`) with unread count endpoint.
 *   **Backend Notification Model:** SQLAlchemy model with `NotificationType` enum (`status_update`, `assignment`, `complaint_submitted`, `complaint_resolved`).
 
-### 5. 🧑‍💼 Admin User & Department Management
+### 5. 🧑‍💼 Admin User & Dynamic Analytics
+*   **Live Recharts Dashboard:** Real-time analytics view for Smart City Command Centers. Visualizes KPIs, Priority distributions (`PieChart`), Department Efficiency (`BarChart`), and Weekly creation vs. resolution trends (`AreaChart`) dynamically hooked to a `/analytics` API endpoint.
 *   **User Administration:** Role-based user management UI with inline role changes (Citizen/Officer/Admin), account enable/disable, and full user listing with search.
 *   **Department CRUD:** Full backend API for department management (`GET`, `POST`, `PATCH`, `DELETE /departments`) with a dedicated `Department` SQLAlchemy model.
-*   **Complaint Lifecycle Management:** Complete update (`PUT /complaints/{id}`) and delete (`DELETE /complaints/{id}`) endpoints with authorization rules (owner/officer/admin).
+*   **Complaint Lifecycle Management:** Complete update (`PUT /complaints/{id}`) and delete (`DELETE /complaints/{id}`) endpoints with strict authorization rules.
 
-### 6. 🎨 Immersive UI/UX
+### 6. 🎨 Immersive UI/UX & PWA
+*   **Progressive Web App (PWA):** Configured with web app manifests and metadata, allowing Civic Connect to be seamlessly installed on citizen mobile devices for native-like reporting functionality.
 *   **Animated Preloader:** Full-screen cyberpunk-style loading sequence with word animations, progress bar, and ambient grid — replaced the basic spinner for a premium first impression.
 *   **Live AI Demo Sandbox:** Interactive multimodal playground supporting image upload, voice recording, and AI classification with real-time animated results, scan overlays, and shimmer effects.
 *   **Technology Showcase Cards:** 6 glassmorphism feature cards with staggered scroll-reveal animations, unique icons, colored hover glows, and background image blending.
@@ -124,14 +127,15 @@ graph TD
 | **3D Graphics** | `@react-three/fiber`, `@react-three/drei`, Three.js | High-performance WebGL particulate canvas |
 | **Styling** | Tailwind CSS v4, Shadcn UI Tokens | Modern utility-first styling system |
 | **Motion Physics** | GSAP 3.15.0, ScrollTrigger, Framer Motion 12 | Fluid transitions & scroll-bound timelines |
+| **Data Viz** | Recharts | Dynamic SVG-based charting for dashboards |
 | **Scrolling Physics**| Lenis 1.3 | Smooth, high-precision inertial scroll |
 | **Icons** | Lucide React | Harmonized icon library |
 | **Vision Model** | EfficientNetB0 (PyTorch) | Image feature extraction for 8-class civic issue classification |
 | **Text Model** | Google MuRIL (Transformers) | Multilingual Telugu/English/Hindi text understanding |
 | **Fusion Architecture** | Custom multimodal fusion layer | Concatenated vision + text features → department + priority heads |
-| **Image Captioning** | Salesforce BLIP | Automatic image description generation |
-| **Voice Transcription** | OpenAI Whisper (tiny) | Voice-to-text for grievance registration in Indian languages |
-| **Backend Framework** | FastAPI (Python) | REST API server with async support |
+| **Image Processing** | Pillow (PIL) | Dynamic resizing and JPEG compression |
+| **Backend Framework** | FastAPI (Python) | REST API server + WebSockets |
+| **API Protection** | SlowAPI | Request rate-limiting to prevent AI abuse |
 | **Database ORM** | SQLAlchemy + PostgreSQL | Complaint, User, Notification, Department models |
 | **Authentication** | JWT (python-jose) + bcrypt | Token-based auth with role guards |
 | **AI Orchestration** | OpenRouter / GPT-4o-mini | Complaint image analysis & priority classification |

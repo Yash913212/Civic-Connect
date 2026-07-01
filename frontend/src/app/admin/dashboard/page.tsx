@@ -24,7 +24,7 @@ import { complaintService, type OfficerData } from "@/services/complaintService"
 import { adminService, type UserData, type DepartmentData } from "@/services/adminService";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
-const complaintTrends = [
+const defaultComplaintTrends = [
   { name: 'Mon', new: 120, resolved: 90 },
   { name: 'Tue', new: 150, resolved: 110 },
   { name: 'Wed', new: 180, resolved: 160 },
@@ -34,7 +34,7 @@ const complaintTrends = [
   { name: 'Sun', new: 80, resolved: 120 },
 ];
 
-const deptPerformance = [
+const defaultDeptPerformance = [
   { name: 'Roads Dept', efficiency: 72, fill: '#f59e0b' },
   { name: 'Drainage Dept', efficiency: 58, fill: '#06b6d4' },
   { name: 'Sanitation', efficiency: 85, fill: '#10b981' },
@@ -45,7 +45,7 @@ const deptPerformance = [
   { name: 'Traffic Management', efficiency: 55, fill: '#a855f7' },
 ];
 
-const priorityData = [
+const defaultPriorityData = [
   { name: 'Critical', value: 120, color: '#ef4444' },
   { name: 'High', value: 280, color: '#f97316' },
   { name: 'Medium', value: 450, color: '#eab308' },
@@ -116,21 +116,21 @@ function PriorityBadge({ priority }: { priority: string }) {
   );
 }
 
-function PieChartCard() {
+function PieChartCard({ data }: { data: any[] }) {
   return (
     <div className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10">
       <h4 className="text-sm font-bold text-slate-700 dark:text-white/80 mb-4">Priority Distribution</h4>
       <ResponsiveContainer width="100%" height={250}>
         <PieChart>
-          <Pie data={priorityData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value"
+          <Pie data={data} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value"
             animationBegin={0} animationDuration={1500}>
-            {priorityData.map((e, i) => <Cell key={i} fill={e.color} stroke={e.color} strokeOpacity={0.5} />)}
+            {data.map((e, i) => <Cell key={i} fill={e.color} stroke={e.color} strokeOpacity={0.5} />)}
           </Pie>
           <Tooltip contentStyle={{ background: '#000', border: '1px solid #ffffff20', borderRadius: '8px', fontSize: '12px' }} />
         </PieChart>
       </ResponsiveContainer>
       <div className="grid grid-cols-2 gap-2 mt-2">
-        {priorityData.map((p) => (
+        {data.map((p) => (
           <div key={p.name} className="flex items-center gap-2 text-xs">
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
             <span className="text-muted-foreground">{p.name}</span>
@@ -346,6 +346,11 @@ function AdminDashboard() {
   const [editingDeptId, setEditingDeptId] = useState<string | null>(null);
   const [deptDeleteTarget, setDeptDeleteTarget] = useState<DepartmentData | null>(null);
 
+  const [trendsData, setTrendsData] = useState(defaultComplaintTrends);
+  const [deptPerfData, setDeptPerfData] = useState(defaultDeptPerformance);
+  const [prioData, setPrioData] = useState(defaultPriorityData);
+  const [kpis, setKpis] = useState({ total: 0, open: 0, closed: 0, resolutionRate: 0 });
+
   useEffect(() => {
     const timer = setInterval(() => setLiveTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -379,7 +384,24 @@ function AdminDashboard() {
       });
   };
 
-  useEffect(() => { loadComplaints(); }, []);
+  const loadAnalytics = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/analytics`, {
+        headers: getAuthHeaders()
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTrendsData(data.trends?.length ? data.trends : defaultComplaintTrends);
+        setDeptPerfData(data.deptPerformance?.length ? data.deptPerformance : defaultDeptPerformance);
+        setPrioData(data.priorityData?.length ? data.priorityData : defaultPriorityData);
+        if (data.kpis) setKpis(data.kpis);
+      }
+    } catch (e) {
+      console.error("Failed to load analytics", e);
+    }
+  };
+
+  useEffect(() => { loadComplaints(); loadAnalytics(); }, []);
 
   useEffect(() => {
     complaintService.listOfficers()
@@ -520,10 +542,10 @@ function AdminDashboard() {
                   {/* KPI Cards */}
                   <motion.div variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } }} initial="hidden" animate="show" className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
-                      { icon: FileText, label: "Total Complaints", value: 12402, suffix: "", color: "text-slate-900 dark:text-white", bg: "bg-white/70 dark:bg-black/50", accent: "text-slate-900/5 dark:text-white/5" },
-                      { icon: AlertTriangle, label: "Open", value: 1240, suffix: "", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/5", accent: "text-amber-500/10" },
-                      { icon: CheckCircle, label: "Closed", value: 10850, suffix: "", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/5", accent: "text-emerald-500/10" },
-                      { icon: TrendingUp, label: "Resolution Rate", value: 87, suffix: "%", color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-500/5", accent: "text-cyan-500/10" },
+                      { icon: FileText, label: "Total Complaints", value: kpis.total, suffix: "", color: "text-slate-900 dark:text-white", bg: "bg-white/70 dark:bg-black/50", accent: "text-slate-900/5 dark:text-white/5" },
+                      { icon: AlertTriangle, label: "Open", value: kpis.open, suffix: "", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/5", accent: "text-amber-500/10" },
+                      { icon: CheckCircle, label: "Closed", value: kpis.closed, suffix: "", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/5", accent: "text-emerald-500/10" },
+                      { icon: TrendingUp, label: "Resolution Rate", value: kpis.resolutionRate, suffix: "%", color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-500/5", accent: "text-cyan-500/10" },
                     ].map((kpi) => {
                       const Icon = kpi.icon;
                       return (
@@ -549,7 +571,7 @@ function AdminDashboard() {
                         <BarChart3 className="w-4 h-4 text-purple-500" /> Daily Complaint Trends
                       </h4>
                       <ResponsiveContainer width="100%" height="85%">
-                        <AreaChart data={complaintTrends}>
+                        <AreaChart data={trendsData}>
                           <defs>
                             <linearGradient id="colorNew" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.5}/><stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
@@ -569,7 +591,7 @@ function AdminDashboard() {
                     </div>
 
                     {/* Priority Pie */}
-                    <PieChartCard />
+                    <PieChartCard data={prioData} />
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -579,13 +601,13 @@ function AdminDashboard() {
                         <Shield className="w-4 h-4 text-cyan-500" /> Department Efficiency Score
                       </h4>
                       <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={deptPerformance} layout="vertical">
+                        <BarChart data={deptPerfData} layout="vertical">
                           <CartesianGrid strokeDasharray="3 3" stroke="#888888" strokeOpacity={0.15} horizontal={false} />
                           <XAxis type="number" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} domain={[0, 100]} />
                           <YAxis dataKey="name" type="category" stroke="#888888" fontSize={10} tickLine={false} axisLine={false} width={90} />
                           <Tooltip cursor={{fill: '#ffffff05'}} contentStyle={{ background: '#000', border: '1px solid #ffffff20', borderRadius: '8px' }} formatter={(v: any) => [`${v ?? 0}%`, 'Efficiency']} />
                           <Bar dataKey="efficiency" radius={[0, 4, 4, 0]} animationDuration={1500}>
-                            {deptPerformance.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                            {deptPerfData.map((e, i) => <Cell key={i} fill={e.fill} />)}
                           </Bar>
                         </BarChart>
                       </ResponsiveContainer>
