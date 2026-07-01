@@ -8,7 +8,8 @@ import {
   Building2, Users, FileText, Map, Settings, AlertTriangle, 
   CheckCircle, FolderOpen, Activity, Clock, Bell,
   LogOut, Download, Filter, Search, Database,
-  TrendingUp, Zap, Shield, BarChart3, RefreshCw, ChevronDown, Trash2
+  TrendingUp, Zap, Shield, BarChart3, RefreshCw, ChevronDown, Trash2,
+  ShieldAlert, Radio, Wallet
 } from "lucide-react";
 import { 
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -331,7 +332,7 @@ function UserRow({ user, onUpdate }: { user: UserData; onUpdate: () => void }) {
 
 function AdminDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"overview" | "complaints" | "departments" | "users" | "map" | "reports">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "complaints" | "departments" | "users" | "map" | "reports" | "audit" | "broadcast" | "budget" | "settings">("overview");
   const [complaints, setComplaints] = useState<ComplaintData[]>([]);
   const [liveTime, setLiveTime] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
@@ -507,6 +508,10 @@ function AdminDashboard() {
               { id: "complaints", icon: FolderOpen, label: "Assignment Center" },
               { id: "departments", icon: Building2, label: "Department Mgmt" },
               { id: "users", icon: Users, label: "User Management" },
+              { id: "audit", icon: ShieldAlert, label: "Audit & Security" },
+              { id: "broadcast", icon: Radio, label: "Emergency Broadcast" },
+              { id: "budget", icon: Wallet, label: "Budget & Resources" },
+              { id: "settings", icon: Settings, label: "System Settings" },
               { id: "map", icon: Map, label: "GIS Analytics" },
               { id: "reports", icon: FileText, label: "Reports & Exports" },
             ].map((tab) => {
@@ -905,6 +910,191 @@ function AdminDashboard() {
                         </motion.div>
                       );
                     })}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* AUDIT LOGS */}
+              {activeTab === "audit" && (
+                <motion.div key="audit" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">Audit & Security Logs</h3>
+                    <div className="flex gap-2">
+                      <button className="px-3 py-1.5 bg-white/70 dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-white/10 flex items-center gap-2 transition-colors"><Filter size={14} /> Filter</button>
+                      <button className="px-3 py-1.5 bg-white/70 dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-white/10 flex items-center gap-2 transition-colors"><Download size={14} /> Export</button>
+                    </div>
+                  </div>
+                  <div className="bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-slate-500 dark:text-white/50">
+                        <tr>
+                          <th className="px-4 py-3 font-semibold">Timestamp</th>
+                          <th className="px-4 py-3 font-semibold">Actor</th>
+                          <th className="px-4 py-3 font-semibold">Action</th>
+                          <th className="px-4 py-3 font-semibold">Target Resource</th>
+                          <th className="px-4 py-3 font-semibold">IP Address</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-black/5 dark:divide-white/5">
+                        {[
+                          { time: "2026-07-01 14:32:01", actor: "System Admin (ID: 99)", action: "ROLE_CHANGE (CITIZEN → OFFICER)", target: "User: Sarah Connor", ip: "192.168.1.42" },
+                          { time: "2026-07-01 12:15:44", actor: "Officer Ramesh (ID: 45)", action: "STATUS_UPDATE (In Progress → Resolved)", target: "Complaint: C-8840", ip: "10.0.4.15" },
+                          { time: "2026-07-01 10:05:12", actor: "Citizen John (ID: 102)", action: "COMPLAINT_CREATED", target: "Complaint: C-8841", ip: "203.0.113.88" },
+                          { time: "2026-06-30 09:22:10", actor: "System Admin (ID: 99)", action: "DEPT_CREATED", target: "Department: Forestry", ip: "192.168.1.42" }
+                        ].map((log, i) => (
+                          <tr key={i} className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+                            <td className="px-4 py-3 font-mono text-xs text-slate-500">{log.time}</td>
+                            <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">{log.actor}</td>
+                            <td className="px-4 py-3">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-white/70 border border-slate-200 dark:border-white/20">
+                                {log.action}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-slate-600 dark:text-white/80">{log.target}</td>
+                            <td className="px-4 py-3 font-mono text-xs text-slate-400">{log.ip}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* EMERGENCY BROADCAST */}
+              {activeTab === "broadcast" && (
+                <motion.div key="broadcast" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Emergency Broadcast System</h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-rose-500/20 shadow-[0_0_30px_rgba(244,63,94,0.05)]">
+                      <h4 className="font-bold text-rose-500 mb-4 flex items-center gap-2"><ShieldAlert size={18} /> Compose Priority Alert</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 mb-1">Target Audience</label>
+                          <select className="w-full bg-slate-50 dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-rose-500/50">
+                            <option>All Registered Citizens (Citywide)</option>
+                            <option>Specific Zip Codes</option>
+                            <option>Officers Only</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 mb-1">Alert Title</label>
+                          <input type="text" placeholder="e.g., Boil Water Advisory" className="w-full bg-slate-50 dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-rose-500/50" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 mb-1">Message Body</label>
+                          <textarea rows={4} placeholder="Details of the emergency..." className="w-full bg-slate-50 dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-rose-500/50 resize-none" />
+                        </div>
+                        <div className="flex gap-4 items-center">
+                          <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                            <input type="checkbox" className="rounded text-rose-500" defaultChecked /> Push Notification
+                          </label>
+                          <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                            <input type="checkbox" className="rounded text-rose-500" defaultChecked /> SMS
+                          </label>
+                        </div>
+                        <button onClick={() => toast.success("Broadcast sent to 45,210 citizens.")} className="w-full py-3 bg-rose-500 hover:bg-rose-400 text-white rounded-xl font-bold transition-all shadow-lg shadow-rose-500/20">
+                          Deploy Broadcast
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h4 className="font-bold text-slate-900 dark:text-white">Recent Broadcasts</h4>
+                      {[
+                        { title: "Severe Weather Warning", date: "June 25, 2026", reach: "42K Deliveries" },
+                        { title: "Main St. Gas Leak", date: "June 12, 2026", reach: "8.5K Deliveries (Zip 10001)" }
+                      ].map((b, i) => (
+                        <div key={i} className="p-4 rounded-xl border border-black/10 dark:border-white/10 bg-white/30 dark:bg-white/5">
+                          <div className="flex justify-between items-start mb-1">
+                            <h5 className="font-bold text-sm">{b.title}</h5>
+                            <span className="text-xs text-slate-500">{b.date}</span>
+                          </div>
+                          <p className="text-xs text-slate-600 dark:text-white/60">{b.reach}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* BUDGET & RESOURCES */}
+              {activeTab === "budget" && (
+                <motion.div key="budget" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Budget & Resource Allocation</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                      <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">Annual Budget</p>
+                      <h4 className="text-2xl font-bold text-slate-900 dark:text-white">$4.5M</h4>
+                    </div>
+                    <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+                      <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">Expended (YTD)</p>
+                      <h4 className="text-2xl font-bold text-slate-900 dark:text-white">$2.1M</h4>
+                    </div>
+                    <div className="p-5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20">
+                      <p className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider mb-1">Active Heavy Equipment</p>
+                      <h4 className="text-2xl font-bold text-slate-900 dark:text-white">42 / 50</h4>
+                    </div>
+                  </div>
+                  <div className="bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-2xl p-6">
+                    <h4 className="font-bold mb-4">Department Cost Breakdown (Estimated)</h4>
+                    <div className="space-y-4">
+                      {[
+                        { dept: "Public Works (Roads)", cost: "$1.2M", percent: "60%" },
+                        { dept: "Water & Sanitation", cost: "$600K", percent: "30%" },
+                        { dept: "Electrical", cost: "$300K", percent: "15%" },
+                      ].map((d, i) => (
+                        <div key={i}>
+                          <div className="flex justify-between text-sm font-semibold mb-1">
+                            <span>{d.dept}</span>
+                            <span>{d.cost}</span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden">
+                            <div className="h-full bg-primary rounded-full" style={{ width: d.percent }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* SYSTEM SETTINGS */}
+              {activeTab === "settings" && (
+                <motion.div key="settings" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">System Settings & Configuration</h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-6">
+                      <div className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10">
+                        <h4 className="font-bold border-b border-black/5 dark:border-white/5 pb-3 mb-4">Core Constants</h4>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Global SLA Target (Hours)</label>
+                            <input type="number" defaultValue={48} className="w-full bg-slate-50 dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Auto-Escalation Threshold (Hours pending)</label>
+                            <input type="number" defaultValue={72} className="w-full bg-slate-50 dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-6">
+                      <div className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10">
+                        <h4 className="font-bold border-b border-black/5 dark:border-white/5 pb-3 mb-4">API Integrations</h4>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Twilio SMS Gateway Key</label>
+                            <input type="password" defaultValue="************************" className="w-full bg-slate-50 dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">SendGrid Email API</label>
+                            <input type="password" defaultValue="************************" className="w-full bg-slate-50 dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50" />
+                          </div>
+                        </div>
+                        <button onClick={() => toast.success("Settings Saved")} className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-all">Save Changes</button>
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               )}

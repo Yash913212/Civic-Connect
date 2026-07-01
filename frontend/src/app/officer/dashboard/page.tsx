@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ClipboardList, Map, Award, Clock, 
   CheckCircle, Camera, Search, Filter, MessageSquare,
-  LogOut, Bell, AlertTriangle, Building2, ChevronDown, RefreshCw
+  LogOut, Bell, AlertTriangle, Building2, ChevronDown, RefreshCw,
+  Truck, CalendarDays, CloudOff, Send, PackagePlus, Clock4, User
 } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -104,13 +105,15 @@ function StatusDropdown({ current, onChange, disabled }: { current: string; onCh
 
 function OfficerDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"tasks" | "map" | "performance">("tasks");
+  const [activeTab, setActiveTab] = useState<"tasks" | "map" | "performance" | "comms" | "resources" | "schedule">("tasks");
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
   const [complaints, setComplaints] = useState<ComplaintData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [myTasksOnly, setMyTasksOnly] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const [pendingSync, setPendingSync] = useState(0);
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
@@ -210,6 +213,21 @@ function OfficerDashboard() {
           </div>
           <div className="mt-6 md:mt-0 flex gap-4">
             <ThemeToggle />
+            <button 
+              onClick={() => {
+                if(isOffline) {
+                  toast.success(`Syncing ${pendingSync} pending items...`);
+                  setPendingSync(0);
+                  setIsOffline(false);
+                } else {
+                  setIsOffline(true);
+                  setPendingSync(3);
+                  toast.error("Connection lost. Working offline.");
+                }
+              }}
+              className={`flex items-center gap-2 px-4 py-2 bg-white shadow-sm border border-black/10 dark:bg-white/5 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition-all text-sm font-semibold ${isOffline ? 'text-amber-500' : 'text-slate-600 dark:text-white/80'}`}>
+              {isOffline ? <><CloudOff className="w-4 h-4" /> {pendingSync} Pending Sync</> : <><RefreshCw className="w-4 h-4" /> Online</>}
+            </button>
             <button className="flex items-center gap-2 px-4 py-2 bg-white shadow-sm border border-black/10 dark:bg-white/5 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition-all text-sm font-semibold">
               <Bell className="w-4 h-4 text-emerald-600 dark:text-cyan-400" />
               Dispatch Alerts
@@ -232,6 +250,9 @@ function OfficerDashboard() {
                 { id: "tasks", icon: ClipboardList, label: `Active Assignments (${activeCount})${myTaskCount > 0 ? ` · ${myTaskCount} mine` : ''}` },
                 { id: "map", icon: Map, label: "Field Map" },
                 { id: "performance", icon: Award, label: "My Performance" },
+                { id: "comms", icon: MessageSquare, label: "Comms Hub" },
+                { id: "resources", icon: Truck, label: "Resource Requests" },
+                { id: "schedule", icon: CalendarDays, label: "Shift Schedule" },
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -538,6 +559,119 @@ function OfficerDashboard() {
                           <Bar dataKey="target" fill="#ffffff20" radius={[4, 4, 0, 0]} name="Target" />
                         </BarChart>
                       </ResponsiveContainer>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* COMMS HUB */}
+              {activeTab === "comms" && (
+                <motion.div key="comms" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6 flex flex-col h-[600px]">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Comms Hub</h3>
+                  <div className="flex-1 flex gap-4 bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl p-4 overflow-hidden">
+                    <div className="w-1/3 border-r border-slate-200 dark:border-white/10 pr-4 flex flex-col gap-2">
+                      <div className="p-3 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-500/30 cursor-pointer">
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white">Admin Control</h4>
+                        <p className="text-xs text-slate-500 truncate">I need backup at Main St.</p>
+                      </div>
+                      <div className="p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 border border-transparent cursor-pointer transition-colors">
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white">Citizen (C-8840)</h4>
+                        <p className="text-xs text-slate-500 truncate">Can you provide the gate code?</p>
+                      </div>
+                    </div>
+                    <div className="w-2/3 flex flex-col">
+                      <div className="flex-1 overflow-y-auto space-y-4 p-4">
+                        <div className="flex flex-col gap-1 items-end">
+                          <div className="px-4 py-2 bg-cyan-500 text-white rounded-2xl rounded-tr-sm text-sm max-w-[80%]">I am on site at Main St. We need a tow truck.</div>
+                          <span className="text-[10px] text-slate-400">10:42 AM</span>
+                        </div>
+                        <div className="flex flex-col gap-1 items-start">
+                          <div className="px-4 py-2 bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white rounded-2xl rounded-tl-sm text-sm max-w-[80%]">Copy that. Dispatching a tow truck now. ETA 15 mins.</div>
+                          <span className="text-[10px] text-slate-400">10:44 AM</span>
+                        </div>
+                      </div>
+                      <div className="mt-auto relative">
+                        <input type="text" placeholder="Type a message..." className="w-full bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-white/10 rounded-full pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-cyan-500/50" />
+                        <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-cyan-500 text-white rounded-full hover:bg-cyan-400 transition-colors">
+                          <Send size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* RESOURCE REQUESTS */}
+              {activeTab === "resources" && (
+                <motion.div key="resources" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">Resource & Equipment Requests</h3>
+                    <button className="flex items-center gap-2 px-4 py-2 bg-cyan-500 text-white rounded-xl text-sm font-bold hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20">
+                      <PackagePlus size={16} /> New Request
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-5 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-slate-200 dark:border-white/10 flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-bold text-slate-900 dark:text-white">Tow Truck</h4>
+                          <span className="px-2 py-0.5 bg-amber-500/20 text-amber-500 rounded-full text-[10px] font-bold uppercase">Pending</span>
+                        </div>
+                        <p className="text-sm text-slate-500 dark:text-white/60 mb-4">Requested for complaint C-8840 to remove abandoned vehicle blocking drainage work.</p>
+                      </div>
+                      <span className="text-xs text-slate-400 flex items-center gap-1"><Clock size={12} /> Requested 2 hours ago</span>
+                    </div>
+                    <div className="p-5 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-slate-200 dark:border-white/10 flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-bold text-slate-900 dark:text-white">Excavator (Mini)</h4>
+                          <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-500 rounded-full text-[10px] font-bold uppercase">Approved</span>
+                        </div>
+                        <p className="text-sm text-slate-500 dark:text-white/60 mb-4">Required for pipe replacement at 5th Ave.</p>
+                      </div>
+                      <span className="text-xs text-slate-400 flex items-center gap-1"><CheckCircle size={12} /> Approved 1 day ago</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* SHIFT SCHEDULE */}
+              {activeTab === "schedule" && (
+                <motion.div key="schedule" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Shift Management</h3>
+                  <div className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-slate-200 dark:border-white/10">
+                    <div className="flex items-center justify-between mb-6 pb-6 border-b border-black/5 dark:border-white/5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-500">
+                          <Clock4 size={24} />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-slate-900 dark:text-white text-lg">Current Shift</h4>
+                          <p className="text-sm text-slate-500">08:00 AM - 04:00 PM (Active)</p>
+                        </div>
+                      </div>
+                      <button className="px-4 py-2 bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white rounded-xl text-sm font-bold hover:bg-slate-200 dark:hover:bg-white/20 transition-all">
+                        Log Break
+                      </button>
+                    </div>
+                    
+                    <h4 className="font-bold text-slate-900 dark:text-white mb-4">Upcoming Shifts</h4>
+                    <div className="space-y-3">
+                      {[
+                        { day: "Tomorrow", time: "08:00 AM - 04:00 PM", role: "Primary Response" },
+                        { day: "Thursday", time: "12:00 PM - 08:00 PM", role: "Evening Patrol" },
+                        { day: "Friday", time: "Off Duty", role: "Rest Day" },
+                      ].map((shift, i) => (
+                        <div key={i} className="flex justify-between items-center p-4 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                          <div>
+                            <p className="font-bold text-slate-900 dark:text-white">{shift.day}</p>
+                            <p className="text-sm text-slate-500">{shift.time}</p>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${shift.time === 'Off Duty' ? 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-white/60' : 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400'}`}>
+                            {shift.role}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </motion.div>
