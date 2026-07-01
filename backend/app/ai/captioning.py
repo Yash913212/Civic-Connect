@@ -1,39 +1,50 @@
-import torch
-from PIL import Image
-
-_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-_processor = None
-_model = None
-_ready = False
-
-
-def _load():
-    global _processor, _model, _ready
-    if _ready:
-        return
-    try:
-        from transformers import BlipProcessor, BlipForConditionalGeneration
-        _processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-        _model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
-        _model.eval()
-        _model.to(_device)
-        _ready = True
-        print("BLIP loaded on demand")
-    except Exception as e:
-        print(f"BLIP load failed: {e}")
-        _ready = False
-
+import os
+import base64
+import requests
+import mimetypes
 
 def generate_caption(image_path):
-    _load()
-    if not _ready:
-        return "Image analysis not available"
-
+    api_key = os.environ.get("OPENROUTER_API_KEY", "")
+    if not api_key:
+        return "Image analysis not available (No API Key)"
+        
     try:
-        image = Image.open(image_path).convert("RGB")
-        inputs = _processor(image, return_tensors="pt").to(_device)
-        with torch.no_grad():
-            out = _model.generate(**inputs, max_new_tokens=50, num_beams=3, temperature=0.7)
-        return _processor.decode(out[0], skip_special_tokens=True)
+        with open(image_path, "rb") as f:
+            contents = f.read()
+        
+        base64_image = base64.b64encode(contents).decode('utf-8')
+        mime_type, _ = mimetypes.guess_type(image_path)
+        if not mime_type:
+            mime_type = "image/jpeg"
+            
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        prompt = "Write a short, single-sentence description of the main civic or public infrastructure issue (like pothole, garbage, broken street light, etc) visible in this image. Keep it concise."
+        
+        payload = {
+            "model": "openai/gpt-4o-mini",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        { "type": "text", "text": prompt },
+                        { "type": "image_url", "image_url": { "url": f"data:{mime_type};base64,{base64_image}" } }
+                    ]
+                }
+            ]
+        }
+        
+        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+        response_data = response.json()
+        
+        if 'choices' in response_data and len(response_data['choices']) > 0:
+            caption = response_data['choices'][0]['message']['content'].strip()
+            return caption
+        else:
+            return "Could not generate description from API."
+            
     except Exception as e:
         return f"Could not analyze image: {e}"

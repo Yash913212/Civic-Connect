@@ -8,8 +8,8 @@ from PIL import Image
 from .complaint_generator import generate_complaint
 
 CLASS_DEPARTMENTS = [
-    "drainage",  "garbage", "roads",
-    "water"
+    "roads", "drainage", "garbage", "water",
+    "streetlight", "electricity", "safety", "traffic"
 ]
 PRIORITY_LEVELS = ["low", "medium", "high"]
 DEPARTMENT_MAP = {name: i for i, name in enumerate(CLASS_DEPARTMENTS)}
@@ -144,10 +144,12 @@ def predict_issue(image_path, description=""):
 
     predicted_idx = predicted.item()
 
-    if predicted_idx >= len(CLASS_DEPARTMENTS):
-         predicted_idx = 0
-
-    vision_dept = CLASS_DEPARTMENTS[predicted_idx]
+    if num_classes == 4:
+        vision_dept = _map_4class_to_8class(predicted_idx)
+    else:
+        if predicted_idx >= len(CLASS_DEPARTMENTS):
+             predicted_idx = 0
+        vision_dept = CLASS_DEPARTMENTS[predicted_idx]
     text_scores, _ = analyze_text(description)
     has_text = bool(description.strip())
     text_confidence = 0.0
