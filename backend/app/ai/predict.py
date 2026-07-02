@@ -6,10 +6,11 @@ from torchvision import transforms, models
 from PIL import Image
 
 from .complaint_generator import generate_complaint
-
 CLASS_DEPARTMENTS = [
-    "roads", "drainage", "garbage", "water",
-    "streetlight", "electricity", "safety", "traffic"
+    "drainage",
+    "garbage",
+    "roads",
+    "water",
 ]
 PRIORITY_LEVELS = ["low", "medium", "high"]
 DEPARTMENT_MAP = {name: i for i, name in enumerate(CLASS_DEPARTMENTS)}
@@ -20,10 +21,7 @@ KEYWORDS = {
     "drainage": ["drainage", "drain", "block", "sewage", "water logging", "nagar", "open drain", "flooded", "kalava", "gutter", "drain block", "nagar lo"],
     "garbage": ["garbage", "trash", "waste", "chetta", "dustbin", "dump", "burning", "rats", "picha", "cetta", "bin full", "garbage pile"],
     "water": ["water", "leak", "pipe", "nandu", "borewell", "drinking", "water supply", "tanker", "pipe leak", "water pipe", "burst pipe", "nila", "water cut", "tap", "motor", "pump", "kran", "valve"],
-    "streetlight": ["street light", "light pole", "dark", "light", "flicker", "night lo", "bulb", "streetlight", "lamp", "no light", "dipam", "street lamp"],
-    "electricity": ["electric", "power", "transformer", "voltage", "wire", "spark", "pole", "current", "shock", "power cut", "electric wire", "fuse", "vidyut"],
-    "safety": ["manhole", "open manhole", "fallen tree", "railing", "construction debris", "dangerous structure", "moodu", "gaddam", "broken bridge", "cave in", "safety hazard"],
-    "traffic": ["traffic", "signal", "jam", "sign board", "zebra crossing", "parking", "congestion", "traffic light", "signal broken", "traffic jam", "sanket"],
+    
 }
 
 SEVERITY_HIGH = ["urgent", "immediate", "danger", "risk", "accident", "emergency", "critical", "hazard",
@@ -40,9 +38,6 @@ image_transform = transforms.Compose([
 _device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 _vision_model = None
-_text_tokenizer = None
-_text_encoder = None
-_has_text_encoder = False
 _vision_num_classes = None
 
 
@@ -50,7 +45,7 @@ def _get_vision_model():
     global _vision_model, _vision_num_classes
     if _vision_model is None:
         model_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "civic_model.pth")
-        has_8_class = False
+        
 
         if os.path.exists(model_path):
             try:
@@ -77,39 +72,18 @@ def _get_vision_model():
     return _vision_model, _vision_num_classes
 
 
-def _get_text_encoder():
-    global _text_tokenizer, _text_encoder, _has_text_encoder
-    if _text_encoder is None and not _has_text_encoder:
-        try:
-            from transformers import AutoTokenizer, AutoModel
-            _text_tokenizer = AutoTokenizer.from_pretrained("google/muril-base-cased")
-            _text_encoder = AutoModel.from_pretrained("google/muril-base-cased")
-            _text_encoder.eval()
-            _text_encoder.to(_device)
-            _has_text_encoder = True
-        except Exception as e:
-            print(f"MuRIL load failed: {e}")
-            _has_text_encoder = False
-    return _text_tokenizer, _text_encoder, _has_text_encoder
 
 
 def analyze_text(text):
     text_lower = text.lower()
+
     scores = {dept: 0.0 for dept in CLASS_DEPARTMENTS}
+
     for dept, keywords in KEYWORDS.items():
         for kw in keywords:
             if kw in text_lower:
                 scores[dept] += 1.0
 
-    tokenizer, encoder, available = _get_text_encoder()
-    if available:
-        try:
-            inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=128).to(_device)
-            with torch.no_grad():
-                outputs = encoder(**inputs)
-            return scores, outputs.pooler_output.squeeze(0).cpu()
-        except Exception:
-            pass
     return scores, None
 
 
@@ -123,11 +97,7 @@ def _compute_text_confidence(text_scores):
     return min(95.0, dominance * 100)
 
 
-def _map_4class_to_8class(old_idx):
-    OLD_CLASSES = ["drainage", "garbage", "roads", "water"]
-    OLD_TO_NEW = {"drainage": "drainage", "garbage": "garbage", "roads": "roads", "water": "water"}
-    old_dept = OLD_CLASSES[old_idx] if old_idx < len(OLD_CLASSES) else "roads"
-    return OLD_TO_NEW.get(old_dept, "roads")
+
 
 
 def predict_issue(image_path, description=""):
@@ -144,12 +114,10 @@ def predict_issue(image_path, description=""):
 
     predicted_idx = predicted.item()
 
-    if num_classes == 4:
-        vision_dept = _map_4class_to_8class(predicted_idx)
-    else:
-        if predicted_idx >= len(CLASS_DEPARTMENTS):
-             predicted_idx = 0
-        vision_dept = CLASS_DEPARTMENTS[predicted_idx]
+    if predicted_idx >= len(CLASS_DEPARTMENTS):
+         predicted_idx = 0
+
+    vision_dept = CLASS_DEPARTMENTS[predicted_idx]
     text_scores, _ = analyze_text(description)
     has_text = bool(description.strip())
     text_confidence = 0.0
