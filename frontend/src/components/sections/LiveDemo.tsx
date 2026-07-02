@@ -247,7 +247,6 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
         try {
           const fd = new FormData();
           fd.append("file", blob, "voice.webm");
-          fd.append("language", "te");
           const res = await fetch(`${API_BASE}/ai/transcribe`, { method: "POST", body: fd });
           const data = await res.json();
           if (data.transcription) {

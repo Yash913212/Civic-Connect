@@ -6,7 +6,7 @@ load_dotenv()
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
-def transcribe_audio(audio_bytes: bytes, language: str = "te") -> str:
+def transcribe_audio(audio_bytes: bytes, language: str = "") -> str:
     if not GROQ_API_KEY:
         return "Groq API key not configured."
 
@@ -41,7 +41,7 @@ def transcribe_audio(audio_bytes: bytes, language: str = "te") -> str:
         return f"Transcription error: {str(e)}"
 
 
-def transcribe_audio_file(file_path: str, language: str = "te") -> str:
+def transcribe_audio_file(file_path: str, language: str = "") -> str:
     if not GROQ_API_KEY:
         return "Groq API key not configured."
     try:
