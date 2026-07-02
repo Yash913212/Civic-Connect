@@ -158,6 +158,7 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [showScan, setShowScan] = useState(false);
+  const [showFullPreview, setShowFullPreview] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -197,6 +198,7 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
           priority: (result.analysis?.priority || "low").toLowerCase(),
           complaint: result.analysis?.description || textInput,
           modality: "text-only",
+          confidence: result.analysis?.confidence || "N/A",
         };
       }
 
@@ -358,9 +360,9 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
             viewport={{ once: true }}
             className="lg:order-1"
           >
-            <motion.div variants={cardVariants} className="relative group">
+            <motion.div variants={cardVariants} className="relative group h-full">
               <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-primary/20 to-purple-500/20 opacity-0 group-hover:opacity-100 blur transition duration-500" />
-              <div className="relative bg-white/70 dark:bg-black/50 backdrop-blur-xl rounded-2xl p-6 border border-black/10 dark:border-white/10 shadow-sm">
+              <div className="relative h-full flex flex-col bg-white/70 dark:bg-black/50 backdrop-blur-xl rounded-2xl p-6 border border-black/10 dark:border-white/10 shadow-sm">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
                     <MessageSquareText className="w-5 h-5 text-primary" />
@@ -375,12 +377,16 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="relative h-40 rounded-xl overflow-hidden border border-primary/20 mb-4 group/image"
+                    className="relative h-64 rounded-xl overflow-hidden border border-primary/20 mb-4 group/image cursor-pointer flex-shrink-0"
+                    onClick={() => setShowFullPreview(true)}
                   >
-                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-105" />
                     <AnimatePresence>{showScan && <ScanOverlay />}</AnimatePresence>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <button onClick={removeFile} className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white/80 hover:text-white hover:bg-black/70 transition-all text-xs backdrop-blur-sm">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); removeFile(); }} 
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white/80 hover:text-white hover:bg-black/70 transition-all text-xs backdrop-blur-sm z-20"
+                    >
                       ✕
                     </button>
                     <div className="absolute bottom-2 left-2 right-2 flex items-center gap-2">
@@ -463,7 +469,7 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
                   whileTap={{ scale: 0.98 }}
                   onClick={handleProcessAI}
                   disabled={loading || (!selectedFile && !textInput.trim())}
-                  className="w-full mt-4 py-3 bg-gradient-to-r from-primary to-purple-600 text-white text-sm font-semibold rounded-xl hover:shadow-[0_0_30px_rgba(var(--primary),0.4)] transition-all disabled:opacity-40 disabled:hover:shadow-none flex items-center justify-center gap-2 relative overflow-hidden group/btn"
+                  className="w-full mt-auto py-3 bg-gradient-to-r from-primary to-purple-600 text-white text-sm font-semibold rounded-xl hover:shadow-[0_0_30px_rgba(var(--primary),0.4)] transition-all disabled:opacity-40 disabled:hover:shadow-none flex items-center justify-center gap-2 relative overflow-hidden group/btn"
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
@@ -494,7 +500,7 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
                 animate={analysisResult ? { opacity: [0.3, 0.6, 0.3] } : {}}
                 transition={{ duration: 4, repeat: Infinity }}
               />
-              <div className="relative bg-white/70 dark:bg-black/50 backdrop-blur-xl rounded-2xl p-6 border border-primary/20 min-h-[400px] flex flex-col shadow-sm">
+              <div className="relative h-full bg-white/70 dark:bg-black/50 backdrop-blur-xl rounded-2xl p-6 border border-primary/20 min-h-[400px] flex flex-col shadow-sm">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
                     <Brain className="w-5 h-5 text-primary" />
@@ -521,7 +527,7 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
 
                 <AnimatePresence mode="wait">
                   {loading ? (
-                    <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1">
+                    <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col items-center justify-center min-h-[300px]">
                       <ProcessingAnimation />
                     </motion.div>
                   ) : analysisResult ? (
@@ -532,11 +538,12 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
                       animate="show"
                       className="flex-1 flex flex-col gap-3"
                     >
-                      <motion.div variants={cardVariants} className="grid grid-cols-3 gap-2">
+                      <motion.div variants={cardVariants} className="grid grid-cols-2 gap-2">
                         {[
                           { label: "Issue", value: analysisResult.issue || "—", color: "text-primary" },
                           { label: "Department", value: DEPT_LABELS[analysisResult.department] || analysisResult.department, color: "text-primary" },
                           { label: "Priority", value: (analysisResult.priority || "low").toUpperCase(), badge: true },
+                          { label: "Confidence", value: analysisResult.confidence ? `${analysisResult.confidence}` : (analysisResult.department_confidence ? `${analysisResult.department_confidence}%` : "—"), color: "text-emerald-500" },
                         ].map((item) => (
                           <motion.div
                             key={item.label}
@@ -680,6 +687,35 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
           </motion.div>
         )}
       </div>
+
+      <AnimatePresence>
+        {showFullPreview && previewUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 md:p-12"
+            onClick={() => setShowFullPreview(false)}
+          >
+            <button
+              onClick={() => setShowFullPreview(false)}
+              className="absolute top-4 right-4 md:top-8 md:right-8 p-2 md:p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+            >
+              <X className="w-6 h-6 md:w-8 md:h-8" />
+            </button>
+            <motion.img
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              src={previewUrl}
+              alt="Full Preview"
+              className="w-full h-full max-w-[95vw] max-h-[90vh] rounded-2xl shadow-2xl object-contain border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

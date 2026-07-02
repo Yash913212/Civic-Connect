@@ -48,7 +48,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (user && !loading) {
-      const wsUrl = `ws://localhost:8000/ws/notifications/${user.id}`;
+      const wsBase = process.env.NEXT_PUBLIC_WS_URL || "wss://civic-connect-gzm1.onrender.com";
+      const wsUrl = `${wsBase}/ws/notifications/${user.id}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
