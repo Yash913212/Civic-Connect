@@ -6,7 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Camera, Clock, Languages, Route, Frown, ArrowDown } from "lucide-react";
 
 const steps = [
-  { title: "Citizen uploads image", desc: "A pothole, a broken streetlight, or garbage.", icon: Camera, color: "from-blue-400 to-cyan-400" },
+  { title: "Citizen uploads image", desc: "A pothole, a broken streetlight, or garbage.", icon: Camera, color: "from-emerald-400 to-teal-400" },
   { title: "Manual routing delays response", desc: "Clerks spend hours sorting through submissions.", icon: Clock, color: "from-amber-400 to-orange-400" },
   { title: "Language barriers create confusion", desc: "Multi-lingual complaints get lost in translation.", icon: Languages, color: "from-purple-400 to-pink-400" },
   { title: "Departments receive incorrect complaints", desc: "Misrouted issues cause endless loops.", icon: Route, color: "from-red-400 to-rose-400" },

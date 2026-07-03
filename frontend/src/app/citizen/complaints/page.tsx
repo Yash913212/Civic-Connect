@@ -14,7 +14,7 @@ function PriorityBadge({ priority }: { priority: string }) {
     Critical: "bg-rose-500/15 border-rose-500/30 text-rose-400",
     High: "bg-orange-500/15 border-orange-500/30 text-orange-400",
     Medium: "bg-amber-500/15 border-amber-500/30 text-amber-400",
-    Low: "bg-blue-500/15 border-blue-500/30 text-blue-400",
+    Low: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
   };
   return (
     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${styles[priority] || styles.Low}`}>
@@ -26,7 +26,7 @@ function PriorityBadge({ priority }: { priority: string }) {
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
     Unassigned: "bg-slate-500/15 border-slate-500/30 text-slate-400",
-    Assigned: "bg-cyan-500/15 border-cyan-500/30 text-cyan-400",
+    Assigned: "bg-teal-500/15 border-teal-500/30 text-teal-400",
     "In Progress": "bg-amber-500/15 border-amber-500/30 text-amber-400",
     Escalated: "bg-purple-500/15 border-purple-500/30 text-purple-400",
     Resolved: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",

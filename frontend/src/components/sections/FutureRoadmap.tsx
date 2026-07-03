@@ -67,7 +67,7 @@ export default function FutureRoadmap() {
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold mb-6">
           Future of{" "}
           <br className="hidden md:block" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 drop-shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-500 drop-shadow-[0_0_15px_rgba(6,182,212,0.3)]">
             Civic Governance
           </span>
         </h2>

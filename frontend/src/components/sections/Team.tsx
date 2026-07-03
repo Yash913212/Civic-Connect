@@ -107,8 +107,8 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
   };
 
   const accentGradients: Record<string, string> = {
-    cyan: "from-cyan-500/10 to-blue-500/5 hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]",
-    blue: "from-blue-500/10 to-indigo-500/5 hover:border-blue-500/40 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]",
+    cyan: "from-teal-500/10 to-emerald-500/5 hover:border-teal-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]",
+    blue: "from-emerald-500/10 to-emerald-500/5 hover:border-emerald-500/40 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]",
     purple: "from-purple-500/10 to-pink-500/5 hover:border-purple-500/40 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)]",
     pink: "from-pink-500/10 to-rose-500/5 hover:border-pink-500/40 hover:shadow-[0_0_30px_rgba(244,63,94,0.15)]",
     emerald: "from-emerald-500/10 to-teal-500/5 hover:border-emerald-500/40 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]",
@@ -200,7 +200,7 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
           href={member.linkedin}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-2 rounded-full border border-white/5 bg-white/[0.01] text-slate-500 dark:text-white/50 hover:bg-white/[0.05] hover:text-cyan-400 transition-all flex items-center justify-center"
+          className="p-2 rounded-full border border-white/5 bg-white/[0.01] text-slate-500 dark:text-white/50 hover:bg-white/[0.05] hover:text-teal-400 transition-all flex items-center justify-center"
           title="LinkedIn"
         >
           <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
@@ -348,7 +348,7 @@ export default function Team() {
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0 opacity-40">
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(168,85,247,0.03) 0%, transparent 60%)' }} />
         <div className="absolute w-[40vw] h-[40vw] rounded-full bg-purple-500/5 blur-[120px] left-[5%] top-[20%]" />
-        <div className="absolute w-[45vw] h-[45vw] rounded-full bg-cyan-500/5 blur-[130px] right-[10%] bottom-[20%]" />
+        <div className="absolute w-[45vw] h-[45vw] rounded-full bg-teal-500/5 blur-[130px] right-[10%] bottom-[20%]" />
       </div>
 
       <div className="container mx-auto px-6 relative z-10 w-full max-w-7xl">
@@ -389,7 +389,7 @@ export default function Team() {
           
           {/* Members */}
           <div className="text-center group p-4 rounded-2xl transition-colors hover:bg-white/[0.01]">
-            <div className="flex justify-center mb-2 text-cyan-400">
+            <div className="flex justify-center mb-2 text-teal-400">
               <Users className="w-6 h-6 animate-pulse" />
             </div>
             <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">
@@ -412,7 +412,7 @@ export default function Team() {
 
           {/* AI Models */}
           <div className="text-center group p-4 rounded-2xl transition-colors hover:bg-white/[0.01]">
-            <div className="flex justify-center mb-2 text-blue-400">
+            <div className="flex justify-center mb-2 text-emerald-400">
               <Cpu className="w-6 h-6" />
             </div>
             <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">

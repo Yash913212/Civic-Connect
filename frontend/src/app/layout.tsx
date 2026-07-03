@@ -41,7 +41,7 @@ export default function RootLayout({
         className={`${inter.variable} ${sora.variable} antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-sans overflow-x-hidden transition-colors duration-500 bg-slate-50 dark:bg-[#050816]">
+      <body className="min-h-full flex flex-col font-sans overflow-x-hidden transition-colors duration-500">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Toaster theme="system" position="top-right" richColors closeButton />
           <AuthProvider>

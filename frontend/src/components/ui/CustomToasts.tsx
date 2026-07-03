@@ -21,7 +21,7 @@ import {
 // Helper for glass container
 const GlassContainer = ({ children, className = "", glowingColor = "cyan" }: { children: React.ReactNode, className?: string, glowingColor?: string }) => {
   const colorMap: Record<string, string> = {
-    cyan: "border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.15)]",
+    cyan: "border-teal-500/30 shadow-[0_0_20px_rgba(6,182,212,0.15)]",
     emerald: "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.15)]",
     rose: "border-rose-500/30 shadow-[0_0_20px_rgba(244,63,94,0.15)]",
     orange: "border-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.15)]",
@@ -68,28 +68,28 @@ export const UploadProgressToast = ({ t }: { t: string | number }) => {
             <circle cx="20" cy="20" r="18" className="stroke-white/10" strokeWidth="3" fill="none" />
             <motion.circle
               cx="20" cy="20" r="18"
-              className="stroke-cyan-400" strokeWidth="3" fill="none"
+              className="stroke-teal-400" strokeWidth="3" fill="none"
               strokeDasharray="113"
               strokeDashoffset={113 - (113 * progress) / 100}
               transition={{ duration: 0.2 }}
             />
           </svg>
-          <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-cyan-400">
+          <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-teal-400">
             {progress}%
           </div>
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2 text-white font-bold text-sm mb-1">
-            <Camera className="w-4 h-4 text-cyan-400" />
+            <Camera className="w-4 h-4 text-teal-400" />
             📸 Image Processing
           </div>
           <div className="text-xs text-white/60">
             <span className="flex items-center gap-1">
-              <ScanLine className="w-3 h-3 animate-pulse text-cyan-400" />
+              <ScanLine className="w-3 h-3 animate-pulse text-teal-400" />
               Analyzing uploaded evidence...
             </span>
           </div>
-          <div className="mt-2 text-[10px] font-mono text-cyan-500/80 uppercase">
+          <div className="mt-2 text-[10px] font-mono text-teal-500/80 uppercase">
             AI preparing complaint data...
           </div>
         </div>
@@ -178,7 +178,7 @@ export const ComplaintSuccessToast = ({ trackingId, t }: { trackingId: string, t
 export const OfficerAssignedToast = ({ department, expectedTime }: { department: string, expectedTime: string }) => (
   <GlassContainer glowingColor="cyan">
     <div className="flex gap-4 items-center">
-      <div className="p-2 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-400">
+      <div className="p-2 rounded-xl bg-teal-500/20 border border-teal-500/30 text-teal-400">
         <User className="w-6 h-6" />
       </div>
       <div className="flex-1">
@@ -186,7 +186,7 @@ export const OfficerAssignedToast = ({ department, expectedTime }: { department:
         <div className="grid grid-cols-2 gap-2">
           <div className="bg-white/5 rounded p-1.5 border border-white/5">
             <span className="text-[9px] text-white/40 block uppercase">Department</span>
-            <span className="text-[10px] text-cyan-400 font-semibold">{department}</span>
+            <span className="text-[10px] text-teal-400 font-semibold">{department}</span>
           </div>
           <div className="bg-white/5 rounded p-1.5 border border-white/5">
             <span className="text-[9px] text-white/40 block uppercase">Expected Response</span>
@@ -204,7 +204,7 @@ export const OfficerAssignedToast = ({ department, expectedTime }: { department:
 export const ResolutionToast = () => (
   <GlassContainer glowingColor="emerald">
     <div className="flex items-start gap-4">
-      <div className="p-2 rounded-full bg-gradient-to-tr from-emerald-400 to-cyan-400 text-black shadow-[0_0_15px_rgba(52,211,153,0.5)]">
+      <div className="p-2 rounded-full bg-gradient-to-tr from-emerald-400 to-teal-400 text-black shadow-[0_0_15px_rgba(52,211,153,0.5)]">
         <CheckCircle2 className="w-6 h-6" />
       </div>
       <div>
@@ -282,12 +282,12 @@ export const TextLoadingToast = ({ t, title, task }: { t: string | number, title
 export const AIFuturisticToast = ({ severity, department, confidence }: { severity: string, department: string, confidence: string }) => (
   <GlassContainer glowingColor="cyan" className="!w-96">
     <div className="flex items-start gap-4">
-      <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-cyan-500/20 animate-pulse" />
-        <Cpu className="w-6 h-6 text-cyan-400 relative z-10" />
+      <div className="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-teal-500/20 animate-pulse" />
+        <Cpu className="w-6 h-6 text-teal-400 relative z-10" />
       </div>
       <div className="flex-1">
-        <h4 className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+        <h4 className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-1 flex items-center gap-2">
           <Activity className="w-3 h-3" /> Civic Intelligence Engine
         </h4>
         <p className="text-[10px] text-white/60 mb-3 font-mono">Scanning uploaded evidence...</p>
@@ -307,7 +307,7 @@ export const AIFuturisticToast = ({ severity, department, confidence }: { severi
           </div>
           <div className="bg-black/40 border border-white/5 rounded p-2 flex flex-col justify-center">
              <span className="text-[8px] uppercase text-white/40">Status</span>
-             <span className="text-[10px] font-bold text-cyan-400">Analysis Complete</span>
+             <span className="text-[10px] font-bold text-teal-400">Analysis Complete</span>
           </div>
         </div>
       </div>
@@ -319,11 +319,11 @@ export const AIFuturisticToast = ({ severity, department, confidence }: { severi
 export const SystemStatusToast = ({ title, message, isError = false }: { title: string, message: string, isError?: boolean }) => (
   <GlassContainer glowingColor={isError ? "rose" : "cyan"}>
     <div className="flex gap-4 items-center">
-      <div className={`p-2 rounded-xl ${isError ? 'bg-rose-500/20 text-rose-500 border-rose-500/30' : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'} border`}>
+      <div className={`p-2 rounded-xl ${isError ? 'bg-rose-500/20 text-rose-500 border-rose-500/30' : 'bg-teal-500/20 text-teal-400 border-teal-500/30'} border`}>
         {isError ? <AlertTriangle className="w-6 h-6" /> : <Shield className="w-6 h-6" />}
       </div>
       <div className="flex-1">
-        <h4 className={`text-sm font-bold ${isError ? 'text-rose-400' : 'text-cyan-400'} mb-1`}>{title}</h4>
+        <h4 className={`text-sm font-bold ${isError ? 'text-rose-400' : 'text-teal-400'} mb-1`}>{title}</h4>
         <div className="text-xs text-white/60 font-mono">{message}</div>
       </div>
     </div>

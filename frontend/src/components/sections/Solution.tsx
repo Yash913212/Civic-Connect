@@ -294,7 +294,7 @@ export default function Solution() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 mb-6 backdrop-blur-sm shadow-xl"
         >
-          <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_12px_#22d3ee]" />
+          <span className="w-2.5 h-2.5 rounded-full bg-teal-400 animate-pulse shadow-[0_0_12px_#22d3ee]" />
           <span className="text-xs font-mono font-bold tracking-[0.2em] text-slate-600 dark:text-white/80 uppercase">
             System Architecture
           </span>
@@ -307,7 +307,7 @@ export default function Solution() {
           transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
           className="text-4xl md:text-5xl lg:text-7xl font-heading font-black mb-6 text-slate-900 dark:text-white tracking-tight leading-[1.1]"
         >
-          Autonomous <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500">Resolution Engine</span>
+          Autonomous <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-500 to-purple-500">Resolution Engine</span>
         </motion.h2>
         
         <motion.p 

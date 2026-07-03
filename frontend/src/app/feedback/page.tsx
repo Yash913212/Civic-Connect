@@ -19,7 +19,7 @@ import {
 const categories = [
   { value: "bug", label: "Bug Report", icon: Bug, color: "text-rose-400" },
   { value: "feature", label: "Feature Request", icon: Lightbulb, color: "text-amber-400" },
-  { value: "general", label: "General Feedback", icon: MessageSquare, color: "text-cyan-400" },
+  { value: "general", label: "General Feedback", icon: MessageSquare, color: "text-teal-400" },
   { value: "praise", label: "Compliment", icon: HeartHandshake, color: "text-emerald-400" },
   { value: "security", label: "Security Concern", icon: ShieldCheck, color: "text-purple-400" },
 ];
@@ -61,7 +61,7 @@ function FeedbackPage() {
   return (
     <main className="bg-transparent text-foreground relative w-full min-h-screen pt-28 pb-24 flex flex-col select-none">
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02] mix-blend-overlay pointer-events-none z-0" />
-      <div className="absolute w-[40vw] h-[40vw] rounded-full bg-cyan-500/5 blur-[120px] -left-[10%] top-[20%] pointer-events-none z-0" />
+      <div className="absolute w-[40vw] h-[40vw] rounded-full bg-teal-500/5 blur-[120px] -left-[10%] top-[20%] pointer-events-none z-0" />
       <div className="absolute w-[40vw] h-[40vw] rounded-full bg-purple-500/5 blur-[120px] -right-[10%] bottom-[10%] pointer-events-none z-0" />
 
       <div className="container mx-auto px-6 relative z-10 w-full max-w-3xl flex-grow mb-16">
@@ -94,7 +94,7 @@ function FeedbackPage() {
           </div>
           <h1 className="text-3xl md:text-5xl font-heading font-bold text-slate-900 dark:text-white mb-3">
             Send{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-purple-500">
               Feedback
             </span>
           </h1>
@@ -234,7 +234,7 @@ function FeedbackPage() {
               whileTap={isFormValid ? { scale: 0.97 } : {}}
               className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${
                 isFormValid && !submitting
-                  ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_0_20px_rgba(6,182,212,0.25)] hover:shadow-[0_0_30px_rgba(6,182,212,0.4)]"
+                  ? "bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-[0_0_20px_rgba(6,182,212,0.25)] hover:shadow-[0_0_30px_rgba(6,182,212,0.4)]"
                   : "bg-muted text-muted-foreground/50 cursor-not-allowed"
               }`}
             >

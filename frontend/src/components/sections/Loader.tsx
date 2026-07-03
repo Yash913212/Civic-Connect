@@ -155,7 +155,7 @@ export default function Loader() {
       {/* Layer 1: Ambient Glowing Neon Aura Blobs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 opacity-70">
         <div 
-          className="absolute w-[50vw] h-[50vw] rounded-full bg-cyan-500/10 blur-[130px]"
+          className="absolute w-[50vw] h-[50vw] rounded-full bg-teal-500/10 blur-[130px]"
           style={{
             animation: 'floatBlob1 25s ease-in-out infinite alternate',
             left: '-15%',
@@ -171,7 +171,7 @@ export default function Loader() {
           }}
         />
         <div 
-          className="absolute w-[40vw] h-[40vw] rounded-full bg-blue-600/15 blur-[110px]"
+          className="absolute w-[40vw] h-[40vw] rounded-full bg-emerald-600/15 blur-[110px]"
           style={{
             animation: 'floatBlob3 20s ease-in-out infinite alternate',
             left: '30%',
@@ -194,7 +194,7 @@ export default function Loader() {
       />
 
       {/* Layer 3: Cyberpunk Binary Pulsing Streams */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0 opacity-[0.06] font-mono text-[9px] text-cyan-400">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0 opacity-[0.06] font-mono text-[9px] text-teal-400">
         <div className="absolute left-[8%] animate-[pulse_4s_infinite]" style={{ top: '18%' }}>01100011 01101001 01110110</div>
         <div className="absolute right-[10%] animate-[pulse_5s_infinite_delay-1s]" style={{ top: '28%' }}>01101001 01100011 01000001</div>
         <div className="absolute left-[14%] animate-[pulse_6s_infinite_delay-2s]" style={{ bottom: '25%' }}>01001001 01001110 01010100</div>
@@ -235,7 +235,7 @@ export default function Loader() {
         <div className="text-3xl font-mono font-light text-slate-600 dark:text-white/80 tracking-widest">{progress.toString().padStart(3, '0')}</div>
         <div className="w-full h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden relative shadow-[0_0_10px_rgba(255,255,255,0.05)] border border-white/5">
           <div
-            className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 via-cyan-400 to-purple-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]"
+            className="absolute top-0 left-0 h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-purple-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]"
             style={{ width: `${progress}%` }}
           />
         </div>

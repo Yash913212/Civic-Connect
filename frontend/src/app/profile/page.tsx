@@ -83,14 +83,14 @@ export default function ProfilePage() {
       {/* Background static noise and cyber glows */}
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02] mix-blend-overlay pointer-events-none z-0" />
       <div className="absolute w-[40vw] h-[40vw] rounded-full bg-purple-500/5 blur-[120px] left-[5%] top-[10%] pointer-events-none z-0" />
-      <div className="absolute w-[40vw] h-[40vw] rounded-full bg-cyan-500/5 blur-[120px] right-[5%] bottom-[10%] pointer-events-none z-0" />
+      <div className="absolute w-[40vw] h-[40vw] rounded-full bg-teal-500/5 blur-[120px] right-[5%] bottom-[10%] pointer-events-none z-0" />
 
       {/* Profile Core Layout */}
       <div className="container mx-auto px-6 relative z-10 w-full max-w-6xl flex-grow mb-16">
         
         {/* Main Title Row */}
         <div className="mb-12">
-          <span className="text-xs uppercase tracking-[0.25em] font-semibold text-cyan-400 mb-2 block">
+          <span className="text-xs uppercase tracking-[0.25em] font-semibold text-teal-400 mb-2 block">
             CONTROL CENTER
           </span>
           <h1 className="text-3xl md:text-5xl font-heading font-bold text-white tracking-tight">
@@ -108,17 +108,17 @@ export default function ProfilePage() {
             <div className="rounded-[28px] border border-white/10 bg-white/[0.02] backdrop-blur-md p-6 shadow-2xl relative overflow-hidden flex flex-col items-center text-center">
               
               {/* Dynamic Glow Background */}
-              <div className="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-cyan-500/10 blur-2xl pointer-events-none" />
+              <div className="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-teal-500/10 blur-2xl pointer-events-none" />
               
               {/* Avatar circle with glow */}
-              <div className="relative w-24 h-24 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-500 flex items-center justify-center text-white text-3xl font-bold font-heading mb-4 shadow-[0_0_20px_rgba(6,182,212,0.3)] border border-white/20">
+              <div className="relative w-24 h-24 rounded-full bg-gradient-to-tr from-teal-500 to-purple-500 flex items-center justify-center text-white text-3xl font-bold font-heading mb-4 shadow-[0_0_20px_rgba(6,182,212,0.3)] border border-white/20">
                 {name.charAt(0).toUpperCase()}
                 <span className="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 border-2 border-black rounded-full" />
               </div>
 
               {/* Name & Bio */}
               <h2 className="text-xl font-bold text-white tracking-wide mb-1 font-heading">{name}</h2>
-              <p className="text-xs text-cyan-400 font-semibold mb-3 tracking-wider uppercase">{role}</p>
+              <p className="text-xs text-teal-400 font-semibold mb-3 tracking-wider uppercase">{role}</p>
               <p className="text-xs text-white/50 leading-relaxed mb-6 max-w-xs">{bio}</p>
 
               {/* Verified Trust Stats Gauge */}
@@ -126,7 +126,7 @@ export default function ProfilePage() {
                 <div>
                   <span className="text-[10px] uppercase text-white/40 block font-semibold">Trust Index</span>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                    <Activity className="w-3.5 h-3.5 text-teal-400" />
                     <span className="text-sm font-bold font-mono text-white">99.8%</span>
                   </div>
                 </div>
@@ -149,7 +149,7 @@ export default function ProfilePage() {
                       : "bg-transparent border-transparent text-white/50 hover:bg-white/[0.02]"
                   }`}
                 >
-                  <Sliders className="w-4 h-4 text-cyan-400" />
+                  <Sliders className="w-4 h-4 text-teal-400" />
                   <span>Configure Settings</span>
                 </button>
 
@@ -203,7 +203,7 @@ export default function ProfilePage() {
                   className="space-y-6"
                 >
                   <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <Sliders className="w-5 h-5 text-cyan-400" />
+                    <Sliders className="w-5 h-5 text-teal-400" />
                     <span>Configuration Parameters</span>
                   </h3>
 
@@ -217,7 +217,7 @@ export default function ProfilePage() {
                           type="text"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          className="w-full bg-black/20 text-white border border-white/10 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-cyan-500/40 placeholder:text-white/20 transition-all"
+                          className="w-full bg-black/20 text-white border border-white/10 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-teal-500/40 placeholder:text-white/20 transition-all"
                           required
                         />
                       </div>
@@ -232,7 +232,7 @@ export default function ProfilePage() {
                           type="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          className="w-full bg-black/20 text-white border border-white/10 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-cyan-500/40 placeholder:text-white/20 transition-all"
+                          className="w-full bg-black/20 text-white border border-white/10 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-teal-500/40 placeholder:text-white/20 transition-all"
                           required
                         />
                       </div>
@@ -247,7 +247,7 @@ export default function ProfilePage() {
                           type="text"
                           value={region}
                           onChange={(e) => setRegion(e.target.value)}
-                          className="w-full bg-black/20 text-white border border-white/10 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-cyan-500/40 placeholder:text-white/20 transition-all"
+                          className="w-full bg-black/20 text-white border border-white/10 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-teal-500/40 placeholder:text-white/20 transition-all"
                           required
                         />
                       </div>
@@ -260,14 +260,14 @@ export default function ProfilePage() {
                         value={bio}
                         onChange={(e) => setBio(e.target.value)}
                         rows={3}
-                        className="w-full bg-black/20 text-white border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-cyan-500/40 placeholder:text-white/20 transition-all text-sm leading-relaxed resize-none"
+                        className="w-full bg-black/20 text-white border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-teal-500/40 placeholder:text-white/20 transition-all text-sm leading-relaxed resize-none"
                       />
                     </div>
 
                     {/* Custom Notifications panel */}
                     <div className="pt-4 border-t border-white/5 space-y-4">
                       <h4 className="text-sm font-bold text-white/80 flex items-center gap-2">
-                        <Bell className="w-4 h-4 text-cyan-400" />
+                        <Bell className="w-4 h-4 text-teal-400" />
                         <span>Notification Preferences</span>
                       </h4>
 
@@ -279,7 +279,7 @@ export default function ProfilePage() {
                             type="checkbox"
                             checked={notifyEmail}
                             onChange={(e) => setNotifyEmail(e.target.checked)}
-                            className="w-4 h-4 accent-cyan-500 rounded border-white/10 cursor-pointer"
+                            className="w-4 h-4 accent-teal-500 rounded border-white/10 cursor-pointer"
                           />
                         </label>
 
@@ -290,7 +290,7 @@ export default function ProfilePage() {
                             type="checkbox"
                             checked={notifyWeb}
                             onChange={(e) => setNotifyWeb(e.target.checked)}
-                            className="w-4 h-4 accent-cyan-500 rounded border-white/10 cursor-pointer"
+                            className="w-4 h-4 accent-teal-500 rounded border-white/10 cursor-pointer"
                           />
                         </label>
 
@@ -301,7 +301,7 @@ export default function ProfilePage() {
                             type="checkbox"
                             checked={notifySms}
                             onChange={(e) => setNotifySms(e.target.checked)}
-                            className="w-4 h-4 accent-cyan-500 rounded border-white/10 cursor-pointer"
+                            className="w-4 h-4 accent-teal-500 rounded border-white/10 cursor-pointer"
                           />
                         </label>
                       </div>
@@ -311,7 +311,7 @@ export default function ProfilePage() {
                     <div className="pt-6 text-right">
                       <button
                         type="submit"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold rounded-xl text-sm transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.25)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)]"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-white font-bold rounded-xl text-sm transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.25)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)]"
                       >
                         <Save className="w-4 h-4" />
                         <span>Save Configuration</span>
@@ -349,7 +349,7 @@ export default function ProfilePage() {
                         <span className="text-[10px] uppercase font-bold text-white/40 block">Digital Verification Handshake</span>
                         <h4 className="text-lg font-bold text-white mt-1">99.8% Perfect Accuracy</h4>
                       </div>
-                      <span className="text-[10px] text-cyan-400 font-semibold mt-4">Secured with SHA-256 Hash</span>
+                      <span className="text-[10px] text-teal-400 font-semibold mt-4">Secured with SHA-256 Hash</span>
                     </div>
                   </div>
 
@@ -359,7 +359,7 @@ export default function ProfilePage() {
                     <div className="rounded-xl border border-white/10 bg-black/80 p-4 font-mono text-xs text-white/70 space-y-1.5 max-h-60 overflow-y-auto leading-relaxed">
                       <p className="text-white/40">{"[SYSTEM HANDSHAKE LOGS]"}</p>
                       <p className="text-emerald-400">{"[INFO] 16:51:48 SECURITY_HANDSHAKE_COMPLETED"}</p>
-                      <p className="text-cyan-400">{"[INFO] 16:51:48 LOCAL_GEOLOCATION_CHECK: MUMBAI_IN [PASS]"}</p>
+                      <p className="text-teal-400">{"[INFO] 16:51:48 LOCAL_GEOLOCATION_CHECK: MUMBAI_IN [PASS]"}</p>
                       <p className="text-purple-400">{"[DEVEL] 16:51:49 LOADED_FASTAPI_DEPARTMENT_CLASSIFIER"}</p>
                       <p className="text-purple-400">{"[DEVEL] 16:51:49 MURIL_MULTILINGUAL_TEXT_PROCESSOR: OK"}</p>
                       <p className="text-white/60">{"[AUTH] 16:51:50 SESSION_SESSIONSTORAGE_WRITE_COMPLETE"}</p>

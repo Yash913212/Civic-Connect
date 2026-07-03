@@ -91,7 +91,7 @@ export default function Navbar() {
             <div className="relative h-10 w-10 rounded-md group-hover:scale-105 transition-transform duration-300 flex items-center justify-center overflow-hidden">
               <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full" />
             </div>
-            <span className="text-xl font-bold font-sans text-slate-900 dark:text-white tracking-wider group-hover:text-sky-600 dark:group-hover:text-cyan-400 transition-colors">
+            <span className="text-xl font-bold font-sans text-slate-900 dark:text-white tracking-wider group-hover:text-sky-600 dark:group-hover:text-teal-400 transition-colors">
               Civic Connect
             </span>
           </Link>
@@ -130,16 +130,16 @@ export default function Navbar() {
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   aria-label="Toggle user profile menu"
                   aria-expanded={dropdownOpen}
-                  className="flex items-center gap-3 py-1.5 pl-2.5 pr-4 rounded-full border border-black/10 dark:border-white/10 bg-slate-900/[0.03] dark:bg-white/[0.03] hover:bg-slate-900/[0.08] dark:hover:bg-white/[0.08] hover:border-sky-500/30 dark:hover:border-cyan-500/30 transition-all duration-300 shadow-sm group"
+                  className="flex items-center gap-3 py-1.5 pl-2.5 pr-4 rounded-full border border-black/10 dark:border-white/10 bg-slate-900/[0.03] dark:bg-white/[0.03] hover:bg-slate-900/[0.08] dark:hover:bg-white/[0.08] hover:border-sky-500/30 dark:hover:border-teal-500/30 transition-all duration-300 shadow-sm group"
                 >
                   {/* Dynamic Glowing Avatar */}
-                  <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold font-heading shadow-[0_0_10px_rgba(6,182,212,0.3)] group-hover:shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all">
+                  <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-teal-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold font-heading shadow-[0_0_10px_rgba(6,182,212,0.3)] group-hover:shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all">
                     {user.full_name?.charAt(0).toUpperCase()}
                     <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border border-black rounded-full" />
                   </div>
                   <div className="text-left">
                     <p className="text-xs font-bold text-slate-900 dark:text-white leading-none mb-0.5">{user.full_name}</p>
-                    <p className="text-[10px] text-sky-600 dark:text-cyan-400 font-semibold leading-none">{user.role}</p>
+                    <p className="text-[10px] text-sky-600 dark:text-teal-400 font-semibold leading-none">{user.role}</p>
                   </div>
                 </button>
 
@@ -155,13 +155,13 @@ export default function Navbar() {
                     >
                       {/* User Header */}
                       <div className="flex items-center gap-3 pb-3 border-b border-black/10 dark:border-white/10 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 dark:from-cyan-500 to-indigo-500 dark:to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 dark:from-teal-500 to-emerald-500 dark:to-purple-500 flex items-center justify-center text-white font-bold text-sm">
                           {user.full_name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="overflow-hidden">
                           <h5 className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.full_name}</h5>
                           <p className="text-xs text-slate-500 dark:text-white/50 truncate mb-1">{user.email}</p>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-semibold bg-sky-500/10 dark:bg-cyan-500/10 border border-sky-500/20 dark:border-cyan-500/20 text-sky-600 dark:text-cyan-400">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-semibold bg-sky-500/10 dark:bg-teal-500/10 border border-sky-500/20 dark:border-teal-500/20 text-sky-600 dark:text-teal-400">
                             {user.role}
                           </span>
                         </div>
@@ -179,18 +179,18 @@ export default function Navbar() {
 
                         <div className="flex items-center justify-between p-2 rounded-lg bg-black/5 dark:bg-white/[0.01] hover:bg-black/10 dark:hover:bg-white/[0.03] transition-colors border border-black/5 dark:border-white/5">
                           <div className="flex items-center gap-2 text-slate-600 dark:text-white/70">
-                            <Activity className="w-3.5 h-3.5 text-sky-600 dark:text-cyan-400" />
+                            <Activity className="w-3.5 h-3.5 text-sky-600 dark:text-teal-400" />
                             <span className="text-[11px] font-medium">Trust Rank</span>
                           </div>
-                          <span className="text-[10px] text-sky-600 dark:text-cyan-400 font-bold font-mono">99.8%</span>
+                          <span className="text-[10px] text-sky-600 dark:text-teal-400 font-bold font-mono">99.8%</span>
                         </div>
 
                         <div className="flex items-center justify-between p-2 rounded-lg bg-black/5 dark:bg-white/[0.01] hover:bg-black/10 dark:hover:bg-white/[0.03] transition-colors border border-black/5 dark:border-white/5">
                           <div className="flex items-center gap-2 text-slate-600 dark:text-white/70">
-                            <Terminal className="w-3.5 h-3.5 text-indigo-600 dark:text-purple-400" />
+                            <Terminal className="w-3.5 h-3.5 text-emerald-600 dark:text-purple-400" />
                             <span className="text-[11px] font-medium">Role Level</span>
                           </div>
-                          <span className="text-[10px] text-indigo-600 dark:text-purple-400 font-bold">L3 Validator</span>
+                          <span className="text-[10px] text-emerald-600 dark:text-purple-400 font-bold">L3 Validator</span>
                         </div>
                       </div>
 
@@ -201,7 +201,7 @@ export default function Navbar() {
                           onClick={() => setDropdownOpen(false)}
                           className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-white/70 dark:hover:text-white bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 rounded-xl border border-black/5 dark:border-white/10 transition-all text-left"
                         >
-                          <Activity className="w-4 h-4 text-cyan-400" />
+                          <Activity className="w-4 h-4 text-teal-400" />
                           <span>{user.role === 'ADMIN' ? 'Admin Portal' : user.role === 'OFFICER' ? 'Officer Portal' : 'Citizen Portal'}</span>
                         </Link>
                         <Link
@@ -298,13 +298,13 @@ export default function Navbar() {
               {user ? (
                 <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-left backdrop-blur-md space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-teal-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
                       {user.full_name?.charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <h5 className="text-white font-bold text-base">{user.full_name}</h5>
                       <p className="text-xs text-white/50">{user.email}</p>
-                      <span className="inline-block mt-1.5 px-2 py-0.5 rounded text-[9px] font-semibold bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+                      <span className="inline-block mt-1.5 px-2 py-0.5 rounded text-[9px] font-semibold bg-teal-500/10 border border-teal-500/20 text-teal-400">
                         {user.role}
                       </span>
                     </div>
@@ -315,7 +315,7 @@ export default function Navbar() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
                   >
-                    <Activity className="w-4 h-4 text-cyan-400" />
+                    <Activity className="w-4 h-4 text-teal-400" />
                     {user.role === 'ADMIN' ? 'Admin Portal' : user.role === 'OFFICER' ? 'Officer Portal' : 'Citizen Portal'}
                   </Link>
                     <Link

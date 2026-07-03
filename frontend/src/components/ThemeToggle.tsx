@@ -24,7 +24,7 @@ export function ThemeToggle() {
     <motion.button
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className="relative flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-[#0B1020] border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden z-50 transition-colors"
+      className="relative flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-card border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden z-50 transition-colors"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       initial={false}

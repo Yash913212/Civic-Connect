@@ -218,7 +218,7 @@ export default function Heatmap() {
           </div>
           <h2 className="text-3xl md:text-6xl font-heading font-bold text-slate-900 dark:text-white mb-3">
             Smart City{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-500">
               Heatmap
             </span>
           </h2>
@@ -230,7 +230,7 @@ export default function Heatmap() {
           {[
             { label: "Pothole Hotspots", color: "bg-primary" },
             { label: "Garbage Overflow", color: "bg-yellow-500" },
-            { label: "Water Leaks", color: "bg-cyan-500" },
+            { label: "Water Leaks", color: "bg-teal-500" },
           ].map((item) => (
             <div
               key={item.label}

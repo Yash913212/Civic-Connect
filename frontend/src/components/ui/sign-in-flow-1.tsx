@@ -430,7 +430,7 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
         setIsOpen(false);
       }}
       className={`px-4 py-2 sm:px-3 text-xs sm:text-sm border rounded-full transition-all duration-300 w-full sm:w-auto ${!isSignUp
-          ? "border-cyan-500 bg-cyan-500/10 text-cyan-400 font-bold shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+          ? "border-teal-500 bg-teal-500/10 text-teal-400 font-bold shadow-[0_0_15px_rgba(6,182,212,0.2)]"
           : "border-white/10 bg-white/5 text-gray-300 hover:border-white/30 hover:text-white"
         }`}
     >
@@ -443,7 +443,7 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
       {isSignUp && (
         <div className="absolute inset-0 -m-1 rounded-full
                        hidden sm:block
-                       bg-cyan-500
+                       bg-teal-500
                        opacity-20 filter blur-md pointer-events-none"></div>
       )}
       <button
@@ -452,7 +452,7 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
           setIsOpen(false);
         }}
         className={`relative z-10 px-4 py-2 sm:px-3 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 w-full sm:w-auto ${isSignUp
-            ? "text-black bg-gradient-to-br from-cyan-400 to-cyan-200 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+            ? "text-black bg-gradient-to-br from-teal-400 to-teal-200 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
             : "text-black bg-gradient-to-br from-gray-100 to-gray-300 hover:from-gray-200 hover:to-gray-400"
           }`}
       >
@@ -473,7 +473,7 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
       <div className="flex items-center justify-between w-full gap-x-6 sm:gap-x-8">
         <Link href="/" className="flex items-center gap-2.5 group">
           {logoElement}
-          <span className="text-base font-bold font-heading text-white tracking-wider group-hover:text-cyan-400 transition-colors">
+          <span className="text-base font-bold font-heading text-white tracking-wider group-hover:text-teal-400 transition-colors">
             Civic Connect
           </span>
         </Link>
@@ -535,7 +535,7 @@ const roleInfo = {
     pillBorder: "rgba(59,130,246,0.45)",
     pillGlow: "rgba(59,130,246,0.35)",
     progressColor: "#3b82f6",
-    accentText: "text-blue-400",
+    accentText: "text-emerald-400",
   },
   OFFICER: {
     title: "Officer Portal",
@@ -589,14 +589,14 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
               initial={{ x: -50, y: -100, opacity: 0 }}
               animate={{ x: -400, y: -150, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.1, type: "spring", bounce: 0.4 }}
-              className="absolute hidden lg:flex w-64 h-32 bg-slate-200/60 dark:bg-blue-900/20 border border-slate-300 dark:border-blue-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col justify-between shadow-[0_0_30px_rgba(59,130,246,0.15)]"
+              className="absolute hidden lg:flex w-64 h-32 bg-slate-200/60 dark:bg-emerald-900/20 border border-slate-300 dark:border-emerald-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col justify-between shadow-[0_0_30px_rgba(59,130,246,0.15)]"
             >
-              <div className="text-blue-600 dark:text-blue-300 text-xs font-semibold tracking-wide uppercase">Complaints Submitted</div>
+              <div className="text-emerald-600 dark:text-emerald-300 text-xs font-semibold tracking-wide uppercase">Complaints Submitted</div>
               <div className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                1,204 <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-500/10 dark:bg-blue-500/20 px-2 py-1 rounded-full">+12%</span>
+                1,204 <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/20 px-2 py-1 rounded-full">+12%</span>
               </div>
-              <div className="w-full h-1.5 bg-blue-950/50 rounded-full overflow-hidden mt-2">
-                <motion.div className="h-full bg-blue-400" initial={{ width: 0 }} animate={{ width: "70%" }} transition={{ duration: 1, delay: 0.5 }} />
+              <div className="w-full h-1.5 bg-emerald-950/50 rounded-full overflow-hidden mt-2">
+                <motion.div className="h-full bg-emerald-400" initial={{ width: 0 }} animate={{ width: "70%" }} transition={{ duration: 1, delay: 0.5 }} />
               </div>
             </motion.div>
 
@@ -605,13 +605,13 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
               initial={{ x: 50, y: 100, opacity: 0 }}
               animate={{ x: 400, y: 150, opacity: 0.8 }}
               transition={{ duration: 1.2, delay: 0.2, type: "spring", bounce: 0.4 }}
-              className="absolute hidden lg:flex w-64 h-48 bg-slate-200/60 dark:bg-blue-900/20 border border-slate-300 dark:border-blue-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(59,130,246,0.15)]"
+              className="absolute hidden lg:flex w-64 h-48 bg-slate-200/60 dark:bg-emerald-900/20 border border-slate-300 dark:border-emerald-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(59,130,246,0.15)]"
             >
-              <div className="text-blue-600 dark:text-blue-300 text-xs font-semibold tracking-wide uppercase mb-4">Resolution Progress</div>
+              <div className="text-emerald-600 dark:text-emerald-300 text-xs font-semibold tracking-wide uppercase mb-4">Resolution Progress</div>
               <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full border-4 border-blue-950/50" />
+                <div className="absolute inset-0 rounded-full border-4 border-emerald-950/50" />
                 <motion.div
-                  className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-400 border-r-blue-400"
+                  className="absolute inset-0 rounded-full border-4 border-transparent border-t-emerald-400 border-r-emerald-400"
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
                 />
@@ -620,7 +620,7 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
             </motion.div>
 
             {/* Ambient Map Pins */}
-            <motion.div animate={{ y: [0, -15, 0], opacity: [0.3, 0.6, 0.3] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="absolute hidden lg:block left-[15%] top-[60%] text-blue-400">
+            <motion.div animate={{ y: [0, -15, 0], opacity: [0.3, 0.6, 0.3] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="absolute hidden lg:block left-[15%] top-[60%] text-emerald-400">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
             </motion.div>
           </motion.div>
@@ -1157,7 +1157,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                               />
                               <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                                 rememberMe 
-                                  ? 'bg-blue-500 border-blue-500' 
+                                  ? 'bg-emerald-500 border-emerald-500' 
                                   : 'border-black/20 dark:border-white/20 bg-black/5 dark:bg-black/20 group-hover:border-black/40 dark:group-hover:border-white/40'
                               }`}>
                                 {rememberMe && <Check size={12} className="text-white" strokeWidth={3} />}

@@ -33,7 +33,7 @@ function getIcon(type: string) {
   switch (type) {
     case "status_update": return <Clock className="text-yellow-400 w-4 h-4" />;
     case "assignment": return <UserPlus className="text-purple-400 w-4 h-4" />;
-    case "complaint_submitted": return <FileText className="text-blue-400 w-4 h-4" />;
+    case "complaint_submitted": return <FileText className="text-emerald-400 w-4 h-4" />;
     case "complaint_resolved": return <CheckCircle2 className="text-green-400 w-4 h-4" />;
     default: return <Info className="text-gray-400 w-4 h-4" />;
   }

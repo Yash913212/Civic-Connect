@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-12 relative z-10">
       <div className="w-full max-w-[420px] bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-lg dark:shadow-2xl relative overflow-hidden">
         {/* Glow decoration */}
-        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-blue-500 blur-[100px] opacity-20 pointer-events-none" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-emerald-500 blur-[100px] opacity-20 pointer-events-none" />
 
         <AnimatePresence mode="wait">
           {!isSuccess ? (
@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
               className="space-y-6"
             >
               <div className="text-center space-y-2">
-                <div className="mx-auto w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-500 mb-2">
+                <div className="mx-auto w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-500 mb-2">
                   <Mail size={24} />
                 </div>
                 <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Recover Password</h2>
@@ -136,9 +136,9 @@ export default function ForgotPasswordPage() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 text-left space-y-3"
+                    className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-left space-y-3"
                   >
-                    <div className="flex items-center gap-2 text-blue-400 text-xs font-semibold uppercase tracking-wider">
+                    <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
                       <ShieldCheck size={16} /> Sandbox Simulator
                     </div>
                     <p className="text-xs text-slate-600 dark:text-white/50 leading-relaxed">
@@ -146,7 +146,7 @@ export default function ForgotPasswordPage() {
                     </p>
                     <Link
                       href={`/reset-password?token=${resetToken}`}
-                      className="block w-full text-center py-2 px-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-xs transition-colors"
+                      className="block w-full text-center py-2 px-3 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg text-xs transition-colors"
                     >
                       Simulate Link Click
                     </Link>

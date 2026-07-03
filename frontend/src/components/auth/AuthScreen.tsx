@@ -25,12 +25,12 @@ const roleConfigs: Record<
   }
 > = {
   CITIZEN: {
-    color: "from-blue-500/25 via-blue-500/10 to-transparent",
-    accent: "text-blue-400",
-    bgHover: "hover:bg-blue-500/10",
-    bgActive: "bg-blue-500/20 border-blue-500/60",
+    color: "from-emerald-500/25 via-emerald-500/10 to-transparent",
+    accent: "text-emerald-400",
+    bgHover: "hover:bg-emerald-500/10",
+    bgActive: "bg-emerald-500/20 border-emerald-500/60",
     glowColor: "shadow-[0_0_30px_rgba(59,130,246,0.5)]",
-    pillBg: "bg-blue-500/25 border border-blue-400/50 shadow-[0_0_20px_rgba(59,130,246,0.35)]",
+    pillBg: "bg-emerald-500/25 border border-emerald-400/50 shadow-[0_0_20px_rgba(59,130,246,0.35)]",
     icon: <User size={17} />,
     label: "Public Portal",
     emoji: "🌐",
@@ -110,7 +110,7 @@ export function AuthScreen() {
           transition={{ duration: 0.75, ease: "easeOut" }}
           className={`absolute left-[25%] top-[42%] -translate-x-1/2 -translate-y-1/2
             w-16 h-16 rounded-full pointer-events-none z-30 border-2
-            ${role === "CITIZEN" ? "border-blue-400" : role === "OFFICER" ? "border-emerald-400" : "border-orange-400"}
+            ${role === "CITIZEN" ? "border-emerald-400" : role === "OFFICER" ? "border-emerald-400" : "border-orange-400"}
           `}
         />
       </AnimatePresence>
@@ -197,7 +197,7 @@ export function AuthScreen() {
                 <motion.div
                   className={`h-full rounded-full ${
                     role === "CITIZEN"
-                      ? "bg-gradient-to-r from-blue-600 to-blue-400"
+                      ? "bg-gradient-to-r from-emerald-600 to-emerald-400"
                       : role === "OFFICER"
                       ? "bg-gradient-to-r from-emerald-600 to-emerald-400"
                       : "bg-gradient-to-r from-orange-600 to-orange-400"

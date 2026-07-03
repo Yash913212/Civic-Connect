@@ -46,7 +46,7 @@ export default function WarpTransition() {
           initial={{ width: 0, height: 0, opacity: 0 }}
           animate={{ width: "120vw", height: "120vw", opacity: [0, 0.6, 0] }}
           transition={{ duration: 1.8, ease: "easeOut" }}
-          className="absolute border border-cyan-400/50 rounded-full shadow-[0_0_50px_rgba(0,240,255,0.4)]"
+          className="absolute border border-teal-400/50 rounded-full shadow-[0_0_50px_rgba(0,240,255,0.4)]"
         />
         
         {/* Ring 2 */}
@@ -62,7 +62,7 @@ export default function WarpTransition() {
           initial={{ width: 0, height: 0, opacity: 0 }}
           animate={{ width: "160vw", height: "160vw", opacity: [0, 0.3, 0] }}
           transition={{ duration: 2.0, ease: "easeOut", delay: 0.4 }}
-          className="absolute border-2 border-cyan-300/30 rounded-full shadow-[0_0_80px_rgba(0,240,255,0.2)]"
+          className="absolute border-2 border-teal-300/30 rounded-full shadow-[0_0_80px_rgba(0,240,255,0.2)]"
         />
       </div>
 
@@ -88,7 +88,7 @@ export default function WarpTransition() {
                 repeat: Infinity,
                 repeatType: "loop"
               }}
-              className="absolute w-1.5 h-1.5 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full shadow-[0_0_8px_#00f0ff]"
+              className="absolute w-1.5 h-1.5 bg-gradient-to-r from-teal-400 to-emerald-500 rounded-full shadow-[0_0_8px_#00f0ff]"
             />
           );
         })}
@@ -106,10 +106,10 @@ export default function WarpTransition() {
           transition={{ duration: 0.8, ease: "backOut" }}
           className="relative w-28 h-28 flex items-center justify-center mb-6"
         >
-          <div className="absolute inset-0 rounded-full border-2 border-dashed border-cyan-400/30 animate-[spin_10s_linear_infinite]" />
+          <div className="absolute inset-0 rounded-full border-2 border-dashed border-teal-400/30 animate-[spin_10s_linear_infinite]" />
           <div className="absolute inset-2 rounded-full border border-double border-purple-500/40 animate-[spin_6s_linear_infinite_reverse]" />
-          <div className="absolute inset-4 rounded-full bg-cyan-400/5 backdrop-blur-md border border-cyan-400/30 shadow-[0_0_20px_rgba(0,240,255,0.15)] flex items-center justify-center">
-            <svg className="w-10 h-10 text-cyan-400 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <div className="absolute inset-4 rounded-full bg-teal-400/5 backdrop-blur-md border border-teal-400/30 shadow-[0_0_20px_rgba(0,240,255,0.15)] flex items-center justify-center">
+            <svg className="w-10 h-10 text-teal-400 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253" />
             </svg>
           </div>
@@ -122,7 +122,7 @@ export default function WarpTransition() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="space-y-2"
         >
-          <div className="text-cyan-400 font-mono text-sm tracking-[0.25em] font-semibold text-glow drop-shadow-[0_0_6px_rgba(34,211,238,0.4)]">
+          <div className="text-teal-400 font-mono text-sm tracking-[0.25em] font-semibold text-glow drop-shadow-[0_0_6px_rgba(34,211,238,0.4)]">
             {statusText}
           </div>
           <div className="text-white/40 font-mono text-[10px] tracking-widest uppercase">

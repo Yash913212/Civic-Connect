@@ -79,7 +79,7 @@ export default function GlobalBackground() {
   const isLight = theme === "light";
 
   return (
-    <div ref={containerRef} className="fixed inset-0 w-full h-full z-[-1] overflow-hidden bg-slate-50 dark:bg-[#050816] pointer-events-none transition-colors duration-500">
+    <div ref={containerRef} className="fixed inset-0 w-full h-full z-[-1] overflow-hidden pointer-events-none transition-colors duration-500">
       
       {/* Layer 1: Cinematic Video (Dark mode only) */}
       {!isLight && (
@@ -94,7 +94,7 @@ export default function GlobalBackground() {
       <div className={`absolute inset-0 transition-opacity duration-1000 ${
         isLight 
           ? "bg-gradient-to-br from-[#F8FAFC] via-[#FFFFFF] to-[#EEF6FF] opacity-100" 
-          : "bg-gradient-to-b from-transparent via-[#050816]/60 to-[#050816] opacity-90"
+          : "bg-gradient-to-b from-transparent via-background/60 to-background opacity-90"
       }`} />
 
       {/* Layer 3: AI Glow Overlay */}
@@ -103,8 +103,8 @@ export default function GlobalBackground() {
         className={`absolute inset-0 transition-opacity duration-1000 ${isLight ? 'opacity-50' : 'opacity-30'}`}
         style={{
           background: isLight 
-            ? "radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.08) 0%, transparent 60%)"
-            : "radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.15) 0%, transparent 70%)"
+            ? "radial-gradient(circle at 50% 50%, rgba(0, 200, 140, 0.08) 0%, transparent 60%)"
+            : "radial-gradient(circle at 50% 50%, rgba(0, 200, 140, 0.12) 0%, transparent 70%)"
         }}
       />
 
@@ -126,9 +126,9 @@ export default function GlobalBackground() {
       {/* Elegant Aurora Animation for Light Mode */}
       {isLight && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-60">
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-300/40 mix-blend-multiply filter blur-[120px] animate-blob" />
-          <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-200/40 mix-blend-multiply filter blur-[120px] animate-blob animation-delay-2000" />
-          <div className="absolute bottom-[-20%] left-[20%] w-[50%] h-[50%] rounded-full bg-indigo-300/40 mix-blend-multiply filter blur-[120px] animate-blob animation-delay-4000" />
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-300/40 mix-blend-multiply filter blur-[120px] animate-blob" />
+          <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-teal-200/40 mix-blend-multiply filter blur-[120px] animate-blob animation-delay-2000" />
+          <div className="absolute bottom-[-20%] left-[20%] w-[50%] h-[50%] rounded-full bg-emerald-300/40 mix-blend-multiply filter blur-[120px] animate-blob animation-delay-4000" />
         </div>
       )}
 

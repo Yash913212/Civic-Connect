@@ -347,7 +347,7 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
           </motion.span>
           <h2 className="text-4xl md:text-6xl font-heading font-bold mb-3">
             Live{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-teal-400">
               AI Demo
             </span>
           </h2>
@@ -366,10 +366,10 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
             className="lg:order-1"
           >
             <motion.div variants={cardVariants} className="relative group h-full">
-              <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-primary/20 to-purple-500/20 opacity-0 group-hover:opacity-100 blur transition duration-500" />
-              <div className="relative h-full flex flex-col bg-white/70 dark:bg-black/50 backdrop-blur-xl rounded-2xl p-6 border border-black/10 dark:border-white/10 shadow-sm">
+              <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-primary/20 to-emerald-500/20 opacity-0 group-hover:opacity-100 blur transition duration-500" />
+              <div className="relative h-full flex flex-col bg-white/5 dark:bg-white/5 backdrop-blur-2xl rounded-2xl p-6 border border-black/5 dark:border-white/5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-emerald-500/20 flex items-center justify-center">
                     <MessageSquareText className="w-5 h-5 text-primary" />
                   </div>
                   <div>
@@ -412,7 +412,7 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
                     className="relative h-32 border-2 border-dashed border-black/10 dark:border-white/20 rounded-xl flex flex-col items-center justify-center text-muted-foreground hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer mb-4 group/upload overflow-hidden"
                   >
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-purple-500/5"
+                      className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-teal-500/5"
                       animate={{ x: ["-100%", "100%"] }}
                       transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                     />
@@ -474,7 +474,7 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
                   whileTap={{ scale: 0.98 }}
                   onClick={handleProcessAI}
                   disabled={loading || (!selectedFile && !textInput.trim())}
-                  className="w-full mt-auto py-3 bg-gradient-to-r from-primary to-purple-600 text-white text-sm font-semibold rounded-xl hover:shadow-[0_0_30px_rgba(var(--primary),0.4)] transition-all disabled:opacity-40 disabled:hover:shadow-none flex items-center justify-center gap-2 relative overflow-hidden group/btn"
+                  className="w-full mt-auto py-3 bg-gradient-to-r from-primary to-emerald-600 text-white text-sm font-semibold rounded-xl hover:shadow-[0_8px_30px_rgba(0,200,140,0.4)] transition-all disabled:opacity-40 disabled:hover:shadow-none flex items-center justify-center gap-2 relative overflow-hidden group/btn"
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
@@ -501,13 +501,13 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
           >
             <motion.div variants={cardVariants} className="relative group h-full">
               <motion.div
-                className="absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-primary/30 via-purple-500/20 to-transparent opacity-0 group-hover:opacity-100 blur-xl transition duration-700"
+                className="absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-primary/30 via-teal-500/20 to-transparent opacity-0 group-hover:opacity-100 blur-xl transition duration-700"
                 animate={analysisResult ? { opacity: [0.3, 0.6, 0.3] } : {}}
                 transition={{ duration: 4, repeat: Infinity }}
               />
-              <div className="relative h-full bg-white/70 dark:bg-black/50 backdrop-blur-xl rounded-2xl p-6 border border-primary/20 min-h-[400px] flex flex-col shadow-sm">
+              <div className="relative h-full bg-white/5 dark:bg-white/5 backdrop-blur-2xl rounded-2xl p-6 border border-white/10 dark:border-white/10 min-h-[400px] flex flex-col shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-teal-500/20 flex items-center justify-center">
                     <Brain className="w-5 h-5 text-primary" />
                   </div>
                   <div>
@@ -568,7 +568,7 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
                       </motion.div>
 
                       {analysisResult.complaint && (
-                        <motion.div variants={cardVariants} className="relative bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-xl p-4 border border-primary/10 overflow-hidden">
+                        <motion.div variants={cardVariants} className="relative bg-gradient-to-br from-primary/5 to-teal-500/5 rounded-xl p-4 border border-primary/10 overflow-hidden">
                           <motion.div
                             className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent -skew-x-12"
                             animate={{ x: ["-100%", "200%"] }}
@@ -610,7 +610,7 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={proceedToRegister}
-                          className="flex-1 py-2.5 bg-gradient-to-r from-primary to-purple-600 text-white text-sm font-semibold rounded-xl hover:shadow-[0_0_25px_rgba(var(--primary),0.4)] transition-all flex items-center justify-center gap-2 relative overflow-hidden group/reg"
+                          className="flex-1 py-2.5 bg-gradient-to-r from-primary to-emerald-600 text-white text-sm font-semibold rounded-xl hover:shadow-[0_8px_25px_rgba(0,200,140,0.4)] transition-all flex items-center justify-center gap-2 relative overflow-hidden group/reg"
                         >
                           <motion.div
                             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
@@ -628,7 +628,7 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
                     >
                       <div className="text-center">
                         <motion.div
-                          className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/10 to-purple-500/10 flex items-center justify-center border border-primary/10"
+                          className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/10 to-teal-500/10 flex items-center justify-center border border-primary/10"
                           animate={{ y: [0, -5, 0] }}
                           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                         >
@@ -665,7 +665,7 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
               transition={{ delay: i * 0.1 }}
               className="group relative bg-white/60 dark:bg-black/40 backdrop-blur-sm rounded-xl p-4 border border-black/5 dark:border-white/10 hover:border-primary/30 transition-all"
             >
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/10 to-purple-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/10 to-teal-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <item.icon className="w-4 h-4 text-primary" />
               </div>
               <h4 className="text-sm font-semibold mb-1">{item.label}</h4>

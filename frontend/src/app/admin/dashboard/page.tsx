@@ -56,13 +56,13 @@ const defaultPriorityData = [
 
 const deptCards = [
   { name: "Roads Dept", officerCount: 42, activeCases: 156, color: "bg-amber-500", gradient: "from-amber-500/20 to-amber-600/5", iconColor: "text-amber-400" },
-  { name: "Drainage Dept", officerCount: 28, activeCases: 89, color: "bg-cyan-500", gradient: "from-cyan-500/20 to-cyan-600/5", iconColor: "text-cyan-400" },
+  { name: "Drainage Dept", officerCount: 28, activeCases: 89, color: "bg-teal-500", gradient: "from-teal-500/20 to-teal-600/5", iconColor: "text-teal-400" },
   { name: "Sanitation", officerCount: 85, activeCases: 312, color: "bg-emerald-500", gradient: "from-emerald-500/20 to-emerald-600/5", iconColor: "text-emerald-400" },
-  { name: "Water Works", officerCount: 35, activeCases: 67, color: "bg-blue-500", gradient: "from-blue-500/20 to-blue-600/5", iconColor: "text-blue-400" },
+  { name: "Water Works", officerCount: 35, activeCases: 67, color: "bg-emerald-500", gradient: "from-emerald-500/20 to-emerald-600/5", iconColor: "text-emerald-400" },
   { name: "Electrical Dept", officerCount: 22, activeCases: 53, color: "bg-yellow-500", gradient: "from-yellow-500/20 to-yellow-600/5", iconColor: "text-yellow-400" },
-  { name: "Power Distribution", officerCount: 18, activeCases: 41, color: "bg-orange-500", gradient: "from-orange-500/20 to-orange-600/5", iconColor: "text-orange-400" },
+  { name: "Power Distribution", officerCount: 18, activeCases: 41, color: "bg-emerald-500", gradient: "from-emerald-500/20 to-emerald-600/5", iconColor: "text-emerald-400" },
   { name: "Public Safety", officerCount: 15, activeCases: 38, color: "bg-red-500", gradient: "from-red-500/20 to-red-600/5", iconColor: "text-red-400" },
-  { name: "Traffic Management", officerCount: 30, activeCases: 84, color: "bg-purple-500", gradient: "from-purple-500/20 to-purple-600/5", iconColor: "text-purple-400" },
+  { name: "Traffic Management", officerCount: 30, activeCases: 84, color: "bg-teal-500", gradient: "from-teal-500/20 to-teal-600/5", iconColor: "text-teal-400" },
 ];
 
 const complaintFallbacks = [
@@ -107,9 +107,9 @@ function PulseDot({ color = "bg-emerald-500" }: { color?: string }) {
 function PriorityBadge({ priority }: { priority: string }) {
   const styles: Record<string, string> = {
     Critical: "bg-rose-500/15 border-rose-500/30 text-rose-400",
-    High: "bg-orange-500/15 border-orange-500/30 text-orange-400",
+    High: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
     Medium: "bg-amber-500/15 border-amber-500/30 text-amber-400",
-    Low: "bg-blue-500/15 border-blue-500/30 text-blue-400",
+    Low: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
   };
   return (
     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${styles[priority] || styles.Low}`}>
@@ -120,7 +120,7 @@ function PriorityBadge({ priority }: { priority: string }) {
 
 function PieChartCard({ data }: { data: any[] }) {
   return (
-    <div className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10">
+    <div className="p-6 rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
       <h4 className="text-sm font-bold text-slate-700 dark:text-white/80 mb-4">Priority Distribution</h4>
       <ResponsiveContainer width="100%" height={250}>
         <PieChart>
@@ -151,9 +151,9 @@ const STATUS_OPTIONS = ["Unassigned", "Assigned", "In Progress", "Escalated", "R
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
     Unassigned: "bg-slate-500/15 border-slate-500/30 text-slate-400",
-    Assigned: "bg-cyan-500/15 border-cyan-500/30 text-cyan-400",
+    Assigned: "bg-teal-500/15 border-teal-500/30 text-teal-400",
     "In Progress": "bg-amber-500/15 border-amber-500/30 text-amber-400",
-    Escalated: "bg-purple-500/15 border-purple-500/30 text-purple-400",
+    Escalated: "bg-teal-500/15 border-teal-500/30 text-teal-400",
     Resolved: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
   };
   return (
@@ -228,7 +228,7 @@ function OfficerAssignDropdown({ officers, currentOfficerId, currentOfficerName,
                 className={`w-full text-left px-3 py-2 text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex items-center gap-2 ${
                   o.id === currentOfficerId ? 'text-primary' : 'text-foreground'
                 }`}>
-                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-white text-[8px] font-bold">
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-teal-500 to-teal-500 flex items-center justify-center text-white text-[8px] font-bold">
                   {o.full_name.charAt(0)}
                 </div>
                 {o.full_name}
@@ -275,7 +275,7 @@ function UserRow({ user, onUpdate }: { user: UserData; onUpdate: () => void }) {
     <tr className="border-b border-black/5 dark:border-white/5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-white text-[9px] font-bold">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-500 to-teal-500 flex items-center justify-center text-white text-[9px] font-bold">
             {user.full_name.charAt(0)}
           </div>
           <span className="font-semibold text-foreground">{user.full_name}</span>
@@ -287,9 +287,9 @@ function UserRow({ user, onUpdate }: { user: UserData; onUpdate: () => void }) {
           <button onClick={() => !busy && setRoleOpen(!roleOpen)}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all hover:bg-slate-50 dark:hover:bg-white/10 bg-white dark:bg-white/5 border-black/10 dark:border-white/10">
             <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-              user.role === 'ADMIN' ? 'bg-purple-500/20 text-purple-400' :
-              user.role === 'OFFICER' ? 'bg-cyan-500/20 text-cyan-400' :
-              'bg-blue-500/20 text-blue-400'
+              user.role === 'ADMIN' ? 'bg-teal-500/20 text-teal-400' :
+              user.role === 'OFFICER' ? 'bg-teal-500/20 text-teal-400' :
+              'bg-emerald-500/20 text-emerald-400'
             }`}>{user.role}</span>
             <ChevronDown size={12} className="text-muted-foreground" />
           </button>
@@ -462,13 +462,13 @@ function AdminDashboard() {
   );
 
   return (
-    <main className="bg-transparent text-slate-900 dark:text-white min-h-screen pt-24 pb-24 relative overflow-hidden flex flex-col justify-between selection:bg-orange-500/20 dark:selection:bg-white/20">
+    <main className="bg-transparent text-slate-900 dark:text-white min-h-screen pt-24 pb-24 relative overflow-hidden flex flex-col justify-between selection:bg-emerald-500/20 dark:selection:bg-white/20">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <CanvasRevealEffect animationSpeed={3} containerClassName="bg-transparent" colors={[[168, 85, 247]]} dotSize={6} reverse={false} />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--background)_0%,_transparent_100%)] opacity-20" />
         <div className="absolute inset-0 bg-white/40 dark:bg-black/60 backdrop-blur-[2px]" />
       </div>
-      <div className="absolute w-[50vw] h-[50vw] rounded-full bg-purple-500/10 blur-[150px] left-[-10%] top-[20%] pointer-events-none z-0" />
+      <div className="absolute w-[50vw] h-[50vw] rounded-full bg-teal-500/10 blur-[150px] left-[-10%] top-[20%] pointer-events-none z-0" />
       <div className="absolute w-[40vw] h-[40vw] rounded-full bg-amber-500/10 blur-[150px] right-[5%] bottom-[-10%] pointer-events-none z-0" />
 
       <div className="container mx-auto px-6 relative z-10 flex-grow w-full max-w-7xl">
@@ -476,11 +476,11 @@ function AdminDashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-black/10 dark:border-white/10 pb-6">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <span className="text-xs uppercase tracking-[0.2em] font-bold text-orange-600 dark:text-purple-500">Operations Center</span>
+              <span className="text-xs uppercase tracking-[0.2em] font-bold text-emerald-600 dark:text-teal-500">Operations Center</span>
               <PulseDot color="bg-emerald-500" />
             </div>
             <h1 className="text-3xl md:text-5xl font-heading font-bold text-slate-900 dark:text-white tracking-tight">
-              City <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500 dark:from-purple-400 dark:to-indigo-500">Admin</span> Console
+              City <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-rose-500 dark:from-teal-400 dark:to-emerald-500">Admin</span> Console
             </h1>
             <p className="text-xs text-muted-foreground mt-1 font-mono">
               {liveTime.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} · {liveTime.toLocaleTimeString('en-IN')}
@@ -488,10 +488,10 @@ function AdminDashboard() {
           </div>
           <div className="mt-6 md:mt-0 flex gap-3">
             <button onClick={() => { showAIFuturistic("High", "Water Department", "92%"); }} className="flex items-center gap-2 px-4 py-2 bg-white shadow-sm border border-black/10 dark:bg-white/5 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition-all text-sm font-semibold">
-              <Zap className="w-4 h-4 text-orange-500 dark:text-purple-400" /> AI Insights
+              <Zap className="w-4 h-4 text-emerald-500 dark:text-teal-400" /> AI Insights
             </button>
             <button className="flex items-center gap-2 px-4 py-2 bg-white shadow-sm border border-black/10 dark:bg-white/5 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition-all text-sm font-semibold">
-              <Bell className="w-4 h-4 text-orange-500 dark:text-purple-400" />
+              <Bell className="w-4 h-4 text-emerald-500 dark:text-teal-400" />
               <span className="relative">Alerts<span className="absolute -top-2 -right-3 w-4 h-4 bg-rose-500 rounded-full text-[8px] flex items-center justify-center text-white font-bold">3</span></span>
             </button>
             <button onClick={handleSignOut} className="flex items-center gap-2 px-4 py-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl hover:bg-rose-500/20 transition-all text-sm font-semibold">
@@ -521,7 +521,7 @@ function AdminDashboard() {
                 <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl border transition-all text-left ${
                     isActive
-                      ? "bg-orange-500/10 border-orange-500/30 text-orange-600 shadow-[0_4px_20px_rgba(249,115,22,0.15)] dark:bg-purple-500/10 dark:border-purple-500/30 dark:text-purple-400"
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 shadow-[0_4px_20px_rgba(249,115,22,0.15)] dark:bg-teal-500/10 dark:border-teal-500/30 dark:text-teal-400"
                       : "bg-transparent border-transparent text-slate-500 dark:text-white/50 hover:bg-white dark:hover:bg-white/[0.02] hover:text-slate-900 dark:hover:text-white/80"
                   }`}>
                   <Icon className="w-4 h-4" /> {tab.label}
@@ -542,7 +542,7 @@ function AdminDashboard() {
                       { icon: FileText, label: "Total Complaints", value: kpis.total, suffix: "", color: "text-slate-900 dark:text-white", bg: "bg-white/70 dark:bg-black/50", accent: "text-slate-900/5 dark:text-white/5" },
                       { icon: AlertTriangle, label: "Open", value: kpis.open, suffix: "", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/5", accent: "text-amber-500/10" },
                       { icon: CheckCircle, label: "Closed", value: kpis.closed, suffix: "", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/5", accent: "text-emerald-500/10" },
-                      { icon: TrendingUp, label: "Resolution Rate", value: kpis.resolutionRate, suffix: "%", color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-500/5", accent: "text-cyan-500/10" },
+                      { icon: TrendingUp, label: "Resolution Rate", value: kpis.resolutionRate, suffix: "%", color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-500/5", accent: "text-teal-500/10" },
                     ].map((kpi) => {
                       const Icon = kpi.icon;
                       return (
@@ -563,9 +563,9 @@ function AdminDashboard() {
 
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Complaint Trends */}
-                    <div className="lg:col-span-2 p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 h-80">
+                    <div className="lg:col-span-2 p-6 rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] h-80">
                       <h4 className="text-sm font-bold text-slate-700 dark:text-white/80 mb-4 flex items-center gap-2">
-                        <BarChart3 className="w-4 h-4 text-purple-500" /> Daily Complaint Trends
+                        <BarChart3 className="w-4 h-4 text-teal-500" /> Daily Complaint Trends
                       </h4>
                       <ResponsiveContainer width="100%" height="85%">
                         <AreaChart data={trendsData}>
@@ -593,9 +593,9 @@ function AdminDashboard() {
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Dept Efficiency */}
-                    <div className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10">
+                    <div className="p-6 rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
                       <h4 className="text-sm font-bold text-slate-700 dark:text-white/80 mb-4 flex items-center gap-2">
-                        <Shield className="w-4 h-4 text-cyan-500" /> Department Efficiency Score
+                        <Shield className="w-4 h-4 text-teal-500" /> Department Efficiency Score
                       </h4>
                       <ResponsiveContainer width="100%" height={250}>
                         <BarChart data={deptPerfData} layout="vertical">
@@ -611,15 +611,15 @@ function AdminDashboard() {
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10">
+                    <div className="p-6 rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
                       <h4 className="text-sm font-bold text-slate-700 dark:text-white/80 mb-4 flex items-center gap-2">
                         <Zap className="w-4 h-4 text-amber-500" /> Quick Actions
                       </h4>
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { label: "New Department", icon: Building2, color: "from-purple-500/20 to-purple-600/5 text-purple-400" },
+                          { label: "New Department", icon: Building2, color: "from-teal-500/20 to-teal-600/5 text-teal-400" },
                           { label: "Generate Report", icon: FileText, color: "from-rose-500/20 to-rose-600/5 text-rose-400" },
-                          { label: "Assign Officers", icon: Users, color: "from-cyan-500/20 to-cyan-600/5 text-cyan-400" },
+                          { label: "Assign Officers", icon: Users, color: "from-teal-500/20 to-teal-600/5 text-teal-400" },
                           { label: "Sync Data", icon: RefreshCw, color: "from-emerald-500/20 to-emerald-600/5 text-emerald-400" },
                         ].map((a) => {
                           const Icon = a.icon;
@@ -646,7 +646,7 @@ function AdminDashboard() {
                       <div className="relative">
                         <Search className="w-4 h-4 text-slate-500 dark:text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
                         <input type="text" placeholder="Search ID, title, dept..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                          className="bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-orange-500/50 dark:focus:border-purple-500/50 transition-all w-56 shadow-sm" />
+                          className="bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-emerald-500/50 dark:focus:border-teal-500/50 transition-all w-56 shadow-sm" />
                       </div>
                       <button className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-white/10 transition-colors shadow-sm">
                         <Filter size={16} /> Filters
@@ -660,14 +660,14 @@ function AdminDashboard() {
                     )}
                     {filteredComplaints.map((item) => (
                       <motion.div key={item.id} variants={{ hidden: { opacity: 0, x: -20 }, show: { opacity: 1, x: 0 } }}
-                        className="p-4 rounded-xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 hover:bg-white/80 dark:hover:bg-black/60 transition-all flex flex-col md:flex-row justify-between items-center gap-4 group hover:shadow-md hover:scale-[1.005]">
+                        className="p-4 rounded-xl bg-white/80 dark:bg-white/5 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:bg-white/80 dark:hover:bg-black/60 transition-all flex flex-col md:flex-row justify-between items-center gap-4 group hover:shadow-md hover:scale-[1.005]">
                         <div className="flex items-center gap-4 w-full md:w-auto">
                           <motion.div whileHover={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 0.3 }}
                             className={`p-3 rounded-xl border ${
                               item.priority === 'Critical' ? 'bg-rose-500/10 border-rose-500/30 text-rose-500' :
-                              item.priority === 'High' ? 'bg-orange-500/10 border-orange-500/30 text-orange-500' :
+                              item.priority === 'High' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' :
                               item.priority === 'Medium' ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' :
-                              'bg-blue-500/10 border-blue-500/30 text-blue-500'
+                              'bg-emerald-500/10 border-emerald-500/30 text-emerald-500'
                             }`}>
                             <AlertTriangle size={20} />
                           </motion.div>
@@ -710,7 +710,7 @@ function AdminDashboard() {
                         <RefreshCw size={14} />
                       </button>
                       <button onClick={() => { setShowDeptForm(true); setEditingDeptId(null); setDeptFormName(""); setDeptFormDesc(""); }}
-                        className="px-4 py-2 bg-purple-500 hover:bg-purple-400 text-white font-semibold text-sm rounded-lg transition-all hover:shadow-lg hover:shadow-purple-500/25">
+                        className="px-4 py-2 bg-teal-500 hover:bg-teal-400 text-white font-semibold text-sm rounded-lg transition-all hover:shadow-lg hover:shadow-teal-500/25">
                         + New Department
                       </button>
                     </div>
@@ -720,14 +720,14 @@ function AdminDashboard() {
                   <AnimatePresence>
                     {showDeptForm && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-                        className="p-5 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-purple-500/30 overflow-hidden">
+                        className="p-5 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-emerald-500/30 overflow-hidden">
                         <h4 className="text-sm font-bold text-foreground mb-3">{editingDeptId ? "Edit Department" : "New Department"}</h4>
                         <div className="flex gap-3 items-start">
                           <div className="flex-1 space-y-2">
                             <input type="text" placeholder="Department name" value={deptFormName} onChange={e => setDeptFormName(e.target.value)}
-                              className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-purple-500/50" />
+                              className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-teal-500/50" />
                             <input type="text" placeholder="Description (optional)" value={deptFormDesc} onChange={e => setDeptFormDesc(e.target.value)}
-                              className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-purple-500/50" />
+                              className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-teal-500/50" />
                           </div>
                           <div className="flex gap-2 pt-1">
                             <button onClick={async () => {
@@ -743,7 +743,7 @@ function AdminDashboard() {
                                 setShowDeptForm(false);
                                 loadDepartments();
                               } catch (err: any) { toast.error(err.message); }
-                            }} className="px-4 py-2 bg-purple-500 hover:bg-purple-400 text-white text-sm font-semibold rounded-lg transition-all">
+                            }} className="px-4 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-lg transition-all">
                               {editingDeptId ? "Save" : "Create"}
                             </button>
                             <button onClick={() => setShowDeptForm(false)}
@@ -766,18 +766,18 @@ function AdminDashboard() {
                         const pct = Math.round((caseCount / maxCases) * 100);
                         const colors = [
                           { color: "bg-amber-500", gradient: "from-amber-500/20 to-amber-600/5", iconColor: "text-amber-400" },
-                          { color: "bg-cyan-500", gradient: "from-cyan-500/20 to-cyan-600/5", iconColor: "text-cyan-400" },
+                          { color: "bg-teal-500", gradient: "from-teal-500/20 to-teal-600/5", iconColor: "text-teal-400" },
                           { color: "bg-emerald-500", gradient: "from-emerald-500/20 to-emerald-600/5", iconColor: "text-emerald-400" },
-                          { color: "bg-blue-500", gradient: "from-blue-500/20 to-blue-600/5", iconColor: "text-blue-400" },
+                          { color: "bg-emerald-500", gradient: "from-emerald-500/20 to-emerald-600/5", iconColor: "text-emerald-400" },
                           { color: "bg-yellow-500", gradient: "from-yellow-500/20 to-yellow-600/5", iconColor: "text-yellow-400" },
-                          { color: "bg-orange-500", gradient: "from-orange-500/20 to-orange-600/5", iconColor: "text-orange-400" },
+                          { color: "bg-emerald-500", gradient: "from-emerald-500/20 to-emerald-600/5", iconColor: "text-emerald-400" },
                           { color: "bg-red-500", gradient: "from-red-500/20 to-red-600/5", iconColor: "text-red-400" },
-                          { color: "bg-purple-500", gradient: "from-purple-500/20 to-purple-600/5", iconColor: "text-purple-400" },
+                          { color: "bg-teal-500", gradient: "from-teal-500/20 to-teal-600/5", iconColor: "text-teal-400" },
                         ][i % 8];
                         return (
                           <motion.div key={dept.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                             whileHover={{ y: -2, transition: { duration: 0.2 } }}
-                            className={`p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20 transition-all bg-gradient-to-br ${colors.gradient} ${!dept.is_active ? 'opacity-50' : ''}`}>
+                            className={`p-6 rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:border-black/20 dark:hover:border-white/20 transition-all bg-gradient-to-br ${colors.gradient} ${!dept.is_active ? 'opacity-50' : ''}`}>
                             <div className="flex justify-between items-start mb-4">
                               <div className="flex items-center gap-3">
                                 <div className={`w-10 h-10 rounded-xl ${colors.color}/20 flex items-center justify-center ${colors.iconColor}`}>
@@ -828,7 +828,7 @@ function AdminDashboard() {
                       <RefreshCw size={14} /> Refresh
                     </button>
                   </div>
-                  <div className="rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 overflow-hidden">
+                  <div className="rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] overflow-hidden">
                     {loadingUsers ? (
                       <div className="p-12 text-center text-muted-foreground text-sm">Loading users...</div>
                     ) : users.length === 0 ? (
@@ -872,13 +872,13 @@ function AdminDashboard() {
                     <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] dark:opacity-10 mix-blend-overlay z-0"></div>
                     <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }} transition={{ duration: 2, repeat: Infinity }} className="absolute top-[30%] left-[40%] w-4 h-4 bg-rose-500 rounded-full shadow-[0_0_20px_rgba(244,63,94,0.8)] z-10" />
                     <motion.div animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }} className="absolute top-[50%] left-[60%] w-4 h-4 bg-amber-500 rounded-full shadow-[0_0_20px_rgba(245,158,11,0.8)] z-10" />
-                    <motion.div animate={{ scale: [1, 1.4, 1], opacity: [0.6, 1, 0.6] }} transition={{ duration: 3, repeat: Infinity, delay: 1 }} className="absolute top-[20%] left-[20%] w-6 h-6 bg-cyan-500/60 rounded-full flex items-center justify-center border-2 border-cyan-400 z-10 text-[8px] font-bold text-white">12</motion.div>
-                    <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 3.5, repeat: Infinity, delay: 1.5 }} className="absolute bottom-[30%] right-[25%] w-3 h-3 bg-purple-500 rounded-full shadow-[0_0_15px_rgba(168,85,247,0.8)] z-10" />
+                    <motion.div animate={{ scale: [1, 1.4, 1], opacity: [0.6, 1, 0.6] }} transition={{ duration: 3, repeat: Infinity, delay: 1 }} className="absolute top-[20%] left-[20%] w-6 h-6 bg-teal-500/60 rounded-full flex items-center justify-center border-2 border-teal-400 z-10 text-[8px] font-bold text-white">12</motion.div>
+                    <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 3.5, repeat: Infinity, delay: 1.5 }} className="absolute bottom-[30%] right-[25%] w-3 h-3 bg-teal-500 rounded-full shadow-[0_0_15px_rgba(168,85,247,0.8)] z-10" />
                     <div className="z-20 p-6 bg-white/80 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 rounded-xl max-w-sm text-center shadow-xl">
                       <h4 className="text-foreground font-bold mb-2">Map Engine Initialized</h4>
                       <p className="text-xs text-muted-foreground mb-4">Live connection to geospatial data streams active.</p>
                       <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                        className="px-6 py-2 bg-purple-500 text-white rounded-lg text-sm font-semibold hover:bg-purple-400 transition-colors">Interact</motion.button>
+                        className="px-6 py-2 bg-teal-500 text-white rounded-lg text-sm font-semibold hover:bg-teal-400 transition-colors">Interact</motion.button>
                     </div>
                   </div>
                 </motion.div>
@@ -897,7 +897,7 @@ function AdminDashboard() {
                       return (
                         <motion.div key={r.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
                           whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                          className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 flex flex-col items-center text-center hover:bg-white/80 dark:hover:bg-black/60 transition-all cursor-pointer group">
+                          className="p-6 rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] flex flex-col items-center text-center hover:bg-white/80 dark:hover:bg-black/60 transition-all cursor-pointer group">
                           <div className={`w-16 h-16 rounded-full bg-${r.color}-500/10 text-${r.color}-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                             <Icon size={28} />
                           </div>
@@ -924,7 +924,7 @@ function AdminDashboard() {
                       <button className="px-3 py-1.5 bg-white/70 dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-white/10 flex items-center gap-2 transition-colors"><Download size={14} /> Export</button>
                     </div>
                   </div>
-                  <div className="bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden">
+                  <div className="bg-white/80 dark:bg-white/5 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] rounded-2xl overflow-hidden">
                     <table className="w-full text-left text-sm">
                       <thead className="bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-slate-500 dark:text-white/50">
                         <tr>
@@ -1030,12 +1030,12 @@ function AdminDashboard() {
                       <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">Expended (YTD)</p>
                       <h4 className="text-2xl font-bold text-slate-900 dark:text-white">$2.1M</h4>
                     </div>
-                    <div className="p-5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20">
-                      <p className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider mb-1">Active Heavy Equipment</p>
+                    <div className="p-5 rounded-2xl bg-teal-500/10 border border-teal-500/20">
+                      <p className="text-xs font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider mb-1">Active Heavy Equipment</p>
                       <h4 className="text-2xl font-bold text-slate-900 dark:text-white">42 / 50</h4>
                     </div>
                   </div>
-                  <div className="bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-2xl p-6">
+                  <div className="bg-white/80 dark:bg-white/5 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] rounded-2xl p-6">
                     <h4 className="font-bold mb-4">Department Cost Breakdown (Estimated)</h4>
                     <div className="space-y-4">
                       {[
@@ -1064,7 +1064,7 @@ function AdminDashboard() {
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">System Settings & Configuration</h3>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="space-y-6">
-                      <div className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10">
+                      <div className="p-6 rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
                         <h4 className="font-bold border-b border-black/5 dark:border-white/5 pb-3 mb-4">Core Constants</h4>
                         <div className="space-y-4">
                           <div>
@@ -1080,7 +1080,7 @@ function AdminDashboard() {
                     </div>
                     
                     <div className="space-y-6">
-                      <div className="p-6 rounded-2xl bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/10">
+                      <div className="p-6 rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-sm dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
                         <h4 className="font-bold border-b border-black/5 dark:border-white/5 pb-3 mb-4">API Integrations</h4>
                         <div className="space-y-4">
                           <div>

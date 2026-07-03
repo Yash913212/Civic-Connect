@@ -52,70 +52,77 @@
 }
 
 :root {
-  /* Premium Light Mode */
-  --background: oklch(0.98 0 0); /* #F8FAFC equivalent */
-  --foreground: oklch(0.12 0 0);
+  /* Premium Light Mode - Emerald */
+  --background: oklch(0.99 0 0); 
+  --foreground: oklch(0.14 0.005 180);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.12 0 0);
+  --card-foreground: oklch(0.14 0.005 180);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.12 0 0);
-  --primary: oklch(0.45 0.15 250); /* #2563EB Citizen Light */
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.9 0.05 250);
-  --secondary-foreground: oklch(0.12 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.4 0 0);
-  --accent: oklch(0.95 0.05 250);
-  --accent-foreground: oklch(0.12 0 0);
+  --popover-foreground: oklch(0.14 0.005 180);
+  --primary: oklch(0.65 0.16 160); /* Premium Emerald */
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.96 0.01 180);
+  --secondary-foreground: oklch(0.14 0.005 180);
+  --muted: oklch(0.96 0.01 180);
+  --muted-foreground: oklch(0.4 0.01 180);
+  --accent: oklch(0.96 0.01 180);
+  --accent-foreground: oklch(0.14 0.005 180);
   --destructive: oklch(0.6 0.2 20);
-  --border: oklch(0.9 0 0); /* #E2E8F0 */
-  --input: oklch(0.9 0 0);
-  --ring: oklch(0.45 0.15 250);
+  --border: oklch(0.92 0.01 180);
+  --input: oklch(0.92 0.01 180);
+  --ring: oklch(0.65 0.16 160);
   
-  --chart-1: oklch(0.45 0.15 250);
-  --chart-2: oklch(0.5 0.15 280);
-  --chart-3: oklch(0.5 0.15 310);
-  --chart-4: oklch(0.5 0.15 340);
-  --chart-5: oklch(0.5 0.15 10);
+  --chart-1: oklch(0.65 0.16 160);
+  --chart-2: oklch(0.75 0.16 85);
+  --chart-3: oklch(0.65 0.20 300);
+  --chart-4: oklch(0.65 0.20 20);
+  --chart-5: oklch(0.70 0.12 210);
   --radius: 0.75rem;
 
   /* Global System Colors Light */
-  --color-citizen: #2563EB;
-  --color-officer: #16A34A;
-  --color-admin: #EA580C;
+  --color-citizen: #00C88C;
+  --color-officer: #D4AF37;
+  --color-admin: #8B5CF6;
 }
 
 .dark {
-  /* Dark Mode for cinematic feel */
-  --background: oklch(0.12 0 0); /* Very dark gray/black */
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.15 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.15 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.6 0.15 250); /* Cyan-ish */
-  --primary-foreground: oklch(0.12 0 0);
-  --secondary: oklch(0.2 0.05 250);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.2 0 0);
-  --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.3 0.1 270);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.6 0.2 20);
-  --border: oklch(0.25 0 0);
-  --input: oklch(0.2 0 0);
-  --ring: oklch(0.6 0.15 250);
+  /* $10,000 Premium Obsidian & Emerald Theme */
+  --background: oklch(0.10 0.005 180); /* Deep Obsidian #080A0A */
+  --foreground: oklch(0.98 0 0); /* Pure Crisp White */
+  --card: oklch(0.14 0.005 180); /* Elevated Dark Surface #111414 */
+  --card-foreground: oklch(0.96 0 0);
+  --popover: oklch(0.14 0.005 180);
+  --popover-foreground: oklch(0.96 0 0);
   
-  --chart-1: oklch(0.6 0.15 250);
-  --chart-2: oklch(0.6 0.15 280);
-  --chart-3: oklch(0.6 0.15 310);
-  --chart-4: oklch(0.6 0.15 340);
-  --chart-5: oklch(0.6 0.15 10);
+  /* Premium Electric Emerald */
+  --primary: oklch(0.70 0.16 160); /* #00C88C */
+  --primary-foreground: oklch(0.10 0.005 180); /* Very dark text on emerald */
+  
+  --secondary: oklch(0.18 0.01 180); /* #1A201F */
+  --secondary-foreground: oklch(0.98 0 0);
+  
+  --muted: oklch(0.18 0.01 180);
+  --muted-foreground: oklch(0.65 0.01 180); /* #9CA3A2 */
+  
+  --accent: oklch(0.18 0.01 180);
+  --accent-foreground: oklch(0.70 0.16 160); /* Emerald text on accent hover */
+  
+  --destructive: oklch(0.55 0.20 20); /* Sophisticated Crimson */
+  --border: oklch(0.22 0.01 180); /* Subtle structural lines #272E2D */
+  --input: oklch(0.22 0.01 180);
+  --ring: oklch(0.70 0.16 160); /* Emerald focus ring */
+
+  /* Premium Data Visualisation Accents (Jewel Tones) */
+  --chart-1: oklch(0.70 0.16 160); /* Emerald */
+  --chart-2: oklch(0.75 0.16 85);  /* Champagne Gold */
+  --chart-3: oklch(0.65 0.20 300); /* Amethyst */
+  --chart-4: oklch(0.65 0.20 20);  /* Ruby */
+  --chart-5: oklch(0.70 0.12 210); /* Sapphire (Muted) */
 
   /* Global System Colors Dark */
-  --color-citizen: #00D9FF;
-  --color-officer: #22C55E;
-  --color-admin: #F59E0B;
+  --color-citizen: #00C88C; /* Emerald */
+  --color-officer: #D4AF37; /* Gold */
+  --color-admin: #8B5CF6;   /* Purple */
 }
 
 @layer base {
@@ -160,14 +167,14 @@ html.lenis body {
 }
 
 .dark .text-glow {
-  text-shadow: 0 0 20px var(--primary);
+  text-shadow: 0 0 15px rgba(0, 200, 140, 0.25); /* Subtle emerald glow */
 }
 
 .text-gradient {
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-image: linear-gradient(to right, oklch(0.7 0.15 220), oklch(0.6 0.2 280));
+  background-image: linear-gradient(to right, oklch(0.70 0.16 160), oklch(0.75 0.16 85)); /* Emerald to Champagne Gold */
 }
 
 .video-overlay-gradient {

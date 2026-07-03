@@ -83,7 +83,7 @@ export default function CommandCenter() {
         className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-6"
       >
         {[
-          { title: "Total Complaints", value: "52,492", icon: Activity, color: "text-blue-500" },
+          { title: "Total Complaints", value: "52,492", icon: Activity, color: "text-emerald-500" },
           { title: "Resolved Cases", value: "48,102", icon: CheckCircle, color: "text-green-500" },
           { title: "Active Issues", value: "3,150", icon: Clock, color: "text-yellow-500" },
           { title: "Critical Alerts", value: "240", icon: AlertTriangle, color: "text-destructive" },

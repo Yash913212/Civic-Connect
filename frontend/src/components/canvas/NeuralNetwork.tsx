@@ -5,83 +5,78 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 export default function NeuralNetwork() {
-  const groupRef = useRef<THREE.Group>(null);
-  const linesRef = useRef<THREE.LineSegments>(null);
   const pointsRef = useRef<THREE.Points>(null);
-
-  const particleCount = 200;
   
-  const { positions, colors, lines, lineColors } = useMemo(() => {
+  // High-density grid for a premium "data wave" effect
+  const gridSize = 75;
+  const particleCount = gridSize * gridSize;
+  const spacing = 1.2;
+  
+  const { positions, colors, initialPositions } = useMemo(() => {
     const pos = new Float32Array(particleCount * 3);
     const col = new Float32Array(particleCount * 3);
+    const initPos = new Float32Array(particleCount * 3);
     
-    // Generate random positions and colors (cyan / primary / white)
-    for (let i = 0; i < particleCount; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 40;     // x
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 40; // y
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 20; // z
+    let i = 0;
+    for (let x = 0; x < gridSize; x++) {
+      for (let z = 0; z < gridSize; z++) {
+        const xPos = (x - gridSize / 2) * spacing;
+        const zPos = (z - gridSize / 2) * spacing;
+        
+        pos[i * 3] = xPos;
+        pos[i * 3 + 1] = 0; // Y is animated below
+        pos[i * 3 + 2] = zPos;
+        
+        initPos[i * 3] = xPos;
+        initPos[i * 3 + 1] = 0;
+        initPos[i * 3 + 2] = zPos;
 
-      const colorType = Math.random();
-      if (colorType > 0.6) {
-        // Cyan
-        col[i * 3] = 0.0;
-        col[i * 3 + 1] = 0.8;
-        col[i * 3 + 2] = 1.0;
-      } else if (colorType > 0.3) {
-        // Purple / Primary
-        col[i * 3] = 0.5;
-        col[i * 3 + 1] = 0.2;
-        col[i * 3 + 2] = 1.0;
-      } else {
-        // White-ish
-        col[i * 3] = 0.8;
-        col[i * 3 + 1] = 0.8;
-        col[i * 3 + 2] = 1.0;
-      }
-    }
-
-    // Connect nodes that are close to each other
-    const lineIndices: number[] = [];
-    const lineCols: number[] = [];
-    
-    for (let i = 0; i < particleCount; i++) {
-      let connections = 0;
-      for (let j = i + 1; j < particleCount; j++) {
-        const dx = pos[i * 3] - pos[j * 3];
-        const dy = pos[i * 3 + 1] - pos[j * 3 + 1];
-        const dz = pos[i * 3 + 2] - pos[j * 3 + 2];
-        const distSq = dx * dx + dy * dy + dz * dz;
-
-        // Threshold for connection
-        if (distSq < 25 && connections < 4) {
-          lineIndices.push(i, j);
-          
-          // Use color of first point for the line
-          lineCols.push(col[i * 3], col[i * 3 + 1], col[i * 3 + 2]);
-          lineCols.push(col[j * 3], col[j * 3 + 1], col[j * 3 + 2]);
-          connections++;
+        // Premium Color Distribution (Emerald, Gold, White)
+        const colorType = Math.random();
+        if (colorType > 0.9) {
+          // Champagne Gold Highlight
+          col[i * 3] = 0.83; col[i * 3 + 1] = 0.68; col[i * 3 + 2] = 0.21;
+        } else if (colorType > 0.4) {
+          // Electric Emerald
+          col[i * 3] = 0.0; col[i * 3 + 1] = 0.78; col[i * 3 + 2] = 0.55;
+        } else {
+          // Pale Mint / White
+          col[i * 3] = 0.8; col[i * 3 + 1] = 0.95; col[i * 3 + 2] = 0.85;
         }
+        
+        i++;
       }
     }
 
-    return {
-      positions: pos,
-      colors: col,
-      lines: new Uint16Array(lineIndices),
-      lineColors: new Float32Array(lineCols)
-    };
+    return { positions: pos, colors: col, initialPositions: initPos };
   }, []);
 
-  useFrame((state, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.05;
-      groupRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.2) * 0.1;
+  useFrame((state) => {
+    if (!pointsRef.current) return;
+    
+    const time = state.clock.elapsedTime;
+    const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
+    
+    for (let i = 0; i < particleCount; i++) {
+      const x = initialPositions[i * 3];
+      const z = initialPositions[i * 3 + 2];
+      
+      // Elegant, complex sine wave mathematics for organic fluid motion
+      const y = Math.sin(x * 0.05 + time * 0.4) * 2.5 
+              + Math.cos(z * 0.08 + time * 0.3) * 2.5
+              + Math.sin((x + z) * 0.03 + time * 0.2) * 2.0;
+              
+      positions[i * 3 + 1] = y;
     }
+    
+    pointsRef.current.geometry.attributes.position.needsUpdate = true;
+    
+    // Ultra-slow luxurious rotation
+    pointsRef.current.rotation.y = time * 0.03;
   });
 
   return (
-    <group ref={groupRef}>
-      {/* Nodes */}
+    <group rotation={[Math.PI / 6, 0, 0]} position={[0, -8, -25]}>
       <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -94,7 +89,7 @@ export default function NeuralNetwork() {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.15}
+          size={0.12}
           vertexColors
           transparent
           opacity={0.8}
@@ -102,30 +97,6 @@ export default function NeuralNetwork() {
           blending={THREE.AdditiveBlending}
         />
       </points>
-
-      {/* Connections */}
-      <lineSegments ref={linesRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[positions, 3]}
-          />
-          <bufferAttribute
-            attach="attributes-color"
-            args={[lineColors, 3]}
-          />
-          <bufferAttribute
-            attach="index"
-            args={[lines, 1]}
-          />
-        </bufferGeometry>
-        <lineBasicMaterial
-          vertexColors
-          transparent
-          opacity={0.15}
-          blending={THREE.AdditiveBlending}
-        />
-      </lineSegments>
     </group>
   );
 }

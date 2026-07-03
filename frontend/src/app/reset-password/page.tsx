@@ -71,7 +71,7 @@ function ResetPasswordForm() {
   return (
     <div className="w-full max-w-[420px] bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-lg dark:shadow-2xl relative overflow-hidden">
       {/* Glow decoration */}
-      <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-blue-500 blur-[100px] opacity-20 pointer-events-none" />
+      <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-emerald-500 blur-[100px] opacity-20 pointer-events-none" />
 
       <AnimatePresence mode="wait">
         {!isSuccess ? (
@@ -84,7 +84,7 @@ function ResetPasswordForm() {
             className="space-y-6"
           >
             <div className="text-center space-y-2">
-              <div className="mx-auto w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-500 mb-2">
+              <div className="mx-auto w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-500 mb-2">
                 <Key size={24} />
               </div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Reset Password</h2>
@@ -207,7 +207,7 @@ export default function ResetPasswordPage() {
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-12 relative z-10">
       <Suspense fallback={
         <div className="w-full max-w-[420px] bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl p-8 backdrop-blur-md flex items-center justify-center">
-          <Loader2 size={36} className="animate-spin text-blue-500" />
+          <Loader2 size={36} className="animate-spin text-emerald-500" />
         </div>
       }>
         <ResetPasswordForm />
