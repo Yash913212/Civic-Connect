@@ -603,7 +603,7 @@ async def caption_image(file: UploadFile = File(...)):
 @app.post("/ai/transcribe")
 async def transcribe_audio_endpoint(file: UploadFile = File(...), language: str = Form("")):
     contents = await file.read()
-    text = transcribe_audio(contents, language=language)
+    text = transcribe_audio(contents, language=language, filename=file.filename, content_type=file.content_type)
 
     return {
         "transcription": text,

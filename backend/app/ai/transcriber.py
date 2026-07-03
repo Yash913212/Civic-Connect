@@ -6,13 +6,13 @@ load_dotenv()
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
-def transcribe_audio(audio_bytes: bytes, language: str = "") -> str:
+def transcribe_audio(audio_bytes: bytes, language: str = "", filename: str = "audio.webm", content_type: str = "audio/webm") -> str:
     if not GROQ_API_KEY:
         return "Groq API key not configured."
 
     try:
         files = {
-            "file": ("audio.webm", audio_bytes, "audio/webm")
+            "file": (filename, audio_bytes, content_type)
         }
         data = {
             "model": "whisper-large-v3",

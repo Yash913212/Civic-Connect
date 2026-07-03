@@ -239,14 +239,20 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
       };
 
       mediaRecorder.onstop = async () => {
-        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const mimeType = mediaRecorder.mimeType || "audio/webm";
+        let extension = "webm";
+        if (mimeType.includes("mp4")) extension = "mp4";
+        else if (mimeType.includes("ogg")) extension = "ogg";
+        else if (mimeType.includes("wav")) extension = "wav";
+
+        const blob = new Blob(audioChunksRef.current, { type: mimeType });
         setAudioBlob(blob);
         setIsRecording(false);
         stream.getTracks().forEach(t => t.stop());
 
         try {
           const fd = new FormData();
-          fd.append("file", blob, "voice.webm");
+          fd.append("file", blob, `voice.${extension}`);
           const res = await fetch(`${API_BASE}/ai/transcribe`, { method: "POST", body: fd });
           const data = await res.json();
           if (data.transcription) {
