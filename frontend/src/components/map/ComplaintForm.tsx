@@ -23,6 +23,7 @@ interface DraftData {
   imageUrl: string;
   issue: string;
   modality: string;
+  ai_caption?: string;
 }
 
 export default function ComplaintForm() {
@@ -34,6 +35,8 @@ export default function ComplaintForm() {
   const [manualPreview, setManualPreview] = useState<string | null>(null);
   const [manualDescription, setManualDescription] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [requestNote, setRequestNote] = useState("");
+  const [generatingNote, setGeneratingNote] = useState(false);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("complaint_draft");
@@ -81,6 +84,44 @@ export default function ComplaintForm() {
       setStatus("error");
     }
   };
+  const generateRequestNote = async () => {
+  if (!selectedLocation || !draft) {
+    toast.error("Please select a location first.");
+    return;
+  }
+
+  setGeneratingNote(true);
+
+  try {
+    const res = await fetch(`${API_BASE}/ai/request-note`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        issue: draft.issue,
+        department: draft.department,
+        priority: draft.priority,
+        location: selectedLocation.display_name,
+        summary: draft.description,
+        citizen_description: draft.description,
+        image_caption: draft.ai_caption || "",
+      }),
+    });
+
+    if (!res.ok) throw new Error("Failed");
+
+    const data = await res.json();
+
+    setRequestNote(data.request_note);
+
+    toast.success("Request note generated!");
+  } catch {
+    toast.error("Failed to generate request note.");
+  } finally {
+    setGeneratingNote(false);
+  }
+};
 
   const handleManualFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -126,7 +167,7 @@ export default function ComplaintForm() {
           priority: (result.analysis?.priority || "low").toLowerCase(),
           imageUrl: "",
           issue: result.analysis?.title,
-          modality: "text-only",
+          modality: "text-only",ai_caption: data.ai_caption,
         });
       }
       setShowUpload(false);
@@ -253,19 +294,45 @@ export default function ComplaintForm() {
       </div>
 
       {/* Submit */}
-      {draft && (
-        <button
-          onClick={submitComplaint}
-          disabled={!selectedLocation || status === "submitting"}
-          className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-all disabled:opacity-40 flex items-center justify-center gap-2 text-base"
-        >
-          {status === "submitting" ? (
-            <><Loader2 className="w-5 h-5 animate-spin" /> Submitting...</>
-          ) : (
-            <><Send className="w-5 h-5" /> Submit Complaint</>
-          )}
-        </button>
-      )}
+     {draft && (
+  <div className="space-y-4">
+
+    <button
+      onClick={generateRequestNote}
+      disabled={!selectedLocation || generatingNote}
+      className="w-full py-3 bg-blue-600 text-white rounded-xl"
+    >
+      {generatingNote
+        ? "Generating..."
+        : "Generate Request Note"}
+    </button>
+
+    {requestNote && (
+      <div className="rounded-2xl border border-blue-500/20 p-5 bg-blue-500/5">
+        <h3 className="font-semibold text-blue-400 mb-3">
+          AI Generated Request Letter
+        </h3>
+
+        <p className="whitespace-pre-line text-sm">
+          {requestNote}
+        </p>
+      </div>
+    )}
+
+    {requestNote && (
+      <button
+        onClick={submitComplaint}
+        disabled={status === "submitting"}
+        className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl"
+      >
+        {status === "submitting"
+          ? "Submitting..."
+          : "Submit Complaint"}
+      </button>
+    )}
+
+  </div>
+)}
     </div>
   );
 }

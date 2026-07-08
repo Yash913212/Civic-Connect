@@ -23,7 +23,11 @@ def transcribe_audio(audio_bytes: bytes, language: str = "", filename: str = "au
         headers = {
             "Authorization": f"Bearer {GROQ_API_KEY}"
         }
-
+        print("=" * 50)
+        print("Filename:", filename)
+        print("Content-Type:", content_type)
+        print("Audio size:", len(audio_bytes), "bytes")
+        print("=" * 50)
         response = requests.post(
             "https://api.groq.com/openai/v1/audio/transcriptions",
             headers=headers,

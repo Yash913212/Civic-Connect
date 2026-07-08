@@ -34,7 +34,8 @@ def generate_caption(image_path):
                         { "type": "image_url", "image_url": { "url": f"data:{mime_type};base64,{base64_image}" } }
                     ]
                 }
-            ]
+            ],
+            "max_tokens": 50
         }
         
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)

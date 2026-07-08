@@ -1,6 +1,8 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form, Header, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from app.ai.translator import translate_to_english
+from app.ai.priority_predictor import predict_priority
 import shutil
 import os
 import io
@@ -10,6 +12,7 @@ from dotenv import load_dotenv
 from app.ai.predict import predict_issue
 from app.ai.captioning import generate_caption
 from app.ai.transcriber import transcribe_audio, transcribe_audio_file
+from app.ai.request_note import generate_request_note
 load_dotenv()
 
 from app.database.database import engine, Base, get_db
@@ -29,7 +32,11 @@ from slowapi.errors import RateLimitExceeded
 
 limiter = Limiter(key_func=get_remote_address)
 
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+    print("Database connected successfully.")
+except Exception as e:
+    print("Database initialization failed:", e)
 
 from sqlalchemy import text
 try:
@@ -500,6 +507,7 @@ async def analyze_image(
     file: UploadFile = File(...),
     description: str = Form("")
 ):
+    print("===== /ai/analyze called =====")
     contents = await file.read()
     compressed_contents = compress_image(contents)
     
@@ -512,14 +520,31 @@ async def analyze_image(
     with open(file_path, "wb") as f:
         f.write(compressed_contents)
 
-    result = predict_issue(
-        file_path, description=description
-    )
-    result["citizen_description"] = description
+    # Translate user's description into English
 
+    translated_description = (
+        translate_to_english(description)
+        if description.strip()
+        else ""
+    )
+    result = predict_issue(
+          file_path,
+          description=translated_description
+    )
+
+# Return both original and translated text
+    result["citizen_description"] = description
+    result["translated_description"] = translated_description
     caption = generate_caption(file_path)
     result["ai_caption"] = caption
+    priority = predict_priority(
+         issue=result["issue"],
+         description=translated_description,
+         image_caption=caption
+    )
 
+# Override the old priority
+    result["priority"] = priority
     return result
 
 @app.post("/analyze_text")
@@ -1193,4 +1218,33 @@ def get_analytics(db: Session = Depends(get_db)):
         "priorityData": priority_data,
         "deptPerformance": dept_performance,
         "trends": trends
+    }
+
+class ComplaintUpdate(BaseModel):
+    status: str
+
+
+class RequestNoteRequest(BaseModel):
+    issue: str
+    department: str
+    priority: str
+    location: str
+    citizen_description: str = ""
+    image_caption: str = ""
+
+
+@app.post("/ai/request-note")
+async def create_request_note(request: RequestNoteRequest):
+
+    note = generate_request_note(
+        issue=request.issue,
+        department=request.department,
+        priority=request.priority,
+        location=request.location,
+        citizen_description=request.citizen_description,
+        image_caption=request.image_caption,
+    )
+
+    return {
+        "request_note": note
     }

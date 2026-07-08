@@ -210,22 +210,23 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
       setShowScan(false);
     }
   };
+const proceedToRegister = () => {
+  if (!analysisResult) return;
 
-  const proceedToRegister = () => {
-    if (!analysisResult) return;
-    const payload = {
-      title: analysisResult.issue || "Civic Issue",
-      description: analysisResult.complaint || textInput,
-      department: analysisResult.department || "General",
-      priority: analysisResult.priority || "low",
-      imageUrl: previewUrl || "",
-      issue: analysisResult.issue,
-      modality: analysisResult.modality,
-    };
-    sessionStorage.setItem("complaint_draft", JSON.stringify(payload));
-    router.push("/citizen/complaint");
+  const payload = {
+    title: analysisResult.issue || "Civic Issue",
+    description: analysisResult.complaint || textInput,
+    request_note: analysisResult.request_note || "",
+    department: analysisResult.department || "General",
+    priority: analysisResult.priority || "low",
+    imageUrl: previewUrl || "",
+    issue: analysisResult.issue,
+    modality: analysisResult.modality,
   };
 
+  sessionStorage.setItem("complaint_draft", JSON.stringify(payload));
+  router.push("/citizen/complaint");
+};
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -263,10 +264,7 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
       };
 
       mediaRecorder.start();
-      setTimeout(() => {
-        if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
-      }, 5000);
-    } catch { toast.error("Microphone access denied"); }
+          } catch { toast.error("Microphone access denied"); }
   };
 
   const stopRecording = () => {
@@ -426,8 +424,13 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
                 <div className="flex items-center gap-2 mb-3">
                   <motion.button
                     whileTap={{ scale: 0.95 }}
-                    onMouseDown={startRecording} onMouseUp={stopRecording}
-                    onTouchStart={startRecording} onTouchEnd={stopRecording}
+                    onClick={() => {
+  if (isRecording) {
+    stopRecording();
+  } else {
+    startRecording();
+  }
+}}
                     className={`px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2 border ${
                       isRecording
                         ? "bg-red-500/20 text-red-400 border-red-500/30 scale-105 shadow-[0_0_20px_rgba(239,68,68,0.3)]"
@@ -568,34 +571,56 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
                       </motion.div>
 
                       {analysisResult.complaint && (
-                        <motion.div variants={cardVariants} className="relative bg-gradient-to-br from-primary/5 to-teal-500/5 rounded-xl p-4 border border-primary/10 overflow-hidden">
-                          <motion.div
-                            className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent -skew-x-12"
-                            animate={{ x: ["-100%", "200%"] }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                          />
-                          <div className="text-[9px] text-primary/60 uppercase tracking-wider mb-1.5 font-semibold flex items-center gap-1.5">
-                            <Sparkles className="w-3 h-3" /> Generated Summary
-                          </div>
-                          <motion.p
-                            className="text-sm leading-relaxed relative"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                          >
-                            {analysisResult.complaint.split("").map((char: string, i: number) => (
-                              <motion.span
-                                key={i}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: i * 0.008 }}
-                                className="inline"
-                              >
-                                {char}
-                              </motion.span>
-                            ))}
-                          </motion.p>
-                        </motion.div>
-                      )}
+  <motion.div
+    variants={cardVariants}
+    className="relative bg-gradient-to-br from-primary/5 to-teal-500/5 rounded-xl p-4 border border-primary/10 overflow-hidden"
+  >
+    <motion.div
+      className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent -skew-x-12"
+      animate={{ x: ["-100%", "200%"] }}
+      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+    />
+
+    <div className="text-[9px] text-primary/60 uppercase tracking-wider mb-1.5 font-semibold flex items-center gap-1.5">
+      <Sparkles className="w-3 h-3" />
+      Generated Summary
+    </div>
+
+    <motion.p
+      className="text-sm leading-relaxed relative"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      {analysisResult.complaint.split("").map((char: string, i: number) => (
+        <motion.span
+          key={i}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: i * 0.008 }}
+          className="inline"
+        >
+          {char}
+        </motion.span>
+      ))}
+    </motion.p>
+  </motion.div>
+)}
+
+{analysisResult.request_note && (
+  <motion.div
+    variants={cardVariants}
+    className="relative bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-xl p-4 border border-blue-500/10 overflow-hidden mt-4"
+  >
+    <div className="text-[9px] text-blue-400 uppercase tracking-wider mb-2 font-semibold flex items-center gap-1.5">
+      <Sparkles className="w-3 h-3" />
+      AI Generated Request Note
+    </div>
+
+    <p className="text-sm leading-relaxed whitespace-pre-line">
+      {analysisResult.request_note}
+    </p>
+  </motion.div>
+)}
 
                       <motion.div variants={cardVariants} className="flex gap-2 mt-auto pt-2">
                         <motion.button
