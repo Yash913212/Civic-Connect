@@ -167,7 +167,7 @@ export default function ComplaintForm() {
           priority: (result.analysis?.priority || "low").toLowerCase(),
           imageUrl: "",
           issue: result.analysis?.title,
-          modality: "text-only",ai_caption: data.ai_caption,
+          modality: "text-only",
         });
       }
       setShowUpload(false);
