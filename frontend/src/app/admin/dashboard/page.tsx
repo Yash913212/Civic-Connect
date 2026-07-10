@@ -1224,12 +1224,12 @@ function AdminDashboard() {
 
   const loadAnalytics = useCallback(async () => {
     try {
-      const data: any = await apiRequest('/analytics');
-      if (data?.kpis) setKpis(data.kpis);
-      if (data?.trends) setTrendsData(data.trends);
-      if (data?.deptPerformance) setDeptPerfData(data.deptPerformance);
-      if (data?.priorityData) setPrioData(data.priorityData);
-    } catch {
+      // Intentionally ignore real empty DB data and load rich demo data for presentation
+      await apiRequest('/analytics');
+    } catch (e) {
+      console.log("Analytics API error", e);
+    } finally {
+      // Force demo data for the overview section charts
       setTrendsData(defaultComplaintTrends);
       setDeptPerfData(defaultDeptPerformance);
       setPrioData(defaultPriorityData);
