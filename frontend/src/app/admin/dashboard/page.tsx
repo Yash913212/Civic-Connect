@@ -790,8 +790,8 @@ function OverviewTab({ kpis, trendsData, deptPerfData, prioData, loading }: {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={deptPerfData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-                <XAxis type="number" stroke="rgba(255,255,255,0.12)" tick={{ fill: "rgba(255,255,255,0.6)" }} fontSize={11} tickLine={false} axisLine={false} domain={[0, 100]} />
-                <YAxis dataKey="name" type="category" stroke="rgba(255,255,255,0.12)" tick={{ fill: "rgba(255,255,255,0.6)" }} fontSize={10} tickLine={false} axisLine={false} width={95} />
+                <XAxis type="number" stroke="rgba(255,255,255,0.12)" tick={{ fill: "rgba(255,255,255,0.7)" }} fontSize={11} tickLine={false} axisLine={false} domain={[0, 100]} />
+                <YAxis dataKey="name" type="category" stroke="rgba(255,255,255,0.12)" tick={{ fill: "#ffffff", fontSize: 11 }} tickLine={false} axisLine={false} width={120} />
                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.03)' }} content={<CustomTooltip />} formatter={(v: any) => [`${v ?? 0}%`, 'Efficiency']} />
                 <Bar dataKey="efficiency" radius={[0, 6, 6, 0]} animationDuration={1500}>
                   {deptPerfData.map((e, i) => <Cell key={i} fill={e.fill}
