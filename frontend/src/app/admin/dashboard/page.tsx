@@ -307,6 +307,7 @@ function UserRow({ user, onUpdate, index }: { user: UserData; onUpdate: () => vo
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.03, type: "spring", stiffness: 100, damping: 20 }}
       className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors group"
+      style={{ zIndex: 100 - index, position: "relative" }}
     >
       <td className="px-4 py-3.5">
         <div className="flex items-center gap-3">
@@ -908,7 +909,8 @@ function ComplaintsTab({ complaints, officers, searchQuery, setSearchQuery, comp
             {filtered.map((item, i) => (
               <motion.div key={item.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.025 }}
                 whileHover={{ x: 2, borderColor: 'rgba(255,255,255,0.12)' }}
-                className="p-4 rounded-xl bg-black/40 backdrop-blur-xl border border-white/[0.06] transition-all flex flex-col md:flex-row justify-between items-center gap-4 group cursor-default">
+                className="p-4 rounded-xl bg-black/40 backdrop-blur-xl border border-white/[0.06] transition-all flex flex-col md:flex-row justify-between items-center gap-4 group cursor-default"
+                style={{ zIndex: filtered.length - i, position: "relative" }}>
                 <div className="flex items-center gap-4 w-full md:w-auto">
                   <motion.div whileHover={{ rotate: [0, -8, 8, 0] }} className={`p-2.5 rounded-xl border ${
                     item.priority === 'Critical' ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' :
@@ -948,7 +950,8 @@ function ComplaintsTab({ complaints, officers, searchQuery, setSearchQuery, comp
             {filtered.map((item, i) => (
               <motion.div key={item.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.025 }}
                 whileHover={{ y: -3 }}
-                className="p-5 rounded-xl bg-black/40 backdrop-blur-xl border border-white/[0.06] hover:bg-white/[0.03] hover:border-white/[0.12] transition-all group">
+                className="p-5 rounded-xl bg-black/40 backdrop-blur-xl border border-white/[0.06] hover:bg-white/[0.03] hover:border-white/[0.12] transition-all group"
+                style={{ zIndex: filtered.length - i, position: "relative" }}>
                 <div className="flex items-start justify-between mb-3">
                   <PriorityBadge priority={item.priority} />
                   <StatusBadge status={item.status} />
