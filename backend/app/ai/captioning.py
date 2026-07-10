@@ -4,7 +4,7 @@ import requests
 import mimetypes
 
 def generate_caption(image_path):
-    api_key = os.environ.get("OPENROUTER_API_KEY", "")
+    api_key = os.environ.get("GROQ_API_KEY", "")
     if not api_key:
         return "Image analysis not available (No API Key)"
         
@@ -25,7 +25,7 @@ def generate_caption(image_path):
         prompt = "Write a short, single-sentence description of the main civic or public infrastructure issue (like pothole, garbage, broken street light, etc) visible in this image. Keep it concise."
         
         payload = {
-            "model": "openai/gpt-4o-mini",
+            "model": "llama-3.2-11b-vision-preview",
             "messages": [
                 {
                     "role": "user",
@@ -38,7 +38,7 @@ def generate_caption(image_path):
             "max_tokens": 50
         }
         
-        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+        response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload, timeout=30)
         response_data = response.json()
         
         if 'choices' in response_data and len(response_data['choices']) > 0:

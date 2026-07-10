@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 
 def translate_to_english(text: str) -> str:
@@ -12,12 +12,12 @@ def translate_to_english(text: str) -> str:
         return ""
 
     headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json",
     }
 
     payload = {
-        "model": "openai/gpt-4o-mini",
+        "model": "llama-3.1-8b-instant",
         "messages": [
             {
                 "role": "system",
@@ -37,7 +37,7 @@ def translate_to_english(text: str) -> str:
 
     try:
         response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
+            "https://api.groq.com/openai/v1/chat/completions",
             headers=headers,
             json=payload,
             timeout=30,

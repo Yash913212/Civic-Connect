@@ -555,7 +555,7 @@ async def analyze_image(
 def analyze_text(request: Request, body: TextAnalysisRequest):
     try:
         headers = {
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Authorization": f"Bearer {os.environ.get('GROQ_API_KEY')}",
             "Content-Type": "application/json"
         }
         
@@ -572,7 +572,7 @@ def analyze_text(request: Request, body: TextAnalysisRequest):
         """
         
         payload = {
-            "model": "openai/gpt-4o-mini",
+            "model": "llama-3.1-8b-instant",
             "response_format": { "type": "json_object" },
             "messages": [
                 {
@@ -584,7 +584,7 @@ def analyze_text(request: Request, body: TextAnalysisRequest):
             ]
         }
         
-        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+        response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload, timeout=30)
         response_data = response.json()
         ai_result = response_data['choices'][0]['message']['content']
         
