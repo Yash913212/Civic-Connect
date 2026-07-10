@@ -39,53 +39,56 @@ except Exception as e:
     print("Database initialization failed:", e)
 
 from sqlalchemy import text
-try:
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS image_url VARCHAR"))
-except Exception as e:
-    pass
 
-try:
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE complaints ALTER COLUMN priority TYPE VARCHAR USING priority::VARCHAR"))
-        conn.execute(text("ALTER TABLE complaints ALTER COLUMN status TYPE VARCHAR USING status::VARCHAR"))
-except Exception as e:
-    pass
+# PostgreSQL-specific migrations (skip for SQLite)
+if not settings.DATABASE_URL.startswith("sqlite"):
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS image_url VARCHAR"))
+    except Exception as e:
+        pass
 
-try:
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS latitude VARCHAR"))
-except Exception: pass
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE complaints ALTER COLUMN priority TYPE VARCHAR USING priority::VARCHAR"))
+            conn.execute(text("ALTER TABLE complaints ALTER COLUMN status TYPE VARCHAR USING status::VARCHAR"))
+    except Exception as e:
+        pass
 
-try:
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS longitude VARCHAR"))
-except Exception: pass
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS latitude VARCHAR"))
+    except Exception: pass
 
-try:
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS address VARCHAR"))
-except Exception: pass
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS longitude VARCHAR"))
+    except Exception: pass
 
-try:
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS user_id VARCHAR"))
-except Exception: pass
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS address VARCHAR"))
+    except Exception: pass
 
-try:
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS assigned_to VARCHAR"))
-except Exception: pass
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS user_id VARCHAR"))
+    except Exception: pass
 
-try:
-    Base.metadata.tables["notifications"].create(bind=engine, checkfirst=True)
-except Exception as e:
-    pass
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS assigned_to VARCHAR"))
+    except Exception: pass
 
-try:
-    Base.metadata.tables["departments"].create(bind=engine, checkfirst=True)
-except Exception as e:
-    pass
+    try:
+        Base.metadata.tables["notifications"].create(bind=engine, checkfirst=True)
+    except Exception as e:
+        pass
+
+    try:
+        Base.metadata.tables["departments"].create(bind=engine, checkfirst=True)
+    except Exception as e:
+        pass
 
 app = FastAPI(title="CivicConnect API")
 app.state.limiter = limiter
@@ -1219,10 +1222,6 @@ def get_analytics(db: Session = Depends(get_db)):
         "deptPerformance": dept_performance,
         "trends": trends
     }
-
-class ComplaintUpdate(BaseModel):
-    status: str
-
 
 class RequestNoteRequest(BaseModel):
     issue: str

@@ -71,7 +71,7 @@ export default function Navbar() {
 
   const showNavLinks = !pathname.includes('/admin/dashboard') && !pathname.includes('/officer/dashboard');
 
-  if (pathname === "/") return null;
+  if (pathname === "/" || pathname.startsWith("/admin") || pathname.startsWith("/officer")) return null;
 
   return (
     <>

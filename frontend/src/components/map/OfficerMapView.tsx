@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
-import { Search, Loader2, MapPin, Layers } from "lucide-react";
+import { Search, Loader2, MapPin, Layers, Clock, RefreshCw, Crosshair } from "lucide-react";
 import "@/lib/leafletSetup";
 import MarkerCluster from "./MarkerCluster";
 import { API_BASE, getAuthHeaders } from "@/services/api";
+
 const DEFAULT_CENTER: [number, number] = [17.385, 78.4867];
 
 interface Complaint {
@@ -54,7 +56,7 @@ function createMarkerIcon(priority: string, isSelected: boolean) {
       background: ${color};
       border: 3px solid ${isSelected ? '#fff' : color};
       border-radius: 50%;
-      box-shadow: 0 2px 8px ${color}80, 0 0 0 ${isSelected ? 4 : 2}px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 12px ${color}80, 0 0 0 ${isSelected ? 6 : 2}px rgba(0,0,0,0.2), 0 0 ${isSelected ? 20 : 0}px ${color}40;
       transition: all 0.2s;
     "></div>`,
     iconSize: [size * 2, size * 2],
@@ -69,6 +71,33 @@ function MapController({ center }: { center: [number, number] | null }) {
     if (center) map.flyTo(center, 14, { duration: 1 });
   }, [center, map]);
   return null;
+}
+
+function LiveIndicator({ loading, lastUpdated, newCount }: { loading: boolean; lastUpdated: Date | null; newCount: number }) {
+  return (
+    <div className="flex items-center gap-3">
+      {newCount > 0 && (
+        <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+          className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-semibold border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+          +{newCount} new
+        </motion.span>
+      )}
+      <div className="flex items-center gap-1.5">
+        <motion.span
+          animate={{ scale: [1, 1.3, 1] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className={`w-1.5 h-1.5 rounded-full ${loading ? "bg-amber-400" : "bg-emerald-400"}`}
+        />
+        <span className="text-[10px] text-white/50">
+          {lastUpdated
+            ? `Updated ${lastUpdated.toLocaleTimeString()}`
+            : loading
+              ? "Loading..."
+              : "Waiting for data"}
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export default function OfficerMapView() {
@@ -161,111 +190,119 @@ export default function OfficerMapView() {
   const statuses = ["Unassigned", "Assigned", "In Progress", "Escalated", "Resolved"];
 
   return (
-    <div className="space-y-4 h-full flex flex-col">
+    <div className="space-y-4 h-full flex flex-col p-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-white/30 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by title, address, department..."
-            className="w-full pl-9 pr-3 py-2 rounded-lg bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 text-sm focus:outline-none focus:border-primary"
+            className="w-full pl-9 pr-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-emerald-500/50 transition-all"
           />
         </div>
 
         <div className="flex gap-1">
           {priorities.map((p) => (
-            <button
+            <motion.button
               key={p}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setSelectedPriority(selectedPriority === p ? null : p)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                selectedPriority === p ? "ring-2 ring-offset-1 ring-black/20 dark:ring-white/20" : "opacity-60 hover:opacity-100"
+                selectedPriority === p
+                  ? 'ring-2 ring-offset-1 ring-white/20 bg-white/10 border-white/20 text-white'
+                  : 'bg-white/5 border-white/10 text-white/50 hover:text-white/80 hover:bg-white/10'
               }`}
-              style={{ backgroundColor: `${PRIORITY_COLORS[p]}20`, borderColor: `${PRIORITY_COLORS[p]}40`, color: PRIORITY_COLORS[p] }}
+              style={{ borderColor: selectedPriority === p ? PRIORITY_COLORS[p] : undefined }}
             >
               {PRIORITY_LABELS[p]}
-            </button>
+            </motion.button>
           ))}
         </div>
 
         <select
           value={selectedStatus || ""}
           onChange={(e) => setSelectedStatus(e.target.value || null)}
-          className="px-3 py-2 rounded-lg bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 text-sm focus:outline-none focus:border-primary"
+          className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-emerald-500/50"
         >
-          <option value="">All Status</option>
-          {statuses.map((s) => (<option key={s} value={s.toLowerCase()}>{s}</option>))}
+          <option value="" className="bg-black">All Status</option>
+          {statuses.map((s) => (<option key={s} value={s.toLowerCase()} className="bg-black">{s}</option>))}
         </select>
 
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setUseClustering(!useClustering)}
-          className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all flex items-center gap-1.5 ${
-            useClustering ? "bg-primary text-white border-primary" : "bg-black/5 dark:bg-white/10 border-black/10 dark:border-white/20"
+          className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+            useClustering
+              ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
+              : "bg-white/5 text-white/50 border-white/10 hover:text-white/80 hover:bg-white/10"
           }`}
         >
-          <Layers className="w-4 h-4" />
+          <Layers className="w-3.5 h-3.5" />
           {useClustering ? "Clustered" : "Markers"}
-        </button>
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={fetchComplaints}
+          className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:text-white/80 hover:bg-white/10 transition-all"
+        >
+          <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+        </motion.button>
       </div>
 
-      <div className="flex gap-4 text-xs text-muted-foreground items-center flex-wrap">
-        <span>Total: <strong>{stats.total}</strong></span>
-        <span style={{ color: PRIORITY_COLORS.high }}>High: <strong>{stats.high}</strong></span>
-        <span style={{ color: PRIORITY_COLORS.medium }}>Medium: <strong>{stats.medium}</strong></span>
-        <span style={{ color: PRIORITY_COLORS.low }}>Low: <strong>{stats.low}</strong></span>
+      <div className="flex gap-4 text-xs text-white/40 items-center flex-wrap">
+        <span>Total: <strong className="text-white">{stats.total}</strong></span>
+        <span className="text-rose-400">High: <strong>{stats.high}</strong></span>
+        <span className="text-amber-400">Medium: <strong>{stats.medium}</strong></span>
+        <span className="text-emerald-400">Low: <strong>{stats.low}</strong></span>
         <div className="flex-1" />
-        <div className="flex items-center gap-3">
-          {newCount > 0 && (
-            <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-semibold animate-pulse">
-              +{newCount} new
-            </span>
-          )}
-          <div className="flex items-center gap-1.5">
-            <span className={`w-1.5 h-1.5 rounded-full ${loading ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
-            <span className="text-[10px]">
-              {lastUpdated
-                ? `Updated ${lastUpdated.toLocaleTimeString()}`
-                : loading
-                  ? "Loading..."
-                  : "Waiting for data"}
-            </span>
-          </div>
-        </div>
+        <LiveIndicator loading={loading} lastUpdated={lastUpdated} newCount={newCount} />
       </div>
 
-      <div className="flex-1 rounded-xl overflow-hidden border border-black/10 dark:border-white/20 relative min-h-[400px]">
+      <div className="flex-1 rounded-xl overflow-hidden border border-white/[0.06] relative min-h-[400px]">
         {loading && complaints.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/5 dark:bg-white/5 z-10">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-10">
+            <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+              <Loader2 className="w-8 h-8 text-emerald-400" />
+            </motion.div>
           </div>
         )}
 
         {complaints.length === 0 && !loading && (
-          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground z-10">
+          <div className="absolute inset-0 flex items-center justify-center z-10">
             <div className="text-center">
-              <MapPin className="w-10 h-10 mx-auto mb-2 opacity-30" />
-              <p className="text-sm">No geo-tagged complaints yet</p>
-              <p className="text-xs mt-1">Complaints submitted from the citizen map will appear here</p>
+              <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity }}>
+                <MapPin className="w-12 h-12 mx-auto mb-3 text-white/20" />
+              </motion.div>
+              <p className="text-sm text-white/50">No geo-tagged complaints yet</p>
+              <p className="text-xs text-white/30 mt-1">Complaints submitted from the citizen map will appear here</p>
             </div>
           </div>
         )}
 
-        <div className="absolute bottom-4 left-4 z-[1000] bg-white/90 dark:bg-black/80 backdrop-blur-md rounded-lg px-3 py-2 border border-black/10 dark:border-white/20 shadow-lg text-[10px] space-y-1">
-          <p className="font-semibold text-[9px] uppercase tracking-wider text-muted-foreground">Status</p>
+        {/* Legend */}
+        <div className="absolute bottom-4 left-4 z-[1000] bg-black/80 backdrop-blur-md rounded-xl px-3 py-2.5 border border-white/10 shadow-xl text-[10px] space-y-1.5">
+          <p className="font-semibold text-[9px] uppercase tracking-wider text-white/40">Status</p>
           {Object.entries(STATUS_COLORS).map(([status, color]) => (
             <div key={status} className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-              <span>{status}</span>
+              <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }}
+                className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+              <span className="text-white/60">{status}</span>
             </div>
           ))}
         </div>
-        <div className="absolute bottom-4 right-4 z-[1000] bg-white/90 dark:bg-black/80 backdrop-blur-md rounded-lg px-3 py-2 border border-black/10 dark:border-white/20 shadow-lg text-[10px] space-y-1">
-          <p className="font-semibold text-[9px] uppercase tracking-wider text-muted-foreground">Priority</p>
+
+        <div className="absolute bottom-4 right-4 z-[1000] bg-black/80 backdrop-blur-md rounded-xl px-3 py-2.5 border border-white/10 shadow-xl text-[10px] space-y-1.5">
+          <p className="font-semibold text-[9px] uppercase tracking-wider text-white/40">Priority</p>
           {Object.entries(PRIORITY_COLORS).map(([priority, color]) => (
             <div key={priority} className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-              <span className="capitalize">{priority}</span>
+              <span className="capitalize text-white/60">{priority}</span>
             </div>
           ))}
         </div>
@@ -298,9 +335,9 @@ export default function OfficerMapView() {
                   eventHandlers={{ click: () => handleMarkerClick(c) }}
                 >
                   <Popup>
-                    <div className="text-xs space-y-1 max-w-[200px]">
-                      <p className="font-semibold text-sm">{c.title}</p>
-                      <p className="text-muted-foreground">{c.address || c.location}</p>
+                    <div className="text-xs space-y-1.5 max-w-[200px] bg-black/90">
+                      <p className="font-semibold text-sm text-white">{c.title}</p>
+                      <p className="text-white/60">{c.address || c.location}</p>
                       <div className="flex gap-2 mt-1">
                         <span className="px-1.5 py-0.5 rounded text-[10px] font-medium"
                           style={{ backgroundColor: `${PRIORITY_COLORS[c.priority?.toLowerCase()] || "#888"}20`, color: PRIORITY_COLORS[c.priority?.toLowerCase()] || "#888" }}
@@ -309,7 +346,7 @@ export default function OfficerMapView() {
                           style={{ backgroundColor: `${STATUS_COLORS[c.status] || "#888"}20`, color: STATUS_COLORS[c.status] || "#888" }}
                         >{c.status}</span>
                       </div>
-                      <p className="text-muted-foreground">{c.dept}</p>
+                      <p className="text-white/40">{c.dept}</p>
                     </div>
                   </Popup>
                 </Marker>

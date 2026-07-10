@@ -1,8 +1,12 @@
 import uuid
 from sqlalchemy import Column, String, Boolean, DateTime, Enum, func, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 from app.database.database import Base
 import enum
+
+
+def generate_uuid():
+    return str(uuid.uuid4())
+
 
 class RoleEnum(str, enum.Enum):
     CITIZEN = "CITIZEN"
@@ -12,7 +16,7 @@ class RoleEnum(str, enum.Enum):
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(String(36), primary_key=True, default=generate_uuid, index=True)
     full_name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     phone_number = Column(String, unique=True, index=True, nullable=False)
@@ -38,7 +42,7 @@ class ComplaintStatus(str, enum.Enum):
 class Complaint(Base):
     __tablename__ = "complaints"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(String(36), primary_key=True, default=generate_uuid, index=True)
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
     location = Column(String, nullable=False)
@@ -49,15 +53,15 @@ class Complaint(Base):
     priority = Column(String, default="Low")
     status = Column(Enum(ComplaintStatus), default=ComplaintStatus.UNASSIGNED)
     image_url = Column(String, nullable=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=True)
+    assigned_to = Column(String(36), ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
 class Department(Base):
     __tablename__ = "departments"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(String(36), primary_key=True, default=generate_uuid, index=True)
     name = Column(String, unique=True, nullable=False)
     description = Column(String, default="")
     is_active = Column(Boolean, default=True)
@@ -66,11 +70,11 @@ class Department(Base):
 class Notification(Base):
     __tablename__ = "notifications"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    id = Column(String(36), primary_key=True, default=generate_uuid, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
     title = Column(String, nullable=False)
     message = Column(String, nullable=False)
     type = Column(Enum(NotificationType), nullable=False)
-    complaint_id = Column(UUID(as_uuid=True), nullable=True)
+    complaint_id = Column(String(36), nullable=True)
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

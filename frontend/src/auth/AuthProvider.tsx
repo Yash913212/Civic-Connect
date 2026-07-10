@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, authService } from './authService';
 import { toast } from 'sonner';
 
@@ -27,15 +27,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const localUser = authService.getLocalUser();
         const token = localStorage.getItem('access_token');
-        
-        if (localUser && token) {
-          setUser(localUser);
-          // Optionally fetch fresh user data here
+        if (!token) {
+          setLoading(false);
+          return;
         }
+        const freshUser = await authService.getCurrentUser();
+        setUser(freshUser);
       } catch (error) {
-        console.error('Failed to initialize auth', error);
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+        document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
       } finally {
         setLoading(false);
       }
@@ -44,14 +48,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     initAuth();
   }, []);
 
-  const wsRef = useRef<WebSocket | null>(null);
-
   useEffect(() => {
     if (user && !loading) {
-      const wsBase = process.env.NEXT_PUBLIC_WS_URL || "wss://civic-connect-gzm1.onrender.com";
+      const wsBase = (process.env.NEXT_PUBLIC_WS_URL || "wss://civic-connect-gzm1.onrender.com").replace(/\/+$/, '');
       const wsUrl = `${wsBase}/ws/notifications/${user.id}`;
       const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
 
       ws.onopen = () => console.log("WebSocket Connected");
       

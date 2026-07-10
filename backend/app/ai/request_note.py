@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 
 def generate_request_note(issue,
@@ -16,7 +16,7 @@ def generate_request_note(issue,
     image_caption=""):
 
     headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json",
     }
 
@@ -40,42 +40,40 @@ Additional Observations:
 {image_caption}
 
 Requirements:
-- Write a natural, human-written government complaint letter.
+- Write a concise, human-written complaint email. Keep it short and direct (maximum 2 short paragraphs).
 - Start with a suitable Subject.
-- Begin with "Dear Sir/Madam,".
-- Mention the complaint location in the first paragraph.
-- Use the citizen description as the primary source.
-- Use the summary and observations only to support the explanation.
-- Clearly explain the issue, its impact on the public, and why immediate action is required.
-- Request the concerned department to inspect the location and resolve the issue.
-- End with "Thank you for your time and consideration."
+- Begin with "To the {department} Department," instead of "Dear Sir/Madam".
+- Mention the complaint location in the first sentence.
+- Use the citizen description to explain the issue and its impact.
+- Clearly request the {department} department to inspect and resolve the issue.
+- End exactly with "Thank you for your prompt attention to this matter."
+- CRITICAL: DO NOT include any sign-offs like "Sincerely", "Regards", or "[Your Name]". Stop generating immediately after the thank you sentence.
 - Do not mention AI, uploaded images, or placeholders.
 
 Return only the letter.
 """
     payload = {
-        "model": "openai/gpt-4o-mini",
+        "model": "llama-3.1-8b-instant",
         "messages": [
             {
                 "role": "user",
                 "content": prompt
             }
         ],
-        "max_tokens": 120,
+        "max_tokens": 512,
         "temperature": 0.6
     }
 
     try:
         response = requests.post(
-           "https://openrouter.ai/api/v1/chat/completions",
+           "https://api.groq.com/openai/v1/chat/completions",
             headers=headers,
             json=payload,
             timeout=30
          ) 
 
         print("Status:", response.status_code)
-        print("Response:", response.text)
-
+        
         response.raise_for_status()
 
         data = response.json()
