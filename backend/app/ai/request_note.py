@@ -1,10 +1,8 @@
 import os
-import requests
 from dotenv import load_dotenv
+from app.ai.llm_client import call_llm_with_fallback
 
 load_dotenv()
-
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 
 def generate_request_note(issue,
@@ -14,11 +12,6 @@ def generate_request_note(issue,
     summary: str = "",
     citizen_description="",
     image_caption=""):
-
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json",
-    }
 
     prompt = f"""
 
@@ -52,33 +45,18 @@ Requirements:
 
 Return only the letter.
 """
-    payload = {
-        "model": "llama-3.1-8b-instant",
-        "messages": [
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        "max_tokens": 512,
-        "temperature": 0.6
-    }
+    messages = [
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ]
 
     try:
-        response = requests.post(
-           "https://api.groq.com/openai/v1/chat/completions",
-            headers=headers,
-            json=payload,
-            timeout=30
-         ) 
-
-        print("Status:", response.status_code)
-        
-        response.raise_for_status()
-
-        data = response.json()
-
-        return data["choices"][0]["message"]["content"].strip()
+        note = call_llm_with_fallback(messages, is_vision=False, max_tokens=512)
+        if note:
+            return note
+        return "Unable to generate request note."
 
     except Exception as e:
         print("REQUEST NOTE ERROR:", e)

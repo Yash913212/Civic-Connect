@@ -550,15 +550,12 @@ async def analyze_image(
     result["priority"] = priority
     return result
 
+from app.ai.llm_client import call_llm_with_fallback
+
 @app.post("/analyze_text")
 @limiter.limit("15/minute")
 def analyze_text(request: Request, body: TextAnalysisRequest):
     try:
-        headers = {
-            "Authorization": f"Bearer {os.environ.get('GROQ_API_KEY')}",
-            "Content-Type": "application/json"
-        }
-        
         prompt = f"""
         Analyze this civic issue description: "{body.text}"
         Return a JSON response strictly in this format:
@@ -571,22 +568,17 @@ def analyze_text(request: Request, body: TextAnalysisRequest):
         }}
         """
         
-        payload = {
-            "model": "llama-3.1-8b-instant",
-            "response_format": { "type": "json_object" },
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        { "type": "text", "text": prompt }
-                    ]
-                }
-            ]
-        }
+        messages = [
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
         
-        response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload, timeout=30)
-        response_data = response.json()
-        ai_result = response_data['choices'][0]['message']['content']
+        ai_result = call_llm_with_fallback(messages, is_vision=False, max_tokens=150)
+        
+        if not ai_result:
+            raise Exception("All API fallbacks failed")
         
         ai_result = ai_result.strip()
         if ai_result.startswith("```json"):
