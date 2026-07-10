@@ -743,8 +743,8 @@ function OverviewTab({ kpis, trendsData, deptPerfData, prioData, loading }: {
                   <linearGradient id="nr" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.3} /><stop offset="100%" stopColor="#10b981" stopOpacity={0} /></linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <XAxis dataKey="name" stroke="rgba(255,255,255,0.12)" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="rgba(255,255,255,0.12)" fontSize={11} tickLine={false} axisLine={false} />
+                <XAxis dataKey="name" stroke="rgba(255,255,255,0.12)" tick={{ fill: "rgba(255,255,255,0.6)" }} fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="rgba(255,255,255,0.12)" tick={{ fill: "rgba(255,255,255,0.6)" }} fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip content={<CustomTooltip />} />
                 <Area type="monotone" dataKey="new" stroke="#8b5cf6" strokeWidth={2.5} fillOpacity={1} fill="url(#nt)" dot={{ r: 3, fill: "#8b5cf6", strokeWidth: 2, stroke: "#1a1a2e" }}
                   activeDot={{ r: 5, stroke: "#8b5cf6", strokeWidth: 2 }} />
@@ -790,8 +790,8 @@ function OverviewTab({ kpis, trendsData, deptPerfData, prioData, loading }: {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={deptPerfData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-                <XAxis type="number" stroke="rgba(255,255,255,0.12)" fontSize={11} tickLine={false} axisLine={false} domain={[0, 100]} />
-                <YAxis dataKey="name" type="category" stroke="rgba(255,255,255,0.12)" fontSize={10} tickLine={false} axisLine={false} width={95} />
+                <XAxis type="number" stroke="rgba(255,255,255,0.12)" tick={{ fill: "rgba(255,255,255,0.6)" }} fontSize={11} tickLine={false} axisLine={false} domain={[0, 100]} />
+                <YAxis dataKey="name" type="category" stroke="rgba(255,255,255,0.12)" tick={{ fill: "rgba(255,255,255,0.6)" }} fontSize={10} tickLine={false} axisLine={false} width={95} />
                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.03)' }} content={<CustomTooltip />} formatter={(v: any) => [`${v ?? 0}%`, 'Efficiency']} />
                 <Bar dataKey="efficiency" radius={[0, 6, 6, 0]} animationDuration={1500}>
                   {deptPerfData.map((e, i) => <Cell key={i} fill={e.fill}
@@ -843,8 +843,8 @@ function OverviewTab({ kpis, trendsData, deptPerfData, prioData, loading }: {
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={defaultComplaintTrends}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <XAxis dataKey="name" stroke="rgba(255,255,255,0.12)" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="rgba(255,255,255,0.12)" fontSize={11} tickLine={false} axisLine={false} />
+                <XAxis dataKey="name" stroke="rgba(255,255,255,0.12)" tick={{ fill: "rgba(255,255,255,0.6)" }} fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="rgba(255,255,255,0.12)" tick={{ fill: "rgba(255,255,255,0.6)" }} fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend wrapperStyle={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }} />
                 <Bar dataKey="new" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={16} />
