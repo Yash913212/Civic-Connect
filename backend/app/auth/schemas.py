@@ -17,7 +17,8 @@ class UserResponse(BaseModel):
     full_name: str
     email: EmailStr
     role: RoleEnum
-    
+    department: str | None = None
+
     class Config:
         from_attributes = True
 

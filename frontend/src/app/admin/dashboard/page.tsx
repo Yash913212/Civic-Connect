@@ -62,14 +62,14 @@ const defaultPriorityData = [
 ];
 
 const complaintFallbacks = [
-  { id: "C-8839", title: "Pedda gunta road meeda", dept: "Roads Dept", priority: "Critical", status: "Unassigned", time: "2 hours ago" },
-  { id: "C-8840", title: "Drainage block ayipoyindi", dept: "Drainage Dept", priority: "High", status: "Assigned", time: "5 hours ago" },
-  { id: "C-8841", title: "Overflowing garbage bin on main road", dept: "Sanitation", priority: "Medium", status: "Assigned", time: "1 day ago" },
-  { id: "C-8842", title: "Water pipe burst street flooded", dept: "Water Works", priority: "Critical", status: "In Progress", time: "4 hours ago" },
-  { id: "C-8843", title: "Street light not working complete dark", dept: "Electrical Dept", priority: "High", status: "Assigned", time: "6 hours ago" },
-  { id: "C-8844", title: "Exposed electric wire dangerous", dept: "Power Distribution", priority: "Critical", status: "Unassigned", time: "1 hour ago" },
-  { id: "C-8845", title: "Open manhole no cover dangerous", dept: "Public Safety", priority: "Critical", status: "Unassigned", time: "30 mins ago" },
-  { id: "C-8846", title: "Traffic signal not working at junction", dept: "Traffic Management", priority: "High", status: "Assigned", time: "3 hours ago" },
+  { id: "C-8839", title: "Pedda gunta road meeda", description: "Road issue on main road", dept: "Roads Dept", priority: "Critical", status: "Pending", time: "2 hours ago" },
+  { id: "C-8840", title: "Drainage block ayipoyindi", description: "Drainage blocked near junction", dept: "Drainage Dept", priority: "High", status: "Pending", time: "5 hours ago" },
+  { id: "C-8841", title: "Overflowing garbage bin on main road", description: "Garbage bin overflowing", dept: "Sanitation", priority: "Medium", status: "Assigned", time: "1 day ago" },
+  { id: "C-8842", title: "Water pipe burst street flooded", description: "Water pipe burst on main road", dept: "Water Works", priority: "Critical", status: "In Progress", time: "4 hours ago" },
+  { id: "C-8843", title: "Street light not working complete dark", description: "Street light not working", dept: "Electrical Dept", priority: "High", status: "Assigned", time: "6 hours ago" },
+  { id: "C-8844", title: "Exposed electric wire dangerous", description: "Exposed wire near school", dept: "Power Distribution", priority: "Critical", status: "Pending", time: "1 hour ago" },
+  { id: "C-8845", title: "Open manhole no cover dangerous", description: "Open manhole on sidewalk", dept: "Public Safety", priority: "Critical", status: "Pending", time: "30 mins ago" },
+  { id: "C-8846", title: "Traffic signal not working at junction", description: "Traffic signal malfunctioning", dept: "Traffic Management", priority: "High", status: "Assigned", time: "3 hours ago" },
 ];
 
 const sidebarItems = [
@@ -168,20 +168,19 @@ function PriorityBadge({ priority }: { priority: string }) {
   );
 }
 
-interface ComplaintData { id: string; title: string; dept: string; priority: string; status: string; time: string; assigned_to?: string | null; assigned_name?: string | null; }
+interface ComplaintData { id: string; title: string; description: string; dept: string; priority: string; status: string; time: string; image_url?: string | null; ai_summary?: string | null; ai_request_letter?: string | null; assigned_to?: string | null; assigned_name?: string | null; }
 
-const STATUS_OPTIONS = ["Unassigned", "Assigned", "In Progress", "Escalated", "Resolved"];
+const STATUS_OPTIONS = ["Pending", "Assigned", "In Progress", "Resolved"];
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    Unassigned: "bg-slate-500/15 border-slate-500/25 text-slate-400",
+    Pending: "bg-slate-500/15 border-slate-500/25 text-slate-400",
     Assigned: "bg-blue-500/15 border-blue-500/25 text-blue-400",
     "In Progress": "bg-amber-500/15 border-amber-500/25 text-amber-400",
-    Escalated: "bg-rose-500/15 border-rose-500/25 text-rose-400",
     Resolved: "bg-emerald-500/15 border-emerald-500/25 text-emerald-400",
   };
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${colors[status] || colors.Unassigned}`}>
+    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${colors[status] || colors.Pending}`}>
       {status}
     </span>
   );
@@ -271,8 +270,11 @@ function OfficerAssignDropdown({ officers, currentOfficerId, currentOfficerName,
 
 // ─── User Row ──────────────────────────────────────────────────────────
 
-function UserRow({ user, onUpdate, index }: { user: UserData; onUpdate: () => void; index: number }) {
+function UserRow({ user, onUpdate, index, departments }: {
+  user: UserData; onUpdate: () => void; index: number; departments: DepartmentData[];
+}) {
   const [roleOpen, setRoleOpen] = useState(false);
+  const [deptOpen, setDeptOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const handleRoleChange = async (newRole: string) => {
@@ -280,6 +282,19 @@ function UserRow({ user, onUpdate, index }: { user: UserData; onUpdate: () => vo
     try {
       await adminService.updateRole(user.id, newRole);
       toast.success(`${user.full_name} role → ${newRole}`);
+      onUpdate();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDepartmentChange = async (newDept: string | null) => {
+    setBusy(true);
+    try {
+      await adminService.updateUserDepartment(user.id, newDept);
+      toast.success(`${user.full_name} department → ${newDept || 'None'}`);
       onUpdate();
     } catch (err: any) {
       toast.error(err.message);
@@ -347,6 +362,35 @@ function UserRow({ user, onUpdate, index }: { user: UserData; onUpdate: () => vo
           )}
         </div>
       </td>
+      {user.role === 'OFFICER' && (
+        <td className="px-4 py-3.5">
+          <div className="relative">
+            <button onClick={() => !busy && setDeptOpen(!deptOpen)}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all hover:bg-white/5 bg-white/5 border-white/10">
+              <span className="text-white/70 max-w-[100px] truncate">{user.department || 'No Dept'}</span>
+              <motion.div animate={{ rotate: deptOpen ? 180 : 0 }}><ChevronDown size={12} className="text-white/40" /></motion.div>
+            </button>
+            {deptOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setDeptOpen(false)} />
+                <motion.div initial={{ opacity: 0, y: -4, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+                  className="absolute left-0 top-full mt-1 z-20 bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl py-1 min-w-[160px] max-h-[200px] overflow-y-auto">
+                  <button onClick={() => { handleDepartmentChange(null); setDeptOpen(false); }}
+                    className={`w-full text-left px-3 py-2 text-xs font-semibold hover:bg-white/5 transition-colors ${
+                      !user.department ? 'text-emerald-400' : 'text-white/50'
+                    }`}>None</button>
+                  {departments.map(d => (
+                    <button key={d.id} onClick={() => { handleDepartmentChange(d.name); setDeptOpen(false); }}
+                      className={`w-full text-left px-3 py-2 text-xs font-semibold hover:bg-white/5 transition-colors ${
+                        user.department === d.name ? 'text-emerald-400' : 'text-white/70'
+                      }`}>{d.name}</button>
+                  ))}
+                </motion.div>
+              </>
+            )}
+          </div>
+        </td>
+      )}
       <td className="px-4 py-3.5">
         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${
           user.is_active ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
@@ -522,7 +566,7 @@ function NotificationPanel({ open, onClose }: { open: boolean; onClose: () => vo
     { id: 1, title: "New Complaint Filed", desc: "C-8846: Traffic signal not working", time: "2 min ago", type: "info" },
     { id: 2, title: "Complaint Resolved", desc: "C-8842: Water pipe burst fixed", time: "15 min ago", type: "success" },
     { id: 3, title: "Officer Assigned", desc: "Ramesh → C-8840: Drainage block", time: "1 hour ago", type: "assignment" },
-    { id: 4, title: "Escalation Warning", desc: "C-8839: Unassigned for 48hrs", time: "2 hours ago", type: "urgent" },
+    { id: 4, title: "Pending Alert", desc: "C-8839: Pending for 48hrs", time: "2 hours ago", type: "urgent" },
   ], []);
 
   return (
@@ -1115,7 +1159,7 @@ function DepartmentsTab({ departments, complaints, loadingDepts, loadDepartments
   );
 }
 
-function UsersTab({ users, loadingUsers, loadUsers }: { users: UserData[]; loadingUsers: boolean; loadUsers: () => void }) {
+function UsersTab({ users, loadingUsers, loadUsers, departments }: { users: UserData[]; loadingUsers: boolean; loadUsers: () => void; departments: DepartmentData[] }) {
   return (
     <motion.div key="users" custom={1} variants={slideVariants} initial="enter" animate="center" exit="exit" className="space-y-5">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -1142,12 +1186,13 @@ function UsersTab({ users, loadingUsers, loadUsers }: { users: UserData[]; loadi
                 <tr className="border-b border-white/[0.06] bg-white/[0.02]">
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider text-white/40">User</th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider text-white/40">Role</th>
+                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider text-white/40">Department</th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider text-white/40">Status</th>
                   <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider text-white/40">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((u, i) => <UserRow key={u.id} user={u} onUpdate={loadUsers} index={i} />)}
+                {users.map((u, i) => <UserRow key={u.id} user={u} departments={departments} onUpdate={loadUsers} index={i} />)}
               </tbody>
             </table>
           </div>
@@ -1445,7 +1490,7 @@ function AdminDashboard() {
                 setEditingDeptId={setEditingDeptId} handleCreateDept={handleCreateDept} handleUpdateDept={handleUpdateDept}
                 setDeptDeleteTarget={setDeptDeleteTarget} />
             )}
-            {activeTab === "users" && <UsersTab users={users} loadingUsers={loadingUsers} loadUsers={loadUsers} />}
+            {activeTab === "users" && <UsersTab users={users} loadingUsers={loadingUsers} loadUsers={loadUsers} departments={departments} />}
 
             {/* Static tabs (kept from original, with enhanced styling) */}
             {activeTab === "map" && (

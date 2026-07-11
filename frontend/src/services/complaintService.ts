@@ -12,6 +12,8 @@ export interface ComplaintData {
   priority: string;
   status: string;
   image_url: string | null;
+  ai_summary: string | null;
+  ai_request_letter: string | null;
   user_id: string | null;
   assigned_to: string | null;
   assigned_name: string | null;
@@ -22,6 +24,7 @@ export interface OfficerData {
   id: string;
   full_name: string;
   email: string;
+  department: string | null;
 }
 
 export const complaintService = {
@@ -76,6 +79,8 @@ export const complaintService = {
     department: string;
     priority: string;
     image_url: string;
+    ai_summary?: string;
+    ai_request_letter?: string;
   }): Promise<any> {
     return apiRequest('/complaints', { method: 'POST', body: payload });
   },

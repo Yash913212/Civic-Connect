@@ -45,7 +45,7 @@ const performanceData = [
   { name: 'Week 4', resolved: 22, target: 18 },
 ];
 
-const STATUS_OPTIONS = ["Unassigned", "Assigned", "In Progress", "Escalated", "Resolved"];
+const STATUS_OPTIONS = ["Pending", "Assigned", "In Progress", "Resolved"];
 
 const sidebarItems = [
   { id: "tasks", icon: ClipboardList, label: "Active Assignments" },
@@ -141,14 +141,13 @@ function PriorityBadge({ priority }: { priority: string }) {
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    Unassigned: "bg-slate-500/15 border-slate-500/25 text-slate-400",
+    Pending: "bg-slate-500/15 border-slate-500/25 text-slate-400",
     Assigned: "bg-blue-500/15 border-blue-500/25 text-blue-400",
     "In Progress": "bg-amber-500/15 border-amber-500/25 text-amber-400",
-    Escalated: "bg-rose-500/15 border-rose-500/25 text-rose-400",
     Resolved: "bg-emerald-500/15 border-emerald-500/25 text-emerald-400",
   };
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${colors[status] || colors.Unassigned}`}>
+    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${colors[status] || colors.Pending}`}>
       {status}
     </span>
   );
@@ -1156,7 +1155,7 @@ function OfficerDashboard() {
                         <div className="pt-6 border-t border-white/10 mt-6">
                           <h4 className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-3">Quick Status Actions</h4>
                           <div className="flex flex-wrap gap-2">
-                            {["Assigned", "In Progress", "Resolved", "Escalated"].map(s => (
+                            {["Assigned", "In Progress", "Resolved"].map(s => (
                               <motion.button
                                 key={s}
                                 whileHover={selectedComplaint.status !== s ? { scale: 1.05 } : {}}
@@ -1170,11 +1169,9 @@ function OfficerDashboard() {
                                 } ${
                                   s === 'Resolved' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
                                   s === 'In Progress' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
-                                  s === 'Escalated' ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' :
                                   'bg-blue-500/20 text-blue-400 border-blue-500/30'
                                 }`}>
                                 {s === 'Resolved' && <CheckCircle size={12} className="inline mr-1" />}
-                                {s === 'Escalated' && <AlertTriangle size={12} className="inline mr-1" />}
                                 {s === 'In Progress' && <Activity size={12} className="inline mr-1" />}
                                 {s}
                               </motion.button>

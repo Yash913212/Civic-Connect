@@ -90,6 +90,21 @@ if not settings.DATABASE_URL.startswith("sqlite"):
     except Exception as e:
         pass
 
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS ai_summary VARCHAR"))
+    except Exception: pass
+
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS ai_request_letter VARCHAR"))
+    except Exception: pass
+
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR"))
+    except Exception: pass
+
 app = FastAPI(title="CivicConnect API")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -166,6 +181,8 @@ class Complaint(BaseModel):
     department: str = "General"
     priority: str = "Low"
     image_url: str | None = None
+    ai_summary: str | None = None
+    ai_request_letter: str | None = None
 
 class StatusUpdateRequest(BaseModel):
     status: str
@@ -175,6 +192,9 @@ class AssignRequest(BaseModel):
 
 class RoleUpdateRequest(BaseModel):
     role: str
+
+class DepartmentUpdateRequest(BaseModel):
+    department: str | None = None
 
 class ComplaintUpdate(BaseModel):
     title: str | None = None
@@ -186,6 +206,8 @@ class ComplaintUpdate(BaseModel):
     department: str | None = None
     priority: str | None = None
     image_url: str | None = None
+    ai_summary: str | None = None
+    ai_request_letter: str | None = None
 
 def get_optional_user(
     authorization: str | None = None,
@@ -640,20 +662,6 @@ def create_complaint(
 ):
     try:
         user = get_optional_user(authorization, db)
-        
-        # Auto-assignment logic
-        officers = db.query(User).filter(User.role == RoleEnum.OFFICER, User.is_active == True).all()
-        best_officer = None
-        if officers:
-            officer_loads = []
-            for officer in officers:
-                active_count = db.query(DBComplaint).filter(
-                    DBComplaint.assigned_to == officer.id,
-                    DBComplaint.status.in_([ComplaintStatus.ASSIGNED, ComplaintStatus.IN_PROGRESS])
-                ).count()
-                officer_loads.append((officer, active_count))
-            officer_loads.sort(key=lambda x: x[1])
-            best_officer = officer_loads[0][0]
 
         db_complaint = DBComplaint(
             title=complaint.title,
@@ -665,9 +673,10 @@ def create_complaint(
             department=complaint.department,
             priority=complaint.priority,
             image_url=complaint.image_url,
+            ai_summary=complaint.ai_summary,
+            ai_request_letter=complaint.ai_request_letter,
             user_id=user.id if user else None,
-            assigned_to=best_officer.id if best_officer else None,
-            status=ComplaintStatus.ASSIGNED if best_officer else ComplaintStatus.UNASSIGNED
+            status=ComplaintStatus.PENDING
         )
         db.add(db_complaint)
         db.flush()
@@ -677,17 +686,11 @@ def create_complaint(
                 "Complaint Submitted",
                 f"Your complaint '{db_complaint.title}' has been submitted successfully.",
                 NotificationType.COMPLAINT_SUBMITTED, db_complaint.id)
-                
-        if best_officer:
-            _create_notification(db, best_officer.id,
-                "New Assignment",
-                f"You have been assigned to a new complaint: '{db_complaint.title}'.",
-                NotificationType.ASSIGNMENT, db_complaint.id)
 
         db.commit()
         db.refresh(db_complaint)
 
-        return {"message": "Complaint Submitted Successfully", "id": str(db_complaint.id), "assigned_to": str(best_officer.id) if best_officer else None}
+        return {"message": "Complaint Submitted Successfully", "id": str(db_complaint.id)}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -709,6 +712,8 @@ def _complaint_to_dict(c: DBComplaint, db: Session) -> dict:
         "priority": c.priority,
         "status": c.status.value if hasattr(c.status, 'value') else c.status,
         "image_url": c.image_url,
+        "ai_summary": c.ai_summary,
+        "ai_request_letter": c.ai_request_letter,
         "user_id": str(c.user_id) if c.user_id else None,
         "assigned_to": str(c.assigned_to) if c.assigned_to else None,
         "assigned_name": assigned_name,
@@ -720,7 +725,10 @@ def get_complaints(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    complaints = db.query(DBComplaint).order_by(DBComplaint.created_at.desc()).all()
+    query = db.query(DBComplaint)
+    if current_user.role == RoleEnum.OFFICER and current_user.department:
+        query = query.filter(DBComplaint.department == current_user.department)
+    complaints = query.order_by(DBComplaint.created_at.desc()).all()
     return [_complaint_to_dict(c, db) for c in complaints]
 
 @app.get("/complaints/my")
@@ -747,6 +755,7 @@ def list_officers(
             "id": str(o.id),
             "full_name": o.full_name,
             "email": o.email,
+            "department": o.department,
         }
         for o in officers
     ]
@@ -883,6 +892,22 @@ def toggle_user_active(
     db.commit()
     return {"message": f"User {'activated' if user.is_active else 'deactivated'}", "is_active": user.is_active}
 
+@app.patch("/users/{user_id}/department")
+def update_user_department(
+    user_id: str,
+    request: DepartmentUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != RoleEnum.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can update department")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.department = request.department
+    db.commit()
+    return {"message": f"Department updated to '{request.department}'", "department": user.department}
+
 # ── Admin: Department CRUD ─────────────────────────────────
 
 class DepartmentCreate(BaseModel):
@@ -978,17 +1003,17 @@ def assign_officer(
     if not complaint:
         raise HTTPException(status_code=404, detail="Complaint not found")
 
-    if request.officer_id:
-        officer = db.query(User).filter(
-            User.id == request.officer_id,
-            User.role == RoleEnum.OFFICER,
-            User.is_active == True
-        ).first()
-        if not officer:
-            raise HTTPException(status_code=404, detail="Officer not found")
-        complaint.assigned_to = officer.id
-        if complaint.status == ComplaintStatus.UNASSIGNED:
-            complaint.status = ComplaintStatus.ASSIGNED
+        if request.officer_id:
+            officer = db.query(User).filter(
+                User.id == request.officer_id,
+                User.role == RoleEnum.OFFICER,
+                User.is_active == True
+            ).first()
+            if not officer:
+                raise HTTPException(status_code=404, detail="Officer not found")
+            complaint.assigned_to = officer.id
+            if complaint.status == ComplaintStatus.PENDING:
+                complaint.status = ComplaintStatus.ASSIGNED
 
         _create_notification(db, officer.id,
             "New Assignment",
@@ -1101,6 +1126,8 @@ def update_complaint(
     if request.department is not None: complaint.department = request.department
     if request.priority is not None: complaint.priority = request.priority
     if request.image_url is not None: complaint.image_url = request.image_url
+    if request.ai_summary is not None: complaint.ai_summary = request.ai_summary
+    if request.ai_request_letter is not None: complaint.ai_request_letter = request.ai_request_letter
 
     db.commit()
     db.refresh(complaint)

@@ -5,6 +5,7 @@ export interface User {
   full_name: string;
   email: string;
   role: 'CITIZEN' | 'OFFICER' | 'ADMIN';
+  department?: string | null;
 }
 
 export interface LoginResponse {

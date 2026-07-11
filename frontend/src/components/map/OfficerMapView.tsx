@@ -39,10 +39,9 @@ const PRIORITY_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  "Unassigned": "#6b7280",
+  "Pending": "#6b7280",
   "Assigned": "#3b82f6",
   "In Progress": "#f59e0b",
-  "Escalated": "#ef4444",
   "Resolved": "#22c55e",
 };
 
@@ -187,7 +186,7 @@ export default function OfficerMapView() {
   };
 
   const priorities = ["high", "medium", "low"];
-  const statuses = ["Unassigned", "Assigned", "In Progress", "Escalated", "Resolved"];
+  const statuses = ["Pending", "Assigned", "In Progress", "Resolved"];
 
   return (
     <div className="space-y-4 h-full flex flex-col p-4">

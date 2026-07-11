@@ -66,6 +66,8 @@ export default function ComplaintForm() {
         department: draft?.department || "General",
         priority: (draft?.priority || "low").charAt(0).toUpperCase() + (draft?.priority || "low").slice(1),
         image_url: draft?.imageUrl || "",
+        ai_summary: draft?.description || "",
+        ai_request_letter: requestNote || "",
       };
       const res = await fetch(`${API_BASE}/complaint`, {
         method: "POST",

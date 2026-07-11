@@ -6,6 +6,7 @@ export interface UserData {
   email: string;
   phone_number: string;
   role: string;
+  department: string | null;
   is_active: boolean;
   created_at: string | null;
 }
@@ -54,5 +55,12 @@ export const adminService = {
 
   async deleteDepartment(id: string): Promise<any> {
     return apiRequest(`/departments/${id}`, { method: 'DELETE' });
+  },
+
+  async updateUserDepartment(userId: string, department: string | null): Promise<any> {
+    return apiRequest(`/users/${userId}/department`, {
+      method: 'PATCH',
+      body: { department },
+    });
   },
 };

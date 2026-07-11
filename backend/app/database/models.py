@@ -22,6 +22,7 @@ class User(Base):
     phone_number = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
     role = Column(Enum(RoleEnum), default=RoleEnum.CITIZEN, nullable=False)
+    department = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -33,10 +34,9 @@ class NotificationType(str, enum.Enum):
     COMPLAINT_RESOLVED = "complaint_resolved"
 
 class ComplaintStatus(str, enum.Enum):
-    UNASSIGNED = "Unassigned"
+    PENDING = "Pending"
     ASSIGNED = "Assigned"
     IN_PROGRESS = "In Progress"
-    ESCALATED = "Escalated"
     RESOLVED = "Resolved"
 
 class Complaint(Base):
@@ -51,10 +51,12 @@ class Complaint(Base):
     address = Column(String, nullable=True)
     department = Column(String, default="General")
     priority = Column(String, default="Low")
-    status = Column(Enum(ComplaintStatus), default=ComplaintStatus.UNASSIGNED)
+    status = Column(Enum(ComplaintStatus), default=ComplaintStatus.PENDING)
     image_url = Column(String, nullable=True)
     user_id = Column(String(36), ForeignKey("users.id"), nullable=True)
     assigned_to = Column(String(36), ForeignKey("users.id"), nullable=True)
+    ai_summary = Column(String, nullable=True)
+    ai_request_letter = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

@@ -22,10 +22,9 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  "Unassigned": "#6b7280",
+  "Pending": "#6b7280",
   "Assigned": "#3b82f6",
   "In Progress": "#f59e0b",
-  "Escalated": "#ef4444",
   "Resolved": "#22c55e",
 };
 
