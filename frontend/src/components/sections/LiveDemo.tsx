@@ -704,16 +704,28 @@ const proceedToRegister = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mt-8 text-center"
+            className="mt-12 text-center flex justify-center"
           >
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={onViewMyComplaints}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-primary/20 rounded-xl text-sm font-semibold text-foreground hover:border-primary/50 hover:shadow-lg transition-all group"
+              className="relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-primary/20 to-teal-500/20 backdrop-blur-xl border border-primary/40 rounded-2xl text-sm font-bold text-foreground hover:shadow-[0_0_30px_rgba(var(--primary),0.3)] transition-all group overflow-hidden"
             >
-              <ClipboardList className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-              View My Complaints
-              <ArrowRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform" />
-            </button>
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+                animate={{ x: ["-150%", "250%"] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              />
+              <motion.div
+                className="absolute inset-0 rounded-2xl border-2 border-primary/50"
+                animate={{ opacity: [0, 1, 0], scale: [1, 1.05, 1.1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+              />
+              <ClipboardList className="w-5 h-5 text-primary relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+              <span className="relative z-10">View My Complaints & Tracking</span>
+              <ArrowRight className="w-5 h-5 text-primary relative z-10 group-hover:translate-x-1.5 transition-transform duration-300" />
+            </motion.button>
           </motion.div>
         )}
       </div>

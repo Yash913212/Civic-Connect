@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapPin, Send, CheckCircle2, Loader2, Upload, Brain } from "lucide-react";
+import { MapPin, Send, CheckCircle2, Loader2, Upload, Brain, ArrowRight, LayoutDashboard } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
@@ -198,10 +198,18 @@ export default function ComplaintForm() {
         </div>
         <h3 className="text-2xl font-bold mb-2">Complaint Registered!</h3>
         <p className="text-muted-foreground mb-1">Routed to {draft?.department || "concerned department"}.</p>
-        <p className="text-xs text-muted-foreground mb-8">Track its status from your dashboard.</p>
-        <button onClick={() => window.location.reload()} className="px-6 py-3 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-all">
-          Submit Another
-        </button>
+        <p className="text-xs text-muted-foreground mb-8">Track its status from your complaints dashboard.</p>
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <button onClick={() => window.location.href = '/citizen/complaints'} className="px-6 py-3 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-all flex items-center gap-2">
+            View My Complaints <ArrowRight size={16} />
+          </button>
+          <button onClick={() => window.location.href = '/citizen/dashboard'} className="px-6 py-3 bg-black/10 dark:bg-white/10 text-foreground font-medium rounded-xl hover:bg-black/20 dark:hover:bg-white/20 transition-all flex items-center gap-2">
+            <LayoutDashboard size={16} /> Dashboard
+          </button>
+          <button onClick={() => window.location.reload()} className="px-6 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Submit Another
+          </button>
+        </div>
       </div>
     );
   }

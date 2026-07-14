@@ -37,6 +37,29 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+function ComplaintTracker({ status }: { status: string }) {
+  const steps = ["Pending", "Assigned", "In Progress", "Resolved"];
+  const currentIndex = steps.indexOf(status) !== -1 ? steps.indexOf(status) : 0;
+
+  return (
+    <div className="mt-5 pt-5 border-t border-black/5 dark:border-white/5">
+      <div className="relative flex justify-between">
+        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-black/10 dark:bg-white/10 -translate-y-1/2 rounded-full" />
+        <div 
+          className="absolute top-1/2 left-0 h-0.5 bg-primary -translate-y-1/2 rounded-full transition-all duration-500 ease-in-out" 
+          style={{ width: `${(currentIndex / (steps.length - 1)) * 100}%` }}
+        />
+        {steps.map((step, index) => (
+          <div key={step} className="relative z-10 flex flex-col items-center gap-1.5 bg-white/70 dark:bg-black/50 px-2 rounded">
+            <div className={`w-3 h-3 rounded-full border-2 transition-colors duration-500 ${index <= currentIndex ? 'bg-primary border-primary shadow-[0_0_8px_rgba(168,85,247,0.5)]' : 'bg-white dark:bg-black border-black/20 dark:border-white/20'}`} />
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${index <= currentIndex ? 'text-primary' : 'text-muted-foreground'}`}>{step}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CitizenComplaints() {
   const router = useRouter();
   const [complaints, setComplaints] = useState<ComplaintData[]>([]);
@@ -63,6 +86,16 @@ function CitizenComplaints() {
   };
 
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    const handleRefresh = () => { if (document.visibilityState === 'visible') load(); };
+    window.addEventListener('focus', load);
+    document.addEventListener('visibilitychange', handleRefresh);
+    return () => {
+      window.removeEventListener('focus', load);
+      document.removeEventListener('visibilitychange', handleRefresh);
+    };
+  }, []);
 
   const handleDelete = async (c: ComplaintData) => {
     setDeleteTarget(c);
@@ -223,6 +256,7 @@ function CitizenComplaints() {
                     </div>
                   </div>
                 </div>
+                <ComplaintTracker status={c.status} />
               </motion.div>
             ))}
           </div>

@@ -737,7 +737,7 @@ def get_my_complaints(
     db: Session = Depends(get_db)
 ):
     complaints = db.query(DBComplaint).filter(
-        DBComplaint.user_id == current_user.id
+        DBComplaint.user_id == str(current_user.id)
     ).order_by(DBComplaint.created_at.desc()).all()
     return [_complaint_to_dict(c, db) for c in complaints]
 
