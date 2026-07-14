@@ -597,7 +597,7 @@ def analyze_text(request: Request, body: TextAnalysisRequest):
             }
         ]
         
-        ai_result = call_llm_with_fallback(messages, is_vision=False, max_tokens=150)
+        ai_result = call_llm_with_fallback(messages, is_vision=False, max_tokens=150, is_json=True)
         
         if not ai_result:
             raise Exception("All API fallbacks failed")

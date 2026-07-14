@@ -1,7 +1,7 @@
 import os
 import requests
 
-def call_llm_with_fallback(messages, is_vision=False, max_tokens=150):
+def call_llm_with_fallback(messages, is_vision=False, max_tokens=150, is_json=False):
     """
     Calls the LLM with dynamic fallback.
     Tries Groq first. If it fails (exhausted credits or rate limit), falls back to OpenRouter.
@@ -23,8 +23,7 @@ def call_llm_with_fallback(messages, is_vision=False, max_tokens=150):
                 "messages": messages,
                 "max_tokens": max_tokens
             }
-            # For JSON mode in text analysis
-            if not is_vision:
+            if is_json:
                 payload["response_format"] = { "type": "json_object" }
 
             response = requests.post(
@@ -55,7 +54,7 @@ def call_llm_with_fallback(messages, is_vision=False, max_tokens=150):
                 "messages": messages,
                 "max_tokens": max_tokens
             }
-            if not is_vision:
+            if is_json:
                 payload["response_format"] = { "type": "json_object" }
 
             response = requests.post(
