@@ -210,8 +210,17 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
       setShowScan(false);
     }
   };
-const proceedToRegister = () => {
+const proceedToRegister = async () => {
   if (!analysisResult) return;
+
+  let base64Image = "";
+  if (selectedFile) {
+    base64Image = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(selectedFile);
+    });
+  }
 
   const payload = {
     title: analysisResult.issue || "Civic Issue",
@@ -219,7 +228,7 @@ const proceedToRegister = () => {
     request_note: analysisResult.request_note || "",
     department: analysisResult.department || "General",
     priority: analysisResult.priority || "low",
-    imageUrl: previewUrl || "",
+    imageUrl: base64Image,
     issue: analysisResult.issue,
     modality: analysisResult.modality,
   };

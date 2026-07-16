@@ -56,6 +56,15 @@ export default function ComplaintForm() {
     }
     setStatus("submitting");
     try {
+      let finalImageUrl = draft?.imageUrl || "";
+      if (manualFile) {
+        finalImageUrl = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(manualFile);
+        });
+      }
+
       const payload = {
         title: draft?.title || manualFile?.name || "Civic Issue",
         description: draft?.description || manualDescription || "No description provided",
@@ -65,7 +74,7 @@ export default function ComplaintForm() {
         address: selectedLocation.display_name,
         department: draft?.department || "General",
         priority: (draft?.priority || "low").charAt(0).toUpperCase() + (draft?.priority || "low").slice(1),
-        image_url: draft?.imageUrl || "",
+        image_url: finalImageUrl,
         ai_summary: draft?.description || "",
         ai_request_letter: requestNote || "",
       };

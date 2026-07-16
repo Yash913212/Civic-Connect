@@ -213,29 +213,43 @@ function CitizenComplaints() {
                 <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-primary/10 to-purple-500/10 opacity-0 group-hover:opacity-100 blur transition duration-500" />
                 <div className="relative flex flex-col md:flex-row justify-between gap-4">
                   <div className="flex-1">
-                    {editingId === c.id ? (
-                      <div className="space-y-2 mb-3">
-                        <input type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)}
-                          className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-bold text-foreground focus:outline-none focus:border-primary/50" />
-                        <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={2}
-                          className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-muted-foreground focus:outline-none focus:border-primary/50 resize-none" />
-                        <div className="flex gap-2">
-                          <button onClick={() => saveEdit(c)}
-                            className="px-3 py-1 bg-primary/10 border border-primary/30 rounded-lg text-xs font-semibold text-primary hover:bg-primary/20 transition-all">Save</button>
-                          <button onClick={cancelEdit}
-                            className="px-3 py-1 bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground transition-all">Cancel</button>
+                    <div className="flex gap-4">
+                      {c.image_url && (
+                        <div className="shrink-0">
+                          <img 
+                            src={c.image_url} 
+                            alt="Complaint image" 
+                            className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl border border-black/10 dark:border-white/10"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
                         </div>
+                      )}
+                      <div className="flex-1">
+                        {editingId === c.id ? (
+                          <div className="space-y-2 mb-3">
+                            <input type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)}
+                              className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-bold text-foreground focus:outline-none focus:border-primary/50" />
+                            <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={2}
+                              className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-muted-foreground focus:outline-none focus:border-primary/50 resize-none" />
+                            <div className="flex gap-2">
+                              <button onClick={() => saveEdit(c)}
+                                className="px-3 py-1 bg-primary/10 border border-primary/30 rounded-lg text-xs font-semibold text-primary hover:bg-primary/20 transition-all">Save</button>
+                              <button onClick={cancelEdit}
+                                className="px-3 py-1 bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground transition-all">Cancel</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <span className="text-xs font-mono text-muted-foreground">#{c.id.substring(0, 8)}</span>
+                              <h4 className="font-bold text-foreground">{c.title}</h4>
+                            </div>
+                            <p className="text-sm text-muted-foreground line-clamp-3 mb-3">{c.description}</p>
+                          </>
+                        )}
                       </div>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="text-xs font-mono text-muted-foreground">#{c.id.substring(0, 8)}</span>
-                          <h4 className="font-bold text-foreground">{c.title}</h4>
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-3 mb-3">{c.description}</p>
-                      </>
-                    )}
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-3">
                       <span className="flex items-center gap-1"><Building2 size={12} /> {c.dept}</span>
                       <span className="flex items-center gap-1"><MapPin size={12} /> {c.address?.substring(0, 40) || c.location}</span>
                       <span className="flex items-center gap-1"><Clock size={12} /> {new Date(c.time).toLocaleDateString()}</span>
