@@ -138,9 +138,9 @@ function CitizenComplaints() {
   };
 
   const filtered = complaints.filter(c =>
-    c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.dept.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.id.toLowerCase().includes(searchQuery.toLowerCase())
+    (c.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+    (c.dept?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+    (c.id?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
 
   return (

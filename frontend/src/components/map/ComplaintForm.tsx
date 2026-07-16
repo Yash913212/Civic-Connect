@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import MapPicker from "./MapPicker";
+import { complaintService } from "@/services/complaintService";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || "http://localhost:8000";
 
@@ -55,7 +56,6 @@ export default function ComplaintForm() {
     }
     setStatus("submitting");
     try {
-      const token = localStorage.getItem('access_token');
       const payload = {
         title: draft?.title || manualFile?.name || "Civic Issue",
         description: draft?.description || manualDescription || "No description provided",
@@ -69,20 +69,12 @@ export default function ComplaintForm() {
         ai_summary: draft?.description || "",
         ai_request_letter: requestNote || "",
       };
-      const res = await fetch(`${API_BASE}/complaint`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await complaintService.create(payload);
       setStatus("done");
       toast.success("Complaint registered!");
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
-    } catch {
-      toast.error("Failed to register complaint");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to register complaint");
       setStatus("error");
     }
   };

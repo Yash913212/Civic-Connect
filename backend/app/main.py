@@ -222,7 +222,12 @@ def get_optional_user(
         if user_id:
             return db.query(User).filter(User.id == user_id).first()
     except JWTError:
-        pass
+        from fastapi import HTTPException, status
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token expired or invalid",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return None
 
 @app.get("/")
@@ -691,6 +696,9 @@ def create_complaint(
         db.refresh(db_complaint)
 
         return {"message": "Complaint Submitted Successfully", "id": str(db_complaint.id)}
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
