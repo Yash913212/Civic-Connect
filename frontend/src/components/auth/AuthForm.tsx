@@ -7,7 +7,8 @@ import * as z from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ArrowRight, Mail, Lock, User as UserIcon } from "lucide-react";
 import Link from "next/link";
-import { Role } from "./AuthScreen";
+import { Role } from "@/config/roles";
+import { dashRoutes } from "@/config/roles";
 import { authService } from "@/auth/authService";
 import { useAuth } from "@/auth/AuthProvider";
 import { useRouter } from "next/navigation";
@@ -63,11 +64,6 @@ export function AuthForm({ role }: AuthFormProps) {
 
       setAuthUser(response.user, response.access_token, response.refresh_token);
 
-      const dashRoutes: Record<string, string> = {
-        CITIZEN: "/citizen/dashboard",
-        OFFICER: "/officer/dashboard",
-        ADMIN: "/admin/dashboard",
-      };
       window.location.href = dashRoutes[role];
     } catch (err: any) {
       setError(err.response?.data?.detail || err.message || "Authentication failed");

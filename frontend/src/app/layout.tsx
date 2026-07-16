@@ -7,6 +7,9 @@ import GlobalBackground from "@/components/GlobalBackground";
 import { AuthProvider } from "@/auth/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "sonner";
+import CivicAI from "@/components/chatbot/CivicAI";
+import CommandPalette from "@/components/ui/CommandPalette";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -41,6 +44,13 @@ export default function RootLayout({
         className={`${inter.variable} ${sora.variable} antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#059669" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Civic Connect" />
+      </head>
       <body className="min-h-full flex flex-col font-sans overflow-x-hidden transition-colors duration-500">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Toaster theme="system" position="top-right" richColors closeButton />
@@ -51,6 +61,9 @@ export default function RootLayout({
               {children}
             </SmoothScroll>
           </AuthProvider>
+          <CivicAI />
+          <CommandPalette />
+          <ServiceWorkerRegister />
         </ThemeProvider>
       </body>
     </html>

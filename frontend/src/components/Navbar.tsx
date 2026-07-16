@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "./ui/NotificationBell";
 import { ThemeToggle } from "./ThemeToggle";
+import { getPortalLink, getPortalLabel } from "@/config/roles";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -197,12 +198,12 @@ export default function Navbar() {
                       {/* Dropdown Actions */}
                       <div className="space-y-1.5">
                         <Link
-                          href={user.role === 'ADMIN' ? '/admin/dashboard' : user.role === 'OFFICER' ? '/officer/dashboard' : '/citizen/dashboard'}
+                          href={getPortalLink(user.role)}
                           onClick={() => setDropdownOpen(false)}
                           className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-white/70 dark:hover:text-white bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 rounded-xl border border-black/5 dark:border-white/10 transition-all text-left"
                         >
                           <Activity className="w-4 h-4 text-teal-400" />
-                          <span>{user.role === 'ADMIN' ? 'Admin Portal' : user.role === 'OFFICER' ? 'Officer Portal' : 'Citizen Portal'}</span>
+                          <span>{getPortalLabel(user.role)}</span>
                         </Link>
                         <Link
                           href="/citizen/profile"
@@ -311,12 +312,12 @@ export default function Navbar() {
                   </div>
 
                   <Link
-                    href={user.role === 'ADMIN' ? '/admin/dashboard' : user.role === 'OFFICER' ? '/officer/dashboard' : '/citizen/dashboard'}
+                    href={getPortalLink(user.role)}
                     onClick={() => setMobileMenuOpen(false)}
                     className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
                   >
                     <Activity className="w-4 h-4 text-teal-400" />
-                    {user.role === 'ADMIN' ? 'Admin Portal' : user.role === 'OFFICER' ? 'Officer Portal' : 'Citizen Portal'}
+                    {getPortalLabel(user.role)}
                   </Link>
                     <Link
                       href="/citizen/profile"

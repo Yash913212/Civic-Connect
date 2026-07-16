@@ -51,7 +51,7 @@ class Complaint(Base):
     address = Column(String, nullable=True)
     department = Column(String, default="General")
     priority = Column(String, default="Low")
-    status = Column(Enum(ComplaintStatus), default=ComplaintStatus.PENDING)
+    status = Column(String, default=ComplaintStatus.PENDING.value)
     image_url = Column(String, nullable=True)
     user_id = Column(String(36), ForeignKey("users.id"), nullable=True)
     assigned_to = Column(String(36), ForeignKey("users.id"), nullable=True)

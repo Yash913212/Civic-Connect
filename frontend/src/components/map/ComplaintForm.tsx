@@ -6,9 +6,9 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import MapPicker from "./MapPicker";
+import DuplicateWarning from "./DuplicateWarning";
 import { complaintService } from "@/services/complaintService";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || "http://localhost:8000";
+import { API_BASE } from "@/services/api";
 
 interface LocationResult {
   lat: string;
@@ -304,9 +304,21 @@ export default function ComplaintForm() {
         <MapPicker onLocationSelect={setSelectedLocation} selectedLocation={selectedLocation} />
       </div>
 
+      {/* Duplicate Check */}
+      {draft && draft.description && selectedLocation && (
+        <DuplicateWarning
+          description={draft.description}
+          department={draft.department}
+          location={selectedLocation.display_name}
+          onContinue={() => {
+            document.getElementById("submit-section")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        />
+      )}
+
       {/* Submit */}
      {draft && (
-  <div className="space-y-4">
+  <div id="submit-section" className="space-y-4">
 
     <button
       onClick={generateRequestNote}

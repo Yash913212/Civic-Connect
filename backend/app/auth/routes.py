@@ -6,7 +6,7 @@ from app.database.models import User, RoleEnum
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, needs_password_rehash
 from app.auth.dependencies import get_current_user
 
-router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register")
 def register(user_in: UserRegister, db: Session = Depends(get_db)):

@@ -4,10 +4,12 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
-import { Search, Loader2, MapPin, Layers, Clock, RefreshCw, Crosshair } from "lucide-react";
+import { Search, Loader2, MapPin, Layers, Clock, RefreshCw, Crosshair, TrendingUp, Zap } from "lucide-react";
 import "@/lib/leafletSetup";
 import MarkerCluster from "./MarkerCluster";
-import { API_BASE, getAuthHeaders } from "@/services/api";
+import HotspotOverlay from "./HotspotOverlay";
+import { API_BASE } from "@/services/api";
+import { complaintService } from "@/services/complaintService";
 
 const DEFAULT_CENTER: [number, number] = [17.385, 78.4867];
 
@@ -108,6 +110,7 @@ export default function OfficerMapView() {
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
   const [useClustering, setUseClustering] = useState(true);
+  const [showPredictions, setShowPredictions] = useState(false);
   const [stats, setStats] = useState({ total: 0, high: 0, medium: 0, low: 0 });
 
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -117,10 +120,7 @@ export default function OfficerMapView() {
   const fetchComplaints = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/complaints`, {
-        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-      });
-      const data = await res.json();
+      const data = await complaintService.getAll();
       const valid = data.filter((c: Complaint) => c.latitude && c.longitude && !isNaN(parseFloat(c.latitude)));
       setComplaints((prev) => {
         if (prev.length > 0 && valid.length > prev.length) {
@@ -247,6 +247,20 @@ export default function OfficerMapView() {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          onClick={() => setShowPredictions(!showPredictions)}
+          className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+            showPredictions
+              ? "bg-amber-500/20 text-amber-400 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
+              : "bg-white/5 text-white/50 border-white/10 hover:text-white/80 hover:bg-white/10"
+          }`}
+        >
+          <Zap className="w-3.5 h-3.5" />
+          {showPredictions ? "Hide Predictions" : "Predictions"}
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={fetchComplaints}
           className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:text-white/80 hover:bg-white/10 transition-all"
         >
@@ -317,6 +331,8 @@ export default function OfficerMapView() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <MapController center={mapCenter} />
+
+          <HotspotOverlay enabled={showPredictions} />
 
           {useClustering ? (
             <MarkerCluster markers={clusterMarkers} />

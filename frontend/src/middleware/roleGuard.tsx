@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
 import { User } from '../auth/authService';
+import { dashRoutes } from '@/config/roles';
 
 export const withRoleGuard = (WrappedComponent: any, allowedRoles: User['role'][]) => {
   return function RoleProtectedRoute(props: any) {
@@ -15,11 +16,7 @@ export const withRoleGuard = (WrappedComponent: any, allowedRoles: User['role'][
         if (!isAuthenticated) {
           router.push('/');
         } else if (user && !allowedRoles.includes(user.role)) {
-          // If logged in but wrong role, redirect to their respective dashboard
-          if (user.role === 'CITIZEN') window.location.href = '/citizen/dashboard';
-          else if (user.role === 'OFFICER') window.location.href = '/officer/dashboard';
-          else if (user.role === 'ADMIN') window.location.href = '/admin/dashboard';
-          else window.location.href = '/';
+          window.location.href = dashRoutes[user.role] || '/';
         }
       }
     }, [loading, isAuthenticated, user, router]);

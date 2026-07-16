@@ -4,8 +4,7 @@ import { Upload, Mic, CheckCircle2, X, Brain, MessageSquareText, MapPin, ArrowRi
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || "http://localhost:8000";
+import { API_BASE } from "@/services/api";
 
 const DEPT_LABELS: Record<string, string> = {
   roads: "Roads Dept", drainage: "Drainage Dept", garbage: "Sanitation",
