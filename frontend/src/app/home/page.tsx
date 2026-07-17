@@ -1,3 +1,5 @@
+"use client";
+
 import Loader from "@/components/sections/Loader";
 import Hero from "@/components/sections/Hero";
 import TheProblem from "@/components/sections/TheProblem";
@@ -11,8 +13,11 @@ import ImpactMetrics from "@/components/sections/ImpactMetrics";
 import Team from "@/components/sections/Team";
 import CTA from "@/components/sections/CTA";
 import Footer from "@/components/sections/Footer";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+  
   return (
     <main className="bg-transparent text-foreground relative w-full min-h-screen">
       <Loader />
@@ -20,7 +25,7 @@ export default function Home() {
       <TheProblem />
       <Solution />
       <Technology />
-      <LiveDemo />
+      <LiveDemo onViewMyComplaints={() => router.push('/citizen/complaints')} />
       <Heatmap />
       <CommandCenter />
       <FutureRoadmap />

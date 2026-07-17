@@ -116,11 +116,11 @@ export default function CivicAI() {
               onClick={() => setIsOpen(false)}
             />
             <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              initial={{ opacity: 0, y: 40, scale: 0.8, originX: 1, originY: 1 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="fixed bottom-20 right-4 z-50 w-[90vw] max-w-[400px] h-[600px] max-h-[80vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 flex flex-col overflow-hidden"
+              exit={{ opacity: 0, y: 30, scale: 0.8, originX: 1, originY: 1 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25, mass: 0.8 }}
+              className="fixed bottom-20 right-4 z-[60] w-[90vw] max-w-[420px] h-[650px] max-h-[85vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 flex flex-col overflow-hidden"
             >
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700">
                 <div className="flex items-center gap-2">
@@ -160,11 +160,10 @@ export default function CivicAI() {
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
-                        msg.role === "user"
+                      className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${msg.role === "user"
                           ? "bg-emerald-500 text-white rounded-br-md"
                           : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-bl-md"
-                      }`}
+                        }`}
                     >
                       {msg.role === "assistant" ? (
                         <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -244,19 +243,20 @@ export default function CivicAI() {
       </AnimatePresence>
 
       <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        animate={!isOpen ? { y: [0, -6, 0] } : {}}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        whileHover={{ scale: 1.1, rotate: 10 }}
+        whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-4 right-4 z-50 p-3.5 rounded-full shadow-lg transition-all ${
-          isOpen
+        className={`fixed bottom-4 right-4 z-[60] p-4 rounded-full shadow-2xl transition-all ${isOpen
             ? "bg-gray-700 dark:bg-gray-600"
-            : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
-        } text-white`}
+            : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-emerald-500/30"
+          } text-white`}
       >
         {isOpen ? (
-          <X className="w-5 h-5" />
+          <X className="w-6 h-6" />
         ) : (
-          <MessageSquare className="w-5 h-5" />
+          <MessageSquare className="w-6 h-6" />
         )}
       </motion.button>
     </>

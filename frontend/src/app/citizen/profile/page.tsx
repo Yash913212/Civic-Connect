@@ -16,9 +16,14 @@ import {
   Terminal, 
   Lock, 
   Bell, 
-  Save
+  Save,
+  Trophy,
+  Star,
+  Medal,
+  Share2
 } from "lucide-react";
 import { showSystemStatus } from "@/components/ui/CustomToasts";
+import { gamificationService, type GamificationProfile, type LeaderboardEntry } from "@/services/gamificationService";
 
 export default function CitizenProfile() {
   const router = useRouter();
@@ -36,7 +41,12 @@ export default function CitizenProfile() {
   const [notifySms, setNotifySms] = useState(false);
 
   // Active tab state
-  const [activeTab, setActiveTab] = useState<"edit" | "security" | "activity">("edit");
+  const [activeTab, setActiveTab] = useState<"edit" | "security" | "activity" | "gamification">("edit");
+  
+  // Gamification state
+  const [gameProfile, setGameProfile] = useState<GamificationProfile | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [gameLoading, setGameLoading] = useState(false);
 
   useEffect(() => {
     // Read session details
@@ -52,6 +62,22 @@ export default function CitizenProfile() {
       setEmail("yash@civicai.org");
       setRole("Smart City Lead");
     }
+    
+    // Fetch gamification stats
+    setGameLoading(true);
+    Promise.all([
+      gamificationService.getProfile(),
+      gamificationService.getLeaderboard(5)
+    ])
+      .then(([profile, board]) => {
+        setGameProfile(profile);
+        setLeaderboard(board);
+        setGameLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to load gamification data:", err);
+        setGameLoading(false);
+      });
   }, []);
 
   const handleSave = (e: React.FormEvent) => {
@@ -169,6 +195,18 @@ export default function CitizenProfile() {
                 >
                   <Terminal className="w-4 h-4 text-emerald-400" />
                   <span>Activities history</span>
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab("gamification")}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-semibold rounded-xl border transition-all text-left ${
+                    activeTab === "gamification"
+                      ? "bg-amber-500/10 border-amber-500/20 text-amber-400 shadow-inner"
+                      : "bg-transparent border-transparent text-white/50 hover:bg-white/[0.02]"
+                  }`}
+                >
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  <span>Civic Score & Leaderboard</span>
                 </button>
               </div>
 
@@ -427,6 +465,142 @@ export default function CitizenProfile() {
                     </div>
 
                   </div>
+                </motion.div>
+              )}
+              
+              {/* Tab 4: Civic Score (Gamification) */}
+              {activeTab === "gamification" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-6"
+                >
+                  <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-amber-400" />
+                    <span>Civic Score & Achievements</span>
+                  </h3>
+
+                  {gameLoading ? (
+                    <div className="animate-pulse space-y-4">
+                      <div className="h-24 bg-white/5 rounded-2xl"></div>
+                      <div className="h-40 bg-white/5 rounded-2xl"></div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Current Level & Progress */}
+                      <div className="p-6 rounded-2xl border border-amber-500/20 bg-amber-500/5 shadow-[0_0_30px_rgba(245,158,11,0.05)] relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                          <Medal className="w-24 h-24 text-amber-500" />
+                        </div>
+                        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                          <div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs font-bold uppercase text-amber-400 tracking-wider">Current Status</span>
+                              <button 
+                                onClick={() => {
+                                  const text = `I just reached Level ${gameProfile?.level || 1} with ${gameProfile?.points || 0} Civic Points on Civic Connect! 🌟 Reporting issues and making our city better. Join me! #CivicConnect #SmartCity`;
+                                  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+                                }}
+                                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#1DA1F2]/10 text-[#1DA1F2] hover:bg-[#1DA1F2]/20 transition-all text-[10px] font-bold border border-[#1DA1F2]/20"
+                              >
+                                <Share2 className="w-3 h-3" /> Share Score
+                              </button>
+                            </div>
+                            <h4 className="text-3xl font-heading font-bold text-white mt-1">
+                              Level {gameProfile?.level || 1}
+                            </h4>
+                            <div className="flex items-center gap-2 mt-2">
+                              <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                              <span className="text-sm font-bold text-white">{gameProfile?.points || 0} Points</span>
+                            </div>
+                          </div>
+                          
+                          <div className="w-full md:w-1/2">
+                            <div className="flex justify-between text-xs text-white/50 mb-2 font-mono">
+                              <span>Progress to Level {(gameProfile?.level || 1) + 1}</span>
+                              <span>{Math.round(gameProfile?.level_progress_percentage || 0)}%</span>
+                            </div>
+                            <div className="w-full h-3 bg-black/40 rounded-full overflow-hidden border border-white/5">
+                              <motion.div 
+                                initial={{ width: 0 }} 
+                                animate={{ width: `${gameProfile?.level_progress_percentage || 0}%` }} 
+                                className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full"
+                              />
+                            </div>
+                            <p className="text-[10px] text-white/40 text-right mt-1 font-mono">
+                              {gameProfile?.points_to_next_level || 100} pts required
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Badges Earned */}
+                        <div className="space-y-4">
+                          <h4 className="text-sm font-bold text-white/80 flex items-center gap-2 border-b border-white/5 pb-2">
+                            <Award className="w-4 h-4 text-teal-400" />
+                            <span>Earned Badges</span>
+                          </h4>
+                          <div className="grid grid-cols-2 gap-3">
+                            {gameProfile?.badges && gameProfile.badges.filter(b => b.earned).length > 0 ? (
+                              gameProfile.badges.filter(b => b.earned).map((badge, idx) => (
+                                <div key={idx} className="p-3 rounded-xl border border-white/10 bg-white/[0.02] flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-lg">
+                                    {badge.icon || <Award className="w-4 h-4" />}
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <span className="text-xs font-semibold text-white truncate">{badge.name}</span>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="col-span-2 p-4 text-center text-xs text-white/40 border border-white/5 border-dashed rounded-xl">
+                                No badges earned yet. Report issues to start earning!
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Top Citizens Leaderboard */}
+                        <div className="space-y-4">
+                          <h4 className="text-sm font-bold text-white/80 flex items-center gap-2 border-b border-white/5 pb-2">
+                            <Trophy className="w-4 h-4 text-purple-400" />
+                            <span>City Leaderboard (Top 5)</span>
+                          </h4>
+                          <div className="space-y-2">
+                            {leaderboard.length > 0 ? (
+                              leaderboard.map((entry) => (
+                                <div key={entry.user_id} className={`p-3 rounded-xl border flex items-center justify-between ${
+                                  entry.rank === 1 ? 'bg-amber-500/10 border-amber-500/30' :
+                                  entry.rank === 2 ? 'bg-slate-400/10 border-slate-400/30' :
+                                  entry.rank === 3 ? 'bg-orange-700/10 border-orange-700/30' :
+                                  'bg-white/[0.02] border-white/5'
+                                }`}>
+                                  <div className="flex items-center gap-3">
+                                    <span className={`text-xs font-bold w-4 text-center ${
+                                      entry.rank <= 3 ? 'text-white' : 'text-white/40'
+                                    }`}>#{entry.rank}</span>
+                                    <div>
+                                      <h5 className="text-xs font-semibold text-white">{entry.name}</h5>
+                                      <span className="text-[10px] text-white/40">Level {entry.level}</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1 font-mono text-xs">
+                                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                                    <span className="text-white font-bold">{entry.points}</span>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="p-4 text-center text-xs text-white/40 border border-white/5 border-dashed rounded-xl">
+                                Leaderboard is empty. Be the first!
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </motion.div>
               )}
 

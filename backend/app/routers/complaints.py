@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.database.database import get_db
 from app.database.models import Complaint as DBComplaint
 from app.database.models import User, RoleEnum, ComplaintStatus, PriorityEnum, DepartmentEnum, Notification, NotificationType
@@ -8,6 +8,7 @@ from app.auth.dependencies import get_current_user
 from app.core.dependencies import manager, get_optional_user
 import json
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -62,19 +63,29 @@ def _create_notification(db: Session, user_id, title: str, message: str, ntype: 
     db.flush()
 
 
-def _complaint_to_dict(c: DBComplaint, db: Session) -> dict:
+def _sanitize_html(text: str | None) -> str | None:
+    if not text:
+        return text
+    text = re.sub(r'<[^>]*>', '', text)
+    text = text.replace('javascript:', '').replace('onerror=', '').replace('onclick=', '')
+    return text[:5000]
+
+def _complaint_to_dict(c: DBComplaint, db: Session, officer_cache: dict[str, str] | None = None) -> dict:
     assigned_name = None
     if c.assigned_to:
-        officer = db.query(User).filter(User.id == c.assigned_to).first()
-        assigned_name = officer.full_name if officer else None
+        if officer_cache is not None:
+            assigned_name = officer_cache.get(c.assigned_to)
+        else:
+            officer = db.query(User).filter(User.id == c.assigned_to).first()
+            assigned_name = officer.full_name if officer else None
     return {
         "id": str(c.id),
-        "title": c.title,
-        "description": c.description,
-        "location": c.location,
+        "title": _sanitize_html(c.title),
+        "description": _sanitize_html(c.description),
+        "location": _sanitize_html(c.location),
         "latitude": c.latitude,
         "longitude": c.longitude,
-        "address": c.address,
+        "address": _sanitize_html(c.address),
         "dept": c.department,
         "priority": c.priority,
         "status": c.status.value if hasattr(c.status, 'value') else c.status,
@@ -292,8 +303,11 @@ def get_complaints(
     query = db.query(DBComplaint)
     if current_user.role == RoleEnum.OFFICER and current_user.department:
         query = query.filter(DBComplaint.department == current_user.department)
-    complaints = query.order_by(DBComplaint.created_at.desc()).all()
-    return [_complaint_to_dict(c, db) for c in complaints]
+    complaints = query.options(joinedload(DBComplaint.assigned_officer)).order_by(DBComplaint.created_at.desc()).all()
+    officer_ids = {c.assigned_to for c in complaints if c.assigned_to}
+    officers = db.query(User).filter(User.id.in_(officer_ids)).all() if officer_ids else []
+    officer_cache = {str(o.id): o.full_name for o in officers}
+    return [_complaint_to_dict(c, db, officer_cache) for c in complaints]
 
 
 @router.patch("/{complaint_id}/assign")

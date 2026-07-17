@@ -178,14 +178,17 @@ class RequestNoteRequest(BaseModel):
 @router.post("/upload")
 @limiter.limit("5/minute")
 async def upload_image(request: Request, file: UploadFile = File(...)):
+    import uuid
     contents = await file.read()
     compressed_contents = compress_image(contents)
 
-    filename = file.filename
+    filename = os.path.basename(file.filename)
     if not filename.lower().endswith(('.jpg', '.jpeg')):
         filename = filename.rsplit('.', 1)[0] + '.jpg'
-
-    filepath = os.path.join(UPLOAD_DIR, filename)
+        
+    unique_filename = f"{uuid.uuid4()}_{filename}"
+    filepath = os.path.join(UPLOAD_DIR, unique_filename)
+    
     with open(filepath, "wb") as buffer:
         buffer.write(compressed_contents)
 
@@ -443,8 +446,8 @@ async def upload_image(request: Request, file: UploadFile = File(...)):
 
     return {
         "message": "Image Uploaded",
-        "filename": file.filename,
-        "imageUrl": f"/uploads/{file.filename}",
+        "filename": unique_filename,
+        "imageUrl": f"/uploads/{unique_filename}",
         "analysis": analysis
     }
 
@@ -456,15 +459,17 @@ async def analyze_image(
     file: UploadFile = File(...),
     description: str = Form("")
 ):
+    import uuid
     print("===== /ai/analyze called =====")
     contents = await file.read()
     compressed_contents = compress_image(contents)
 
-    filename = file.filename
+    filename = os.path.basename(file.filename)
     if not filename.lower().endswith(('.jpg', '.jpeg')):
         filename = filename.rsplit('.', 1)[0] + '.jpg'
 
-    file_path = os.path.join("uploads", filename)
+    unique_filename = f"{uuid.uuid4()}_{filename}"
+    file_path = os.path.join("uploads", unique_filename)
 
     with open(file_path, "wb") as f:
         f.write(compressed_contents)
@@ -551,15 +556,20 @@ def analyze_text(request: Request, body: TextAnalysisRequest):
 
 @router.post("/ai/caption")
 async def caption_image(file: UploadFile = File(...)):
+    import uuid
     contents = await file.read()
-    filepath = os.path.join(UPLOAD_DIR, f"caption_{file.filename}")
+    
+    filename = os.path.basename(file.filename)
+    unique_filename = f"caption_{uuid.uuid4()}_{filename}"
+    filepath = os.path.join(UPLOAD_DIR, unique_filename)
+    
     with open(filepath, "wb") as f:
         f.write(contents)
 
     caption = generate_caption(filepath)
 
     return {
-        "filename": file.filename,
+        "filename": unique_filename,
         "caption": caption,
     }
 

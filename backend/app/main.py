@@ -23,30 +23,33 @@ except Exception as e:
     logger.error("Database initialization failed: %s", e)
 
 if not settings.DATABASE_URL.startswith("sqlite"):
-    migrations = [
-        "ALTER TABLE complaints ADD COLUMN IF NOT EXISTS image_url VARCHAR",
-        "ALTER TABLE complaints ADD COLUMN IF NOT EXISTS latitude VARCHAR",
-        "ALTER TABLE complaints ADD COLUMN IF NOT EXISTS longitude VARCHAR",
-        "ALTER TABLE complaints ADD COLUMN IF NOT EXISTS address VARCHAR",
-        "ALTER TABLE complaints ADD COLUMN IF NOT EXISTS user_id VARCHAR",
-        "ALTER TABLE complaints ADD COLUMN IF NOT EXISTS assigned_to VARCHAR",
-        "ALTER TABLE complaints ADD COLUMN IF NOT EXISTS ai_summary VARCHAR",
-        "ALTER TABLE complaints ADD COLUMN IF NOT EXISTS ai_request_letter VARCHAR",
-        "ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR",
+    pg_migrations = [
+        ("complaints", "image_url", "VARCHAR"),
+        ("complaints", "latitude", "VARCHAR"),
+        ("complaints", "longitude", "VARCHAR"),
+        ("complaints", "address", "VARCHAR"),
+        ("complaints", "user_id", "VARCHAR"),
+        ("complaints", "assigned_to", "VARCHAR"),
+        ("complaints", "ai_summary", "VARCHAR"),
+        ("complaints", "ai_request_letter", "VARCHAR"),
+        ("users", "department", "VARCHAR"),
     ]
-    for stmt in migrations:
+    for table, column, col_type in pg_migrations:
         try:
             with engine.begin() as conn:
-                conn.execute(text(stmt))
+                conn.execute(text(f"""
+                    DO $$
+                    BEGIN
+                        IF NOT EXISTS (
+                            SELECT 1 FROM information_schema.columns
+                            WHERE table_name = '{table}' AND column_name = '{column}'
+                        ) THEN
+                            ALTER TABLE {table} ADD COLUMN {column} {col_type};
+                        END IF;
+                    END $$;
+                """))
         except Exception as e:
-            logger.debug("Migration step skipped: %s", e)
-
-    try:
-        with engine.begin() as conn:
-            conn.execute(text("ALTER TABLE complaints ALTER COLUMN priority TYPE VARCHAR USING priority::VARCHAR"))
-            conn.execute(text("ALTER TABLE complaints ALTER COLUMN status TYPE VARCHAR USING status::VARCHAR"))
-    except Exception as e:
-        logger.debug("Type migration skipped: %s", e)
+            logger.warning("Migration failed for %s.%s: %s", table, column, e)
 
     for table in ["notifications", "departments"]:
         try:

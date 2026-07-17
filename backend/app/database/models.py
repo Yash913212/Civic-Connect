@@ -1,5 +1,6 @@
 import uuid
 from sqlalchemy import Column, String, Boolean, DateTime, Enum, func, ForeignKey, Integer
+from sqlalchemy.orm import relationship
 from app.database.database import Base
 import enum
 
@@ -103,6 +104,8 @@ class Complaint(Base):
     
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    assigned_officer = relationship("User", foreign_keys=[assigned_to])
 
 class Department(Base):
     __tablename__ = "departments"

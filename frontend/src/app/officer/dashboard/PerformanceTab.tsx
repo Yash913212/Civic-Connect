@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, Clock, Activity, Target, TrendingUp, BarChart3, ChevronRight, FileText, MapPin, AlertTriangle, Users, Award } from "lucide-react";
+import { CheckCircle, Clock, Activity, Target, TrendingUp, BarChart3, ChevronRight, FileText, MapPin, AlertTriangle, Users, Award, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from "recharts";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -134,6 +134,66 @@ export function PerformanceTab({ complaints, loading }: { complaints: ComplaintD
                 <Bar dataKey="target" fill="rgba(255,255,255,0.08)" radius={[4, 4, 0, 0]} name="Target" animationDuration={1500} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        </GlassCard>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <GlassCard glow className="border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-transparent">
+          <SectionHeader icon={Trophy} label="Officer Bonus Points" />
+          <div className="flex items-center gap-6 mb-6">
+            <div className="relative w-20 h-20 rounded-full border-4 border-amber-500/30 flex items-center justify-center bg-black/40">
+              <Trophy className="w-8 h-8 text-amber-500" />
+              <div className="absolute -bottom-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full border border-black">Lvl 12</div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-3xl font-black text-white">3,450 <span className="text-sm font-medium text-white/50">PTS</span></h3>
+              <p className="text-xs text-amber-400 font-semibold mb-2">Rank: Field Expert</p>
+              <div className="w-full bg-black/50 h-2 rounded-full overflow-hidden">
+                <div className="h-full bg-amber-500 w-[75%]" />
+              </div>
+              <p className="text-[9px] text-white/40 mt-1">550 pts to Next Rank (Master Responder)</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h4 className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">Recent Point Awards</h4>
+            <div className="flex justify-between items-center text-xs p-2.5 bg-black/40 rounded-lg border border-white/5">
+              <span className="text-white/80">Resolved Critical Task (C-8842)</span>
+              <span className="text-emerald-400 font-bold">+150 pts</span>
+            </div>
+            <div className="flex justify-between items-center text-xs p-2.5 bg-black/40 rounded-lg border border-white/5">
+              <span className="text-white/80">Under 2Hr SLA Resolution</span>
+              <span className="text-emerald-400 font-bold">+50 pts</span>
+            </div>
+            <div className="flex justify-between items-center text-xs p-2.5 bg-black/40 rounded-lg border border-white/5">
+              <span className="text-white/80">5-Star Citizen Rating</span>
+              <span className="text-emerald-400 font-bold">+100 pts</span>
+            </div>
+          </div>
+        </GlassCard>
+
+        <GlassCard glow>
+          <SectionHeader icon={Users} label="Department Leaderboard" />
+          <div className="space-y-3">
+            {[
+              { rank: 1, name: "Officer Sarah", points: 4250, badge: "Master Responder" },
+              { rank: 2, name: "Officer Marcus", points: 3890, badge: "Senior Resolver" },
+              { rank: 3, name: "You", points: 3450, badge: "Field Expert", isMe: true },
+              { rank: 4, name: "Officer David", points: 3100, badge: "Active Duty" },
+            ].map((off, i) => (
+              <div key={i} className={`flex items-center gap-4 p-3 rounded-xl border transition-all ${off.isMe ? 'bg-amber-500/10 border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.1)]' : 'bg-black/40 border-white/[0.06] hover:bg-white/[0.03]'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ${off.rank === 1 ? 'bg-amber-400 text-black shadow-amber-500/30' : off.rank === 2 ? 'bg-slate-300 text-black' : off.rank === 3 ? 'bg-amber-700 text-white' : 'bg-white/10 text-white/50'}`}>
+                  {off.rank}
+                </div>
+                <div className="flex-1">
+                  <p className={`text-sm font-bold ${off.isMe ? 'text-amber-400' : 'text-white'}`}>{off.name}</p>
+                  <p className="text-[10px] text-white/50">{off.badge}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-emerald-400">{off.points.toLocaleString()} <span className="text-[10px] text-emerald-400/60">pts</span></p>
+                </div>
+              </div>
+            ))}
           </div>
         </GlassCard>
       </div>

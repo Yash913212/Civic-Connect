@@ -16,12 +16,15 @@ import ImpactMetrics from "@/components/sections/ImpactMetrics";
 import Team from "@/components/sections/Team";
 import CTA from "@/components/sections/CTA";
 
+import GamificationWidget from "@/components/widgets/GamificationWidget";
+
 function CitizenDashboard() {
   const router = useRouter();
   return (
     <main className="bg-transparent text-foreground relative w-full min-h-screen select-none">
       <div className="relative z-10 w-full">
         <Hero />
+        <GamificationWidget />
         <TheProblem />
         <Solution />
         <Technology />

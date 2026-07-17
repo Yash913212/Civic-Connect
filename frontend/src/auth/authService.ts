@@ -48,9 +48,9 @@ export const authService = {
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('refresh_token', refreshToken);
     localStorage.setItem('user', JSON.stringify(user));
-    // Set cookies for Next.js middleware
-    document.cookie = `token=${accessToken}; path=/; max-age=86400`;
-    document.cookie = `role=${user.role}; path=/; max-age=86400`;
+    // Set cookies for Next.js middleware with security flags
+    document.cookie = `token=${accessToken}; path=/; max-age=86400; SameSite=Strict; Secure`;
+    document.cookie = `role=${user.role}; path=/; max-age=86400; SameSite=Strict; Secure`;
   },
 
   getLocalUser: (): User | null => {

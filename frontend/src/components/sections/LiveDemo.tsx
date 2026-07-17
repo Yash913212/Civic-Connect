@@ -708,12 +708,7 @@ const proceedToRegister = async () => {
         </motion.div>
 
         {onViewMyComplaints && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-12 text-center flex justify-center"
-          >
+          <div className="mt-12 flex flex-wrap justify-center gap-4">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -734,7 +729,27 @@ const proceedToRegister = async () => {
               <span className="relative z-10">View My Complaints & Tracking</span>
               <ArrowRight className="w-5 h-5 text-primary relative z-10 group-hover:translate-x-1.5 transition-transform duration-300" />
             </motion.button>
-          </motion.div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => router.push('/citizen/profile')}
+              className="relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-xl border border-amber-500/40 rounded-2xl text-sm font-bold text-foreground hover:shadow-[0_0_30px_rgba(245,158,11,0.3)] transition-all group overflow-hidden"
+            >
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+                animate={{ x: ["-150%", "250%"] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              />
+              <motion.div
+                className="absolute inset-0 rounded-2xl border-2 border-amber-500/50"
+                animate={{ opacity: [0, 1, 0], scale: [1, 1.05, 1.1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+              />
+              <Sparkles className="w-5 h-5 text-amber-500 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+              <span className="relative z-10">Civic Score & Leaderboard</span>
+              <ArrowRight className="w-5 h-5 text-amber-500 relative z-10 group-hover:translate-x-1.5 transition-transform duration-300" />
+            </motion.button>
+          </div>
         )}
       </div>
 
