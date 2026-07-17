@@ -15,7 +15,12 @@ export function ThemeToggle() {
   }, []);
 
   if (!mounted) {
-    return <div className="w-10 h-10 rounded-full border border-slate-200 dark:border-white/10" />;
+    return (
+      <button 
+        aria-label="Toggle theme"
+        className="relative flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-card border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden z-50 transition-colors"
+      />
+    );
   }
 
   const isDark = theme === "dark";

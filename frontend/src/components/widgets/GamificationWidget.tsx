@@ -30,7 +30,7 @@ export default function GamificationWidget() {
     fetchGamificationData();
   }, []);
 
-  if (loading) return null; // Or a subtle skeleton loader
+  if (loading) return <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-8 relative z-20 min-h-[300px]" />; // Stable DOM structure instead of null
 
   return (
     <section className="w-full max-w-7xl mx-auto px-4 md:px-8 py-8 relative z-20">
