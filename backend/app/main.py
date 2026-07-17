@@ -51,7 +51,7 @@ if not settings.DATABASE_URL.startswith("sqlite"):
         except Exception as e:
             logger.warning("Migration failed for %s.%s: %s", table, column, e)
 
-    for table in ["notifications", "departments"]:
+    for table in ["notifications", "departments", "badges"]:
         try:
             Base.metadata.tables[table].create(bind=engine, checkfirst=True)
         except Exception as e:
@@ -85,8 +85,10 @@ app.add_middleware(
         "https://civic-connect-self.vercel.app/",
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Set-Cookie"],
+    expose_headers=["Set-Cookie"],
+    max_age=3600,
 )
 
 from app.auth.routes import router as auth_router
@@ -120,17 +122,28 @@ api_router.include_router(transparency_router, prefix="/transparency", tags=["Tr
 api_router.include_router(gamification_router, prefix="/gamification", tags=["Gamification"])
 
 app.include_router(api_router)
-app.include_router(ai_router, tags=["AI"])
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-# Start SLA monitoring background task
+
 @app.on_event("startup")
 async def startup_event():
     from app.core.sla_monitor import start_sla_monitor
+    from app.core.gamification import seed_badges
+    from app.database.database import SessionLocal
+    
     start_sla_monitor()
+    
+    db = SessionLocal()
+    try:
+        seed_badges(db)
+        logger.info("Badges seeded successfully")
+    except Exception as e:
+        logger.warning(f"Badge seeding skipped: {e}")
+    finally:
+        db.close()
 
 
 @app.websocket("/ws/notifications/{user_id}")

@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Boolean, DateTime, Enum, func, ForeignKey, Integer
+from sqlalchemy import Column, String, Boolean, DateTime, Enum, func, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.database.database import Base
 import enum
@@ -26,10 +26,8 @@ class User(Base):
     department = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     
-    # Gamification fields
     points = Column(Integer, default=0)
     level = Column(Integer, default=1)
-    badges = Column(String, default="")  # Comma-separated badge IDs
     complaints_submitted = Column(Integer, default=0)
     complaints_verified = Column(Integer, default=0)
     streak_days = Column(Integer, default=0)
@@ -37,6 +35,8 @@ class User(Base):
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    earned_badges = relationship("UserBadge", backref="user", lazy="dynamic")
 
 class NotificationType(str, enum.Enum):
     STATUS_UPDATE = "status_update"
@@ -127,3 +127,30 @@ class Notification(Base):
     complaint_id = Column(String(36), nullable=True)
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class Badge(Base):
+    __tablename__ = "badges"
+
+    id = Column(String(50), primary_key=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=False)
+    icon = Column(String, nullable=True)
+    points = Column(Integer, nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class UserBadge(Base):
+    __tablename__ = "user_badges"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    badge_id = Column(String(50), ForeignKey("badges.id"), nullable=False)
+    earned_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    badge = relationship("Badge", backref="users")
+    
+    __table_args__ = (
+        UniqueConstraint('user_id', 'badge_id', name='unique_user_badge'),
+    )

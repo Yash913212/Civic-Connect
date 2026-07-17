@@ -1,11 +1,38 @@
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
-from app.database.models import User, Complaint, ComplaintStatus
+from app.database.models import User, Complaint, ComplaintStatus, Badge, UserBadge
+from sqlalchemy import insert
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Badge definitions
+
+def seed_badges(db: Session):
+    """Seed initial badges into the database."""
+    badge_data = [
+        ("first_complaint", "First Step", "Submit your first complaint", "🎯", 10),
+        ("complaint_warrior", "Complaint Warrior", "Submit 5 complaints", "⚔️", 50),
+        ("civic_champion", "Civic Champion", "Submit 10 complaints", "🏆", 100),
+        ("city_guardian", "City Guardian", "Submit 25 complaints", "🛡️", 250),
+        ("verified_reporter", "Verified Reporter", "Have 3 complaints verified as resolved", "✅", 75),
+        ("streak_master", "Streak Master", "Maintain a 7-day active streak", "🔥", 100),
+        ("priority_hunter", "Priority Hunter", "Submit 3 high-priority complaints", "⚡", 60),
+        ("department_expert", "Department Expert", "Submit complaints in 3 different departments", "🎓", 80),
+    ]
+    
+    for badge_id, name, description, icon, points in badge_data:
+        existing = db.query(Badge).filter(Badge.id == badge_id).first()
+        if not existing:
+            db.add(Badge(
+                id=badge_id,
+                name=name,
+                description=description,
+                icon=icon,
+                points=points
+            ))
+    db.commit()
+
+
 BADGES = {
     "first_complaint": {
         "name": "First Step",
@@ -136,34 +163,30 @@ def award_points(user: User, action: str, db: Session) -> dict:
 
 
 def check_badge_eligibility(user: User, db: Session) -> list[dict]:
-    """Check if user is eligible for any new badges."""
-    earned_badges = [b.strip() for b in user.badges.split(",") if b.strip()] if user.badges else []
+    """Check if user is eligible for any new badges and award them."""
+    earned_user_badges = db.query(UserBadge).filter(UserBadge.user_id == str(user.id)).all()
+    earned_badge_ids = {ub.badge_id for ub in earned_user_badges}
     new_badges = []
     
-    # Count complaints by this user
     complaint_count = db.query(Complaint).filter(
         Complaint.user_id == str(user.id)
     ).count()
     
-    # Count verified complaints
     verified_count = db.query(Complaint).filter(
         Complaint.user_id == str(user.id),
         Complaint.status == ComplaintStatus.RESOLVED.value,
         Complaint.verification_status == "VERIFIED"
     ).count()
     
-    # Count unique departments
     departments = db.query(Complaint.department).filter(
         Complaint.user_id == str(user.id)
     ).distinct().count()
     
-    # Count high priority complaints
     high_priority_count = db.query(Complaint).filter(
         Complaint.user_id == str(user.id),
         Complaint.priority == "High"
     ).count()
     
-    # Check each badge
     badge_checks = {
         "first_complaint": complaint_count >= 1,
         "complaint_warrior": complaint_count >= 5,
@@ -176,30 +199,49 @@ def check_badge_eligibility(user: User, db: Session) -> list[dict]:
     }
     
     for badge_id, condition in badge_checks.items():
-        if condition and badge_id not in earned_badges:
-            earned_badges.append(badge_id)
-            new_badges.append(BADGES[badge_id])
+        if condition and badge_id not in earned_badge_ids:
+            db.add(UserBadge(user_id=str(user.id), badge_id=badge_id))
+            badge_info = db.query(Badge).filter(Badge.id == badge_id).first()
+            if badge_info:
+                new_badges.append({
+                    "id": badge_info.id,
+                    "name": badge_info.name,
+                    "description": badge_info.description,
+                    "icon": badge_info.icon,
+                    "points": badge_info.points,
+                })
     
-    # Update user badges
-    user.badges = ",".join(earned_badges)
+    if new_badges:
+        db.commit()
     
     return new_badges
 
 
 def get_user_gamification_profile(user: User, db: Session) -> dict:
     """Get comprehensive gamification profile for a user."""
-    earned_badges = [b.strip() for b in user.badges.split(",") if b.strip()] if user.badges else []
+    earned_user_badges = db.query(UserBadge).filter(UserBadge.user_id == str(user.id)).all()
+    earned_badge_ids = {ub.badge_id for ub in earned_user_badges}
     
-    # Get all available badges with earned status
     all_badges = []
-    for badge_id, badge_info in BADGES.items():
+    badges_in_db = db.query(Badge).all()
+    for badge in badges_in_db:
         all_badges.append({
-            "id": badge_id,
-            **badge_info,
-            "earned": badge_id in earned_badges,
+            "id": badge.id,
+            "name": badge.name,
+            "description": badge.description,
+            "icon": badge.icon,
+            "points": badge.points,
+            "earned": badge.id in earned_badge_ids,
         })
     
-    # Calculate progress to next level
+    if not all_badges:
+        for badge_id, badge_info in BADGES.items():
+            all_badges.append({
+                "id": badge_id,
+                **badge_info,
+                "earned": badge_id in earned_badge_ids,
+            })
+    
     points_to_next = get_points_to_next_level(user.points)
     current_level = user.level
     current_threshold = LEVEL_THRESHOLDS[current_level - 1] if current_level <= len(LEVEL_THRESHOLDS) else LEVEL_THRESHOLDS[-1]
@@ -208,7 +250,6 @@ def get_user_gamification_profile(user: User, db: Session) -> dict:
     if next_threshold:
         progress_percentage = int(((user.points - current_threshold) / (next_threshold - current_threshold)) * 100)
     
-    # Get leaderboard position
     leaderboard_position = db.query(User).filter(
         User.role == "CITIZEN",
         User.points > user.points
@@ -221,8 +262,8 @@ def get_user_gamification_profile(user: User, db: Session) -> dict:
         "complaints_submitted": user.complaints_submitted or 0,
         "complaints_verified": user.complaints_verified or 0,
         "badges": all_badges,
-        "earned_badges_count": len(earned_badges),
-        "total_badges": len(BADGES),
+        "earned_badges_count": len(earned_badge_ids),
+        "total_badges": len(all_badges),
         "points_to_next_level": points_to_next,
         "level_progress_percentage": progress_percentage,
         "leaderboard_position": leaderboard_position,
@@ -236,14 +277,16 @@ def get_leaderboard(db: Session, limit: int = 10) -> list[dict]:
         User.is_active == True
     ).order_by(User.points.desc()).limit(limit).all()
     
-    return [
-        {
+    results = []
+    for i, user in enumerate(top_users):
+        badge_count = db.query(UserBadge).filter(UserBadge.user_id == str(user.id)).count()
+        results.append({
             "rank": i + 1,
             "user_id": str(user.id),
             "name": user.full_name,
             "points": user.points,
             "level": user.level,
-            "badges_count": len([b for b in user.badges.split(",") if b.strip()]) if user.badges else 0,
-        }
-        for i, user in enumerate(top_users)
-    ]
+            "badges_count": badge_count,
+        })
+    
+    return results

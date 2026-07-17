@@ -16,6 +16,11 @@ export interface GamificationProfile {
   points_to_next_level: number;
   level_progress_percentage: number;
   streak_days: number;
+  complaints_submitted?: number;
+  complaints_verified?: number;
+  earned_badges_count: number;
+  total_badges: number;
+  leaderboard_position?: number;
 }
 
 export interface LeaderboardEntry {
@@ -42,5 +47,5 @@ export const gamificationService = {
   getBadges: async (): Promise<BadgeInfo[]> => {
     const response = await apiClient.get('/gamification/badges');
     return response.data;
-  }
+  },
 };

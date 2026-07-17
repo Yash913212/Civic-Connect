@@ -388,9 +388,11 @@ Tracks top 10 citizens by total points.
 | **Icons** | Lucide React | Harmonized icon library |
 | **Maps** | Leaflet + OpenStreetMap + Nominatim | Interactive mapping |
 | **Forms** | React Hook Form + Zod | Form validation |
+| **Testing (Frontend)** | Jest, ts-jest, @testing-library/jest-dom | Unit and integration tests |
+| **Testing (Backend)** | pytest | Python unit tests |
 | **Backend** | FastAPI (Python) + Uvicorn | REST API + WebSockets |
 | **Database** | PostgreSQL + SQLAlchemy ORM | Data persistence |
-| **Auth** | JWT (python-jose) + bcrypt | Token-based auth |
+| **Auth** | JWT (python-jose) + bcrypt | Token-based auth with HttpOnly cookies |
 | **Vision ML** | EfficientNetB0 (PyTorch/TorchVision) | Image classification |
 | **Text ML** | Google MuRIL (Transformers) | Multilingual NLP |
 | **Multimodal** | Custom PyTorch fusion layer | Vision + Text fusion |
@@ -399,6 +401,43 @@ Tracks top 10 citizens by total points.
 | **Rate Limiting** | SlowAPI | API abuse protection |
 | **Image Processing** | Pillow | Resizing & compression |
 | **HTTP Client** | Axios | API requests |
+
+---
+
+## 🗄️ Database Schema
+
+### Core Tables
+
+**Users**
+- `id` (UUID) - Primary key
+- `full_name`, `email`, `phone_number` - User identification
+- `password_hash` - Bcrypt hashed password
+- `role` - CITIZEN, OFFICER, or ADMIN
+- `points`, `level` - Gamification fields
+- `streak_days`, `last_active_date` - Activity tracking
+- `department` - For officers
+
+**Complaints**
+- `id` (UUID) - Primary key
+- `title`, `description` - Complaint details
+- `location`, `latitude`, `longitude` - Geospatial data
+- `department`, `priority`, `status` - Routing fields
+- `image_url` - Evidence attachment
+- `user_id`, `assigned_to` - Relationships to users
+- `sla_deadline`, `sla_status` - SLA tracking
+- `verification_status`, `verification_score` - Resolution verification
+
+**Badges** (Normalized)
+- `id`, `name`, `description`, `icon`, `points` - Badge metadata
+
+**UserBadges** (Junction table)
+- `user_id`, `badge_id`, `earned_at` - Many-to-many relationship
+
+**Notifications**
+- `id` (UUID) - Primary key
+- `user_id` - Recipient
+- `title`, `message`, `type` - Notification content
+- `is_read` - Read status
 
 ---
 
@@ -441,6 +480,7 @@ civic-connect/
 │   │   └── proxy.ts                   # Next.js 16 Proxy (formerly Middleware)
 │   ├── public/                        # Static assets
 │   ├── next.config.ts                 # Rewrites, headers, config
+│   ├── jest.config.js                 # Jest test configuration
 │   └── package.json
 │
 ├── backend/                           # Python FastAPI backend
@@ -459,13 +499,19 @@ civic-connect/
 │   │   │   ├── train_multimodal.py    # Multimodal training script
 │   │   │   └── dataset_generator.py   # Dataset class
 │   │   ├── auth/                      # JWT auth, registration, login
-│   │   ├── core/                      # Config, security, rate limiting, SLA
+│   │   ├── core/                      # Config, security, rate limiting, SLA, gamification
 │   │   ├── database/                  # SQLAlchemy models + DB connection
 │   │   └── routers/                   # API route handlers
+│   ├── tests/                         # Backend tests
+│   │   ├── conftest.py                # Pytest configuration
+│   │   ├── test_gamification.py       # Gamification unit tests
+│   │   └── test_routes.py             # API route tests
 │   ├── train_model.py                 # EfficientNetB0 training
 │   ├── evaluate.py                    # Model evaluation
 │   ├── balance_dataset.py             # Dataset balancing
 │   ├── seeder.py                      # Database seeder
+│   ├── seed_gamification.py           # Gamification data seeder
+│   ├── update_db.py                   # Database migration script
 │   ├── requirements.txt
 │   └── .env
 │
@@ -483,7 +529,8 @@ civic-connect/
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/login` | Login (sets HttpOnly refresh cookie) |
+| POST | `/api/auth/logout` | Logout (clears refresh cookie) |
 | POST | `/api/auth/refresh` | Refresh access token |
 | GET | `/api/auth/me` | Current user info |
 | POST | `/api/auth/forgot-password` | Request password reset |
@@ -494,7 +541,7 @@ civic-connect/
 |--------|----------|-------------|
 | GET | `/api/complaints` | List all complaints |
 | GET | `/api/complaints/my` | Current user's complaints |
-| POST | `/api/complaints` | Create complaint |
+| POST | `/api/complaints` | Create complaint (awards gamification points) |
 | PUT | `/api/complaints/{id}` | Update complaint |
 | DELETE | `/api/complaints/{id}` | Delete complaint |
 | PATCH | `/api/complaints/{id}/status` | Update status |
@@ -552,6 +599,7 @@ civic-connect/
 | GET | `/api/gamification/leaderboard` | Public leaderboard |
 | GET | `/api/gamification/badges` | All badges |
 | POST | `/api/gamification/award` | Award points (admin) |
+| POST | `/api/gamification/check-badges/{user_id}` | Check badge eligibility (admin) |
 
 ### Transparency (Public)
 | Method | Endpoint | Description |
@@ -560,6 +608,30 @@ civic-connect/
 | GET | `/api/transparency/public/trending` | Trending issues |
 | GET | `/api/transparency/public/performance` | Department performance |
 | GET | `/api/transparency/public/wards` | Ward/area stats |
+
+---
+
+## 🧪 Testing
+
+### Backend Tests
+```bash
+cd backend
+pip install pytest
+pytest tests/ -v
+```
+
+Tests cover:
+- Gamification level calculation
+- Points awarding logic
+- Badge eligibility
+- API route validation
+
+### Frontend Tests
+```bash
+cd frontend
+npm install
+npm test
+```
 
 ---
 
@@ -597,6 +669,7 @@ Configure your database and API keys in `backend/.env`:
 DATABASE_URL="postgresql://user:password@localhost:5432/civic_connect"
 OPENROUTER_API_KEY="sk-or-v1-..."
 GROQ_API_KEY="gsk-..."
+SECRET_KEY="your-secret-key-here"
 ```
 
 Start the backend server:
@@ -605,14 +678,21 @@ uvicorn app.main:app --reload --port 8000
 ```
 API runs at [http://localhost:8000](http://localhost:8000) — interactive docs at [http://localhost:8000/docs](http://localhost:8000/docs).
 
-### 4. Build for Production (Frontend)
+### 4. Seed Database (Optional)
+```bash
+cd backend
+python seeder.py              # Create admin/officer users
+python seed_gamification.py   # Create sample citizen users with badges
+```
+
+### 5. Build for Production (Frontend)
 ```bash
 cd frontend
 npm run build
 npm run start
 ```
 
-### 5. Train ML Models (Optional)
+### 6. Train ML Models (Optional)
 ```bash
 cd backend
 python train_model.py              # Train EfficientNetB0 (4 classes)
@@ -653,6 +733,40 @@ The login panel contains a segmented role switch (Citizen / Officer / Admin):
 
 ---
 
+## 📖 Quick Reference
+
+### Common Commands
+```bash
+# Frontend
+npm run dev          # Development server
+npm run build        # Production build
+npm run lint         # ESLint check
+npm test             # Run tests
+
+# Backend
+uvicorn app.main:app --reload  # Development server
+pytest tests/                   # Run tests
+python seeder.py                # Seed database
+```
+
+### Environment Variables
+```env
+# Backend (.env)
+DATABASE_URL="postgresql://..."
+SECRET_KEY="your-secret-key"
+OPENROUTER_API_KEY="..."
+GROQ_API_KEY="..."
+GALLERY_BUCKET="civic-connect-galleries"  # Optional: S3 bucket for images
+```
+
+```env
+# Frontend (.env.local)
+NEXT_PUBLIC_API_URL="http://localhost:8000/api"
+NEXT_PUBLIC_WS_URL="ws://localhost:8000"
+```
+
+---
+
 ## 📬 Feedback & Contributions
 
 Found a bug or have a feature request? Open an issue or submit feedback directly via the in-app form at `/feedback`. Pull requests are welcome.
@@ -662,8 +776,18 @@ Found a bug or have a feature request? Open an issue or submit feedback directly
 ## 🔒 Security Notes
 
 - **API keys** are stored in `backend/.env` and never exposed to the frontend
-- **JWT tokens** expire after 30 minutes (access) and 7 days (refresh)
+- **JWT tokens**: Access tokens expire after 30 minutes, refresh tokens after 7 days
+- **Refresh tokens** are stored in HttpOnly, Secure, SameSite=Strict cookies
 - **Passwords** are hashed with bcrypt (12 rounds)
-- **Rate limiting** prevents AI service abuse
+- **Rate limiting** prevents AI service abuse via SlowAPI
 - **CORS** is restricted to known origins
 - **The CivicAI chatbot** is configured to never reveal sensitive information (API keys, database URLs, credentials, internal configuration)
+
+### Security Best Practices Implemented
+1. HttpOnly cookies for refresh tokens (XSS protection)
+2. Secure cookie flags (Secure, SameSite)
+3. Restricted CORS methods and headers
+4. Request size limits (10MB max upload)
+5. Input validation on frontend and backend
+6. SQL injection protection via SQLAlchemy ORM
+7. JWT token validation with proper expiration

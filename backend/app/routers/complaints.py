@@ -5,7 +5,9 @@ from app.database.database import get_db
 from app.database.models import Complaint as DBComplaint
 from app.database.models import User, RoleEnum, ComplaintStatus, PriorityEnum, DepartmentEnum, Notification, NotificationType
 from app.auth.dependencies import get_current_user
-from app.core.dependencies import manager, get_optional_user
+from app.auth.dependencies import get_optional_user as get_user_from_auth
+from app.core.dependencies import manager
+from app.core.gamification import award_points
 import json
 import logging
 import re
@@ -107,7 +109,7 @@ def create_complaint(
     authorization: str | None = Header(None),
 ):
     try:
-        user = get_optional_user(authorization, db)
+        user = get_user_from_auth(authorization, db)
 
         db_complaint = DBComplaint(
             title=complaint.title,
@@ -132,6 +134,8 @@ def create_complaint(
                 "Complaint Submitted",
                 f"Your complaint '{db_complaint.title}' has been submitted successfully.",
                 NotificationType.COMPLAINT_SUBMITTED, db_complaint.id)
+            
+            award_points(user, "complaint_submitted", db)
 
         db.commit()
         db.refresh(db_complaint)

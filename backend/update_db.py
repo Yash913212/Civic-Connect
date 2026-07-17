@@ -1,9 +1,9 @@
 import os
 import sys
 from sqlalchemy import create_engine, text
-from app.core.config import Settings
+from app.core.config import settings
 
-settings = Settings()
+settings = settings
 engine = create_engine(settings.DATABASE_URL)
 
 alter_users_queries = [

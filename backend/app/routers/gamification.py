@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database.database import get_db
-from app.database.models import User
+from app.database.models import User, Badge, UserBadge
 from app.auth.dependencies import get_current_user
 from app.core.gamification import (
     get_user_gamification_profile,
     get_leaderboard,
     award_points,
-    BADGES,
+    check_badge_eligibility,
 )
 
 router = APIRouter()
@@ -32,11 +32,18 @@ def get_gamification_leaderboard(
 
 
 @router.get("/badges")
-def get_all_badges():
+def get_all_badges(db: Session = Depends(get_db)):
     """Get all available badges."""
+    badges = db.query(Badge).all()
     return [
-        {"id": badge_id, **badge_info}
-        for badge_id, badge_info in BADGES.items()
+        {
+            "id": badge.id,
+            "name": badge.name,
+            "description": badge.description,
+            "icon": badge.icon,
+            "points": badge.points,
+        }
+        for badge in badges
     ]
 
 
@@ -59,4 +66,25 @@ def manually_award_points(
     return {
         "message": f"Awarded {result['points_added']} points to {user.full_name}",
         "result": result,
+    }
+
+
+@router.post("/check-badges/{user_id}")
+def check_badges(
+    user_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Manually check badge eligibility for a user (admin only)."""
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Only admins can check badges")
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    new_badges = check_badge_eligibility(user, db)
+    return {
+        "message": f"Checked badges for {user.full_name}",
+        "new_badges": new_badges,
     }

@@ -40,3 +40,22 @@ def require_role(required_roles: list[RoleEnum]):
 RequireCitizen = Depends(require_role([RoleEnum.CITIZEN, RoleEnum.OFFICER, RoleEnum.ADMIN]))
 RequireOfficer = Depends(require_role([RoleEnum.OFFICER, RoleEnum.ADMIN]))
 RequireAdmin = Depends(require_role([RoleEnum.ADMIN]))
+
+
+def get_optional_user(authorization: str | None = None, db: Session = Depends(get_db)):
+    """Get current user if token is provided, otherwise return None (for optional auth)."""
+    if not authorization:
+        return None
+    try:
+        if authorization.startswith("Bearer "):
+            token = authorization[7:]
+        else:
+            token = authorization
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            return None
+        user = db.query(User).filter(User.id == user_id).first()
+        return user if user else None
+    except JWTError:
+        return None

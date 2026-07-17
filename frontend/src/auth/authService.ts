@@ -1,4 +1,4 @@
-import { apiClient } from './apiClient';
+import { apiClient, authApi } from './apiClient';
 
 export interface User {
   id: string;
@@ -17,7 +17,10 @@ export interface LoginResponse {
 
 export const authService = {
   login: async (credentials: any): Promise<LoginResponse> => {
-    const response = await apiClient.post('/auth/login', credentials);
+    const response = await authApi.post('/auth/login', credentials);
+    const { access_token, refresh_token, user } = response.data;
+    localStorage.setItem('access_token', access_token);
+    localStorage.setItem('user', JSON.stringify(user));
     return response.data;
   },
 
@@ -28,15 +31,13 @@ export const authService = {
 
   logout: async (): Promise<void> => {
     try {
-      await apiClient.post('/auth/logout');
+      await authApi.post('/auth/logout');
     } catch (e) {
-      // Proceed with local logout even if server fails
     }
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
-    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-    document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+    document.cookie = "refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure";
   },
 
   getCurrentUser: async (): Promise<User> => {
@@ -48,9 +49,6 @@ export const authService = {
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('refresh_token', refreshToken);
     localStorage.setItem('user', JSON.stringify(user));
-    // Set cookies for Next.js middleware with security flags
-    document.cookie = `token=${accessToken}; path=/; max-age=86400; SameSite=Strict; Secure`;
-    document.cookie = `role=${user.role}; path=/; max-age=86400; SameSite=Strict; Secure`;
   },
 
   getLocalUser: (): User | null => {

@@ -397,7 +397,7 @@ export default function ComplaintForm() {
       </div>
 
       {/* Duplicate Check */}
-      {draft && draft.description && selectedLocation && (
+{draft && draft.description && selectedLocation && (
         <DuplicateWarning
           description={draft.description}
           department={draft.department}
@@ -408,48 +408,46 @@ export default function ComplaintForm() {
         />
       )}
 
-      {/* Submit */}
-     {draft && (
-  <div id="submit-section" className="space-y-4">
+      {/* Submit Section */}
+      {draft && (
+        <div id="submit-section" className="space-y-4">
+          <button
+            onClick={generateRequestNote}
+            disabled={!selectedLocation || generatingNote || isOfflineMode}
+            className="w-full py-3 bg-blue-600 text-white rounded-xl disabled:opacity-50"
+          >
+            {generatingNote
+              ? "Generating..."
+              : isOfflineMode
+              ? "Request Note (Offline)"
+              : "Generate Request Note"}
+          </button>
 
-    <button
-      onClick={generateRequestNote}
-      disabled={!selectedLocation || generatingNote || isOfflineMode}
-      className="w-full py-3 bg-blue-600 text-white rounded-xl disabled:opacity-50"
-    >
-      {generatingNote
-        ? "Generating..."
-        : isOfflineMode
-        ? "Request Note (Offline)"
-        : "Generate Request Note"}
-    </button>
+          {requestNote && (
+            <div className="rounded-2xl border border-blue-500/20 p-5 bg-blue-500/5">
+              <h3 className="font-semibold text-blue-400 mb-3">
+                AI Generated Request Letter
+              </h3>
 
-    {requestNote && (
-      <div className="rounded-2xl border border-blue-500/20 p-5 bg-blue-500/5">
-        <h3 className="font-semibold text-blue-400 mb-3">
-          AI Generated Request Letter
-        </h3>
+              <p className="whitespace-pre-line text-sm">
+                {requestNote}
+              </p>
+            </div>
+          )}
 
-        <p className="whitespace-pre-line text-sm">
-          {requestNote}
-        </p>
-      </div>
-    )}
-
-    <button
-      onClick={submitComplaint}
-      disabled={status === "submitting"}
-      className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl"
-    >
-      {status === "submitting"
-        ? "Submitting..."
-        : isOfflineMode
-        ? "Submit Offline"
-        : "Submit Complaint"}
-    </button>
-
-  </div>
-)}
+          <button
+            onClick={submitComplaint}
+            disabled={status === "submitting"}
+            className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl"
+          >
+            {status === "submitting"
+              ? "Submitting..."
+              : isOfflineMode
+              ? "Submit Offline"
+              : "Submit Complaint"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
