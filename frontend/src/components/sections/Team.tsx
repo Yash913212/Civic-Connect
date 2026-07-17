@@ -3,8 +3,40 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { Mail, Award, Cpu, Globe, Users } from "lucide-react";
+
+function StatCounter({ target }: { target: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-10% 0px" });
+
+  useEffect(() => {
+    if (!isInView) return;
+    
+    let start = 0;
+    const end = target;
+    if (start === end) return;
+
+    const duration = 2000; // 2 seconds
+    const range = end - start;
+    let current = start;
+    const increment = end > start ? 1 : -1;
+    const stepTime = Math.abs(Math.floor(duration / range));
+    
+    const timer = setInterval(() => {
+      current += increment;
+      setCount(current);
+      if (current === end) {
+        clearInterval(timer);
+      }
+    }, Math.max(stepTime, 20)); // cap at 50fps max
+
+    return () => clearInterval(timer);
+  }, [isInView, target]);
+
+  return <span ref={ref}>{count}</span>;
+}
 
 interface TeamMember {
   name: string;
@@ -302,26 +334,7 @@ export default function Team({
         }
       );
 
-      // Stat cards count up on scroll
-      const countStats = gsap.utils.toArray(".team-count-stat");
-      countStats.forEach((stat: any) => {
-        const targetVal = parseInt(stat.getAttribute("data-target") || "0", 10);
-        gsap.fromTo(
-          stat,
-          { textContent: "0" },
-          {
-            textContent: targetVal,
-            duration: 2.5,
-            ease: "power3.out",
-            snap: { textContent: 1 },
-            scrollTrigger: animateImmediately ? undefined : {
-              trigger: stat,
-              start: "top 90%",
-              toggleActions: "play none none none",
-            },
-          }
-        );
-      });
+      // Stat cards count up handled by StatCounter component to avoid React reconciliation conflicts
 
       // Quote fade-in reveal
       gsap.fromTo(
@@ -399,7 +412,7 @@ export default function Team({
               <Users className="w-6 h-6 animate-pulse" />
             </div>
             <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">
-              <span className="team-count-stat" data-target={5}>0</span>
+              <StatCounter target={5} />
             </div>
             <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-white/50">Team Members</div>
           </div>
@@ -410,7 +423,7 @@ export default function Team({
               <Globe className="w-6 h-6" />
             </div>
             <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">
-              <span className="team-count-stat" data-target={20}>0</span>
+              <StatCounter target={20} />
               <span className="text-purple-400 ml-0.5">+</span>
             </div>
             <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-white/50">Technologies</div>
@@ -422,7 +435,7 @@ export default function Team({
               <Cpu className="w-6 h-6" />
             </div>
             <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">
-              <span className="team-count-stat" data-target={6}>0</span>
+              <StatCounter target={6} />
             </div>
             <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-white/50">AI Models</div>
           </div>
@@ -433,7 +446,7 @@ export default function Team({
               <Award className="w-6 h-6" />
             </div>
             <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">
-              <span className="team-count-stat" data-target={1}>0</span>
+              <StatCounter target={1} />
             </div>
             <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-white/50">Shared Vision</div>
           </div>
