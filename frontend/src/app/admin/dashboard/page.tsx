@@ -755,7 +755,7 @@ function AdminDashboard() {
                   {sidebarOpen && (
                     <>
                       <span className="truncate">{item.label}</span>
-                      {item.badge && (
+                      {'badge' in item && item.badge && (
                         <span className="ml-auto text-[10px] bg-rose-500/15 text-rose-400 px-1.5 py-0.5 rounded-full">
                           {complaints.length}
                         </span>
