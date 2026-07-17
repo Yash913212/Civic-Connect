@@ -234,7 +234,13 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
   );
 }
 
-export default function Team() {
+export default function Team({ 
+  animateImmediately = false,
+  isModal = false
+}: { 
+  animateImmediately?: boolean;
+  isModal?: boolean;
+}) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
@@ -253,7 +259,7 @@ export default function Team() {
           y: 0,
           duration: 1.2,
           ease: "power4.out",
-          scrollTrigger: {
+          scrollTrigger: animateImmediately ? undefined : {
             trigger: titleRef.current,
             start: "top 85%",
           },
@@ -270,7 +276,7 @@ export default function Team() {
           duration: 1.2,
           delay: 0.15,
           ease: "power3.out",
-          scrollTrigger: {
+          scrollTrigger: animateImmediately ? undefined : {
             trigger: subtitleRef.current,
             start: "top 87%",
           },
@@ -289,7 +295,7 @@ export default function Team() {
           duration: 1,
           stagger: 0.12,
           ease: "power4.out",
-          scrollTrigger: {
+          scrollTrigger: animateImmediately ? undefined : {
             trigger: ".team-cards-grid",
             start: "top 80%",
           },
@@ -308,7 +314,7 @@ export default function Team() {
             duration: 2.5,
             ease: "power3.out",
             snap: { textContent: 1 },
-            scrollTrigger: {
+            scrollTrigger: animateImmediately ? undefined : {
               trigger: stat,
               start: "top 90%",
               toggleActions: "play none none none",
@@ -327,7 +333,7 @@ export default function Team() {
           scale: 1,
           duration: 1.4,
           ease: "power4.out",
-          scrollTrigger: {
+          scrollTrigger: animateImmediately ? undefined : {
             trigger: ".team-quote-block",
             start: "top 85%",
           },
@@ -336,13 +342,13 @@ export default function Team() {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [animateImmediately]);
 
   return (
     <section
       id="team"
       ref={sectionRef}
-      className="py-32 w-full bg-transparent relative overflow-hidden flex flex-col items-center select-none"
+      className={`${isModal ? "py-16" : "py-32"} w-full bg-transparent relative overflow-hidden flex flex-col items-center select-none`}
     >
       {/* Dynamic glow background effects */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0 opacity-40">

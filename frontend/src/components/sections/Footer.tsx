@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import Link from "next/link";
-import { MessageSquare, GitBranch, Mail, MapPin, ArrowUpRight } from "lucide-react";
+import { MessageSquare, GitBranch, Mail, MapPin, ArrowUpRight, X, Users } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import Team from "./Team";
 
 export default function Footer() {
   const marqueeRef = useRef<HTMLDivElement>(null);
+  const [isTeamOpen, setIsTeamOpen] = useState(false);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -75,6 +78,15 @@ export default function Footer() {
                 </Link>
               </li>
             ))}
+            <li>
+              <button
+                onClick={() => setIsTeamOpen(true)}
+                className="text-sm text-muted-foreground hover:text-slate-900 dark:hover:text-white transition-all duration-300 flex items-center gap-1 group text-left"
+              >
+                Meet the Team
+                <ArrowUpRight className="w-3 h-3 opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all" />
+              </button>
+            </li>
           </ul>
         </div>
 
@@ -108,7 +120,7 @@ export default function Footer() {
             <li>
               <Link
                 href="/feedback"
-                className="text-sm flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 hover:bg-amber-500/20 transition-all font-semibold"
+                className="text-sm flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 hover:bg-amber-500/20 transition-all font-semibold animate-pulse"
               >
                 <MessageSquare className="w-4 h-4" />
                 Send Feedback
@@ -153,6 +165,13 @@ export default function Footer() {
         </div>
         <div className="flex items-center gap-6">
           <button
+            onClick={() => setIsTeamOpen(true)}
+            className="text-xs text-emerald-500 hover:text-emerald-400 font-bold transition-all duration-300 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:scale-105 hover:bg-emerald-500/20"
+          >
+            <Users className="w-3.5 h-3.5" />
+            Meet the Team
+          </button>
+          <button
             onClick={scrollToTop}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
           >
@@ -161,6 +180,42 @@ export default function Footer() {
           </button>
         </div>
       </div>
+
+      {/* Modal Overlay for Team Section */}
+      <AnimatePresence>
+        {isTeamOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-4 md:p-8"
+            onClick={() => setIsTeamOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.92, y: 30 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.92, y: 30 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25, mass: 0.8 }}
+              className="relative w-full max-w-7xl h-[85vh] bg-slate-900/90 dark:bg-black/85 border border-white/10 rounded-[32px] overflow-hidden shadow-2xl flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button in top-right */}
+              <button
+                onClick={() => setIsTeamOpen(false)}
+                className="absolute top-6 right-6 z-[160] p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all backdrop-blur-md"
+                aria-label="Close Team Modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* Scrollable contents */}
+              <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 md:px-8 py-6 scrollbar-thin scrollbar-thumb-white/10">
+                <Team animateImmediately={true} isModal={true} />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </footer>
   );
 }
