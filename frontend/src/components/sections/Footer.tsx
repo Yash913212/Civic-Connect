@@ -23,6 +23,18 @@ export default function Footer() {
     return () => ctx.revert();
   }, []);
 
+  // Block body scroll when the team modal is open
+  useEffect(() => {
+    if (isTeamOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isTeamOpen]);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -188,30 +200,28 @@ export default function Footer() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-4 md:p-8"
+            className="fixed inset-0 z-[150] w-screen h-screen bg-slate-950/98 dark:bg-black/95 backdrop-blur-2xl overflow-y-auto"
             onClick={() => setIsTeamOpen(false)}
           >
+            {/* Close button in top-right - fixed so it stays visible while scrolling */}
+            <button
+              onClick={() => setIsTeamOpen(false)}
+              className="fixed top-6 right-6 md:top-8 md:right-8 z-[160] p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all backdrop-blur-md hover:scale-110"
+              aria-label="Close Team Modal"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Scrollable window container */}
             <motion.div
-              initial={{ scale: 0.92, y: 30 }}
+              initial={{ scale: 0.95, y: 30 }}
               animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.92, y: 30 }}
-              transition={{ type: "spring", stiffness: 350, damping: 25, mass: 0.8 }}
-              className="relative w-full max-w-7xl h-[85vh] bg-slate-900/90 dark:bg-black/85 border border-white/10 rounded-[32px] overflow-hidden shadow-2xl flex flex-col"
+              exit={{ scale: 0.95, y: 30 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.8 }}
+              className="w-full max-w-7xl mx-auto px-6 py-20 min-h-screen flex flex-col justify-start"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close button in top-right */}
-              <button
-                onClick={() => setIsTeamOpen(false)}
-                className="absolute top-6 right-6 z-[160] p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all backdrop-blur-md"
-                aria-label="Close Team Modal"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              {/* Scrollable contents */}
-              <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 md:px-8 py-6 scrollbar-thin scrollbar-thumb-white/10">
-                <Team animateImmediately={true} isModal={true} />
-              </div>
+              <Team animateImmediately={true} isModal={true} />
             </motion.div>
           </motion.div>
         )}
