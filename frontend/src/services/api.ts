@@ -1,6 +1,6 @@
 import { apiClient } from '@/auth/apiClient';
 
-let API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+let API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
 if (API_BASE.endsWith("/")) API_BASE = API_BASE.slice(0, -1);
 if (!API_BASE.endsWith("/api")) API_BASE = `${API_BASE}/api`;
 
