@@ -14,7 +14,7 @@ function StatCounter({ target }: { target: number }) {
   useEffect(() => {
     if (!isInView) return;
     
-    let start = 0;
+    const start = 0;
     const end = target;
     if (start === end) return;
 

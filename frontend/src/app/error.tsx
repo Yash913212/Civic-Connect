@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import Link from "next/link";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
@@ -44,12 +45,12 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           >
             <RefreshCw className="w-4 h-4" /> Try Again
           </button>
-          <a
+          <Link
             href="/"
             className="px-5 py-2.5 bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-black/10 dark:border-white/20 text-sm font-semibold rounded-xl hover:bg-white/80 dark:hover:bg-black/60 transition-all flex items-center gap-2"
           >
             <Home className="w-4 h-4" /> Go Home
-          </a>
+          </Link>
         </motion.div>
       </motion.div>
     </main>

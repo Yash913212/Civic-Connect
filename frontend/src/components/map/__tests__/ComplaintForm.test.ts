@@ -1,4 +1,4 @@
-import { formatDepartment, formatPriority } from '../ComplaintForm';
+import { formatDepartment, formatPriority } from '../../../utils/complaintFormatters';
 
 describe('formatDepartment', () => {
   it('returns General for null/undefined', () => {
