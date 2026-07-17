@@ -41,6 +41,7 @@ type Message = {
 const API_ENDPOINT = `${API_BASE}/ai/chat`;
 
 export default function CivicAI() {
+  const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
@@ -50,14 +51,22 @@ export default function CivicAI() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    if (isOpen) {
+    if (mounted) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, mounted]);
+
+  useEffect(() => {
+    if (isOpen && mounted) {
       setTimeout(() => inputRef.current?.focus(), 300);
     }
-  }, [isOpen]);
+  }, [isOpen, mounted]);
+
+  if (!mounted) return null;
 
   const sendMessage = async (text: string) => {
     const userMessage: Message = { role: "user", content: text };
