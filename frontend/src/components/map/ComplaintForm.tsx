@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapPin, Send, CheckCircle2, Loader2, Upload, Brain, ArrowRight, LayoutDashboard } from "lucide-react";
+import { MapPin, Send, CheckCircle2, Loader2, Upload, Brain, ArrowRight, LayoutDashboard, WifiOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
@@ -9,6 +9,7 @@ import MapPicker from "./MapPicker";
 import DuplicateWarning from "./DuplicateWarning";
 import { complaintService } from "@/services/complaintService";
 import { API_BASE } from "@/services/api";
+import { saveComplaintOffline, isOnline, registerOnlineListener } from "@/lib/offlineStorage";
 
 interface LocationResult {
   lat: string;
@@ -38,6 +39,7 @@ export default function ComplaintForm() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [requestNote, setRequestNote] = useState("");
   const [generatingNote, setGeneratingNote] = useState(false);
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("complaint_draft");
@@ -47,6 +49,15 @@ export default function ComplaintForm() {
         sessionStorage.removeItem("complaint_draft");
       } catch {}
     }
+  }, []);
+
+  useEffect(() => {
+    setIsOfflineMode(!isOnline());
+    const unsubscribe = registerOnlineListener(() => {
+      setIsOfflineMode(false);
+      toast.success("You're back online! Pending complaints will sync automatically.");
+    });
+    return unsubscribe;
   }, []);
 
   const submitComplaint = async () => {
@@ -65,6 +76,29 @@ export default function ComplaintForm() {
         });
       }
 
+      const formatDepartment = (dept: string) => {
+        if (!dept) return "General";
+        const d = dept.toLowerCase();
+        if (d.includes("road")) return "Roads";
+        if (d.includes("drain")) return "Drainage";
+        if (d.includes("garb") || d.includes("sanit") || d.includes("wast")) return "Garbage";
+        if (d.includes("water")) return "Water";
+        if (d.includes("light")) return "Streetlight";
+        if (d.includes("elect")) return "Electricity";
+        if (d.includes("safe")) return "Safety";
+        if (d.includes("traf")) return "Traffic";
+        return "General";
+      };
+
+      const formatPriority = (pri: string) => {
+        if (!pri) return "Low";
+        const p = pri.toLowerCase();
+        if (p.includes("crit") || p.includes("urg") || p.includes("emer")) return "Critical";
+        if (p.includes("high")) return "High";
+        if (p.includes("med")) return "Medium";
+        return "Low";
+      };
+
       const payload = {
         title: draft?.title || manualFile?.name || "Civic Issue",
         description: draft?.description || manualDescription || "No description provided",
@@ -72,24 +106,61 @@ export default function ComplaintForm() {
         latitude: selectedLocation.lat,
         longitude: selectedLocation.lng,
         address: selectedLocation.display_name,
-        department: draft?.department || "General",
-        priority: (draft?.priority || "low").charAt(0).toUpperCase() + (draft?.priority || "low").slice(1),
+        department: formatDepartment(draft?.department || "General"),
+        priority: formatPriority(draft?.priority || "low"),
         image_url: finalImageUrl,
         ai_summary: draft?.description || "",
         ai_request_letter: requestNote || "",
       };
-      await complaintService.create(payload);
-      setStatus("done");
-      toast.success("Complaint registered!");
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
+
+      if (!isOnline()) {
+        // Save to IndexedDB for offline sync
+        const token = localStorage.getItem("access_token") || "";
+        await saveComplaintOffline({ ...payload, token });
+        setStatus("done");
+        toast.success("Complaint saved offline! It will sync when you're back online.");
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
+      } else {
+        await complaintService.create(payload);
+        setStatus("done");
+        toast.success("Complaint registered!");
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
+      }
     } catch (err: any) {
-      toast.error(err.message || "Failed to register complaint");
-      setStatus("error");
+      // If network error, try offline mode
+      if (!isOnline()) {
+        const token = localStorage.getItem("access_token") || "";
+        await saveComplaintOffline({
+          title: draft?.title || "Civic Issue",
+          description: draft?.description || manualDescription || "No description provided",
+          location: selectedLocation.display_name,
+          latitude: selectedLocation.lat,
+          longitude: selectedLocation.lng,
+          address: selectedLocation.display_name,
+          department: formatDepartment(draft?.department || "General"),
+          priority: formatPriority(draft?.priority || "low"),
+          image_url: "",
+          ai_summary: draft?.description || "",
+          ai_request_letter: requestNote || "",
+          token,
+        });
+        setStatus("done");
+        toast.success("Complaint saved offline! It will sync when you're back online.");
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
+      } else {
+        toast.error(err.message || "Failed to register complaint");
+        setStatus("error");
+      }
     }
   };
   const generateRequestNote = async () => {
   if (!selectedLocation || !draft) {
     toast.error("Please select a location first.");
+    return;
+  }
+
+  if (!isOnline()) {
+    toast.error("Request note generation requires internet connection.");
     return;
   }
 
@@ -138,6 +209,12 @@ export default function ComplaintForm() {
     if (!manualFile && !manualDescription.trim()) {
       toast.error("Upload an image or describe the issue"); return;
     }
+
+    if (!isOnline()) {
+      toast.error("AI analysis requires internet connection. You can still submit a basic complaint.");
+      return;
+    }
+
     setIsAnalyzing(true);
     try {
       if (manualFile) {
@@ -217,6 +294,21 @@ export default function ComplaintForm() {
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Offline Mode Banner */}
+      {isOfflineMode && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center gap-3"
+        >
+          <WifiOff className="w-5 h-5 text-amber-500" />
+          <div>
+            <p className="text-sm font-medium text-amber-500">Offline Mode</p>
+            <p className="text-xs text-muted-foreground">You can still submit complaints. They'll sync when you're back online.</p>
+          </div>
+        </motion.div>
+      )}
+
       {/* AI Analysis Summary */}
       {draft ? (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
@@ -322,11 +414,13 @@ export default function ComplaintForm() {
 
     <button
       onClick={generateRequestNote}
-      disabled={!selectedLocation || generatingNote}
-      className="w-full py-3 bg-blue-600 text-white rounded-xl"
+      disabled={!selectedLocation || generatingNote || isOfflineMode}
+      className="w-full py-3 bg-blue-600 text-white rounded-xl disabled:opacity-50"
     >
       {generatingNote
         ? "Generating..."
+        : isOfflineMode
+        ? "Request Note (Offline)"
         : "Generate Request Note"}
     </button>
 
@@ -342,17 +436,17 @@ export default function ComplaintForm() {
       </div>
     )}
 
-    {requestNote && (
-      <button
-        onClick={submitComplaint}
-        disabled={status === "submitting"}
-        className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl"
-      >
-        {status === "submitting"
-          ? "Submitting..."
-          : "Submit Complaint"}
-      </button>
-    )}
+    <button
+      onClick={submitComplaint}
+      disabled={status === "submitting"}
+      className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl"
+    >
+      {status === "submitting"
+        ? "Submitting..."
+        : isOfflineMode
+        ? "Submit Offline"
+        : "Submit Complaint"}
+    </button>
 
   </div>
 )}

@@ -1,6 +1,7 @@
 const CACHE_NAME = "civic-connect-v1";
 const STATIC_CACHE = "civic-connect-static-v1";
 const API_CACHE = "civic-connect-api-v1";
+const OFFLINE_QUEUE = "civic-connect-offline-queue";
 
 const STATIC_ASSETS = [
   "/",
@@ -28,7 +29,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== STATIC_CACHE && name !== API_CACHE && name !== CACHE_NAME)
+          .filter((name) => name !== STATIC_CACHE && name !== API_CACHE && name !== CACHE_NAME && name !== OFFLINE_QUEUE)
           .map((name) => caches.delete(name))
       );
     })
@@ -63,6 +64,49 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 });
+
+// Background Sync for offline complaints
+self.addEventListener("sync", (event) => {
+  if (event.tag === "sync-complaints") {
+    event.waitUntil(syncOfflineComplaints());
+  }
+});
+
+async function syncOfflineComplaints() {
+  const cache = await caches.open(OFFLINE_QUEUE);
+  const requests = await cache.keys();
+  
+  for (const request of requests) {
+    try {
+      const response = await cache.match(request);
+      const body = await response.json();
+      
+      // Re-send the complaint to the server
+      const serverResponse = await fetch(request, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": body.token || "",
+        },
+        body: JSON.stringify(body.data),
+      });
+      
+      if (serverResponse.ok) {
+        await cache.delete(request);
+        // Notify the client of successful sync
+        const clients = await self.clients.matchAll();
+        clients.forEach((client) => {
+          client.postMessage({
+            type: "COMPLAINT_SYNCED",
+            data: { id: body.data.tempId },
+          });
+        });
+      }
+    } catch (error) {
+      console.error("Failed to sync complaint:", error);
+    }
+  }
+}
 
 async function cacheFirst(request) {
   const cached = await caches.match(request);

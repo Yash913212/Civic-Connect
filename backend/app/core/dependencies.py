@@ -9,6 +9,9 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from PIL import Image
 import io
+import logging
+
+logger = logging.getLogger(__name__)
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -34,8 +37,8 @@ class ConnectionManager:
             for connection in self.active_connections[user_id]:
                 try:
                     await connection.send_text(message)
-                except:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Failed to send WebSocket message to user {user_id}: {e}")
 
     async def broadcast_to_admins(self, message: str, db: Session):
         from app.database.models import RoleEnum

@@ -1,25 +1,28 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from app.database.database import get_db
 from app.database.models import Complaint as DBComplaint
-from app.database.models import User, RoleEnum, ComplaintStatus, Notification, NotificationType
+from app.database.models import User, RoleEnum, ComplaintStatus, PriorityEnum, DepartmentEnum, Notification, NotificationType
 from app.auth.dependencies import get_current_user
 from app.core.dependencies import manager, get_optional_user
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
 class Complaint(BaseModel):
-    title: str
-    description: str
-    location: str
+    title: str = Field(..., min_length=1, max_length=200)
+    description: str = Field(..., min_length=1, max_length=2000)
+    location: str = Field(..., min_length=1, max_length=500)
     latitude: str | None = None
     longitude: str | None = None
     address: str | None = None
-    department: str = "General"
-    priority: str = "Low"
+    department: DepartmentEnum = DepartmentEnum.GENERAL
+    priority: PriorityEnum = PriorityEnum.LOW
     image_url: str | None = None
     ai_summary: str | None = None
     ai_request_letter: str | None = None
@@ -34,14 +37,14 @@ class AssignRequest(BaseModel):
 
 
 class ComplaintUpdate(BaseModel):
-    title: str | None = None
-    description: str | None = None
-    location: str | None = None
+    title: str | None = Field(None, min_length=1, max_length=200)
+    description: str | None = Field(None, min_length=1, max_length=2000)
+    location: str | None = Field(None, min_length=1, max_length=500)
     latitude: str | None = None
     longitude: str | None = None
     address: str | None = None
-    department: str | None = None
-    priority: str | None = None
+    department: DepartmentEnum | None = None
+    priority: PriorityEnum | None = None
     image_url: str | None = None
     ai_summary: str | None = None
     ai_request_letter: str | None = None
@@ -190,8 +193,8 @@ def update_complaint(
             }),
             str(complaint.user_id)
         ))
-    except:
-        pass
+    except Exception as e:
+        logger.warning(f"Failed to send WebSocket notification: {e}")
 
     return _complaint_to_dict(complaint, db)
 
