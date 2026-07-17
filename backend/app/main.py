@@ -117,6 +117,7 @@ api_router.include_router(transparency_router, prefix="/transparency", tags=["Tr
 api_router.include_router(gamification_router, prefix="/gamification", tags=["Gamification"])
 
 app.include_router(api_router)
+app.include_router(ai_router, tags=["AI"])
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
