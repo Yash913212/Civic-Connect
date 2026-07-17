@@ -66,7 +66,7 @@ export default function CivicAI() {
     }
   }, [isOpen, mounted]);
 
-  if (!mounted) return null;
+  if (!mounted) return <></>;
 
   const sendMessage = async (text: string) => {
     const userMessage: Message = { role: "user", content: text };

@@ -15,7 +15,7 @@ const DEPT_LABELS: Record<string, string> = {
 function ParticleField() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
+  if (!mounted) return <div className="absolute inset-0 pointer-events-none overflow-hidden" />;
 
   const particles = Array.from({ length: 20 }, (_, i) => ({
     id: i,
