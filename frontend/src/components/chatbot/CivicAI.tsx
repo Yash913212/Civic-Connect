@@ -18,6 +18,7 @@ import {
   Home,
   Search,
 } from "lucide-react";
+import { API_BASE } from "@/services/api";
 
 const QUICK_ACTIONS = [
   { icon: MapPin, label: "File a complaint", action: "I want to file a civic complaint" },
@@ -37,7 +38,7 @@ type Message = {
   content: string;
 };
 
-const API_ENDPOINT = "/api/ai/chat";
+const API_ENDPOINT = `${API_BASE}/ai/chat`;
 
 export default function CivicAI() {
   const [isOpen, setIsOpen] = useState(false);
