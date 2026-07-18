@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/auth/AuthProvider";
 import { authService } from "@/auth/authService";
 import { cn } from "@/lib/utils";
@@ -249,22 +248,17 @@ const DotMatrix: React.FC<DotMatrixProps> = ({
 const ShaderMaterial = ({
   source,
   uniforms,
-  maxFps = 60,
 }: {
   source: string;
   hovered?: boolean;
-  maxFps?: number;
   uniforms: Uniforms;
 }) => {
   const { size } = useThree();
   const ref = useRef<THREE.Mesh>(null);
-  let lastFrameTime = 0;
 
   useFrame(({ clock }) => {
     if (!ref.current) return;
     const timestamp = clock.getElapsedTime();
-
-    lastFrameTime = timestamp;
 
     const material: any = ref.current.material;
     const timeLocation = material.uniforms.u_time;
@@ -345,6 +339,7 @@ const ShaderMaterial = ({
     });
 
     return materialObject;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [size.width, size.height, source]);
 
   return (
@@ -355,10 +350,19 @@ const ShaderMaterial = ({
   );
 };
 
-const Shader: React.FC<ShaderProps> = ({ source, uniforms, maxFps = 60 }) => {
+const Shader: React.FC<ShaderProps> = ({ source, uniforms }) => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <div className="absolute inset-0 h-full w-full bg-transparent" />;
+  }
+
   return (
     <Canvas className="absolute inset-0  h-full w-full">
-      <ShaderMaterial source={source} uniforms={uniforms} maxFps={maxFps} />
+      <ShaderMaterial source={source} uniforms={uniforms} />
     </Canvas>
   );
 };
@@ -383,6 +387,7 @@ interface MiniNavbarProps {
   setIsSignUp: (val: boolean) => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [headerShapeClass, setHeaderShapeClass] = useState('rounded-full');
@@ -414,6 +419,7 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
 
   const logoElement = (
     <div className="relative h-8 w-8 sm:h-10 sm:w-10 group-hover:scale-105 transition-transform duration-300 bg-white rounded-lg overflow-hidden flex items-center justify-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full p-0.5" />
     </div>
   );
@@ -589,7 +595,6 @@ const DashboardWidgets = ({ role }: { role: Role }) => {
 };
 
 export const SignInPage = ({ className }: SignInPageProps) => {
-  const router = useRouter();
   const { login: setAuthUser } = useAuth();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
@@ -703,6 +708,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleBackClick = () => {
     setStep("email");
     setReverseCanvasVisible(false);
@@ -876,6 +882,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                 >
                   <div className="space-y-4 text-center mb-8 relative">
                     <div className="mx-auto w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.05)] overflow-hidden relative z-10">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full transition-transform duration-300" />
                     </div>
                     <div className="space-y-2 relative h-[60px] w-full">

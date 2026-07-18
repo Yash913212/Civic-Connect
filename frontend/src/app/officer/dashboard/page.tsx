@@ -2,25 +2,20 @@
 
 import { withRoleGuard } from "@/middleware/roleGuard";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ClipboardList, Map, Award, Clock,
-  CheckCircle, Camera, Search, Filter, MessageSquare,
+  CheckCircle, Camera, Search, MessageSquare,
   LogOut, Bell, AlertTriangle, Building2, ChevronDown, RefreshCw,
-  Truck, CalendarDays, Send, PackagePlus, Clock4, User,
-  ChevronLeft, Menu, Shield, Sparkles, FileText, TrendingUp,
-  Zap, Users, ArrowUpRight, ArrowDownRight, Activity, MapPin,
-  ChevronRight, PhoneCall, BarChart3, Target,
+  Truck, CalendarDays, User,
+  ChevronLeft, Menu, Shield, Activity,
+  Users,
 } from "lucide-react";
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  AreaChart, Area, PieChart, Pie, Cell, LineChart, Line,
-} from "recharts";
-import { useRouter } from "next/navigation";
+
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
-import { showTextLoading, showSystemStatus, showUploadProgress } from "@/components/ui/CustomToasts";
+import { showUploadProgress } from "@/components/ui/CustomToasts";
 import { complaintService, type ComplaintData } from "@/services/complaintService";
 import { PriorityBadge } from "@/components/dashboard/PriorityBadge";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
@@ -28,6 +23,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { GlassCard } from "@/components/dashboard/GlassCard";
 import { Shimmer } from "@/components/dashboard/Shimmer";
 import dynamic from "next/dynamic";
+import { useAuth } from "@/auth/AuthProvider";
 import { PerformanceTab } from "./PerformanceTab";
 import { CommsHubTab } from "./CommsHubTab";
 import { ResourcesTab } from "./ResourcesTab";
@@ -127,7 +123,7 @@ function NotificationPanel({ open, onClose }: { open: boolean; onClose: () => vo
               </div>
             </div>
             <div className="max-h-80 overflow-y-auto">
-              {notifications.map((n, i) => (
+              {notifications.map((n) => (
                 <div key={n.id} className="flex items-start gap-3 p-4 border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors cursor-pointer">
                   <div className={`p-1.5 rounded-lg ${
                     n.type === 'success' ? 'bg-emerald-500/15 text-emerald-400' :
@@ -154,7 +150,7 @@ function NotificationPanel({ open, onClose }: { open: boolean; onClose: () => vo
 }
 
 function OfficerDashboard() {
-  const router = useRouter();
+  const { logout: authLogout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<TabId>("tasks");
   const [tabDirection, setTabDirection] = useState(1);
@@ -199,11 +195,8 @@ function OfficerDashboard() {
     } catch (err: any) { toast.error(err.message); }
   };
 
-  const handleSignOut = () => {
-    localStorage.removeItem('access_token'); localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user'); sessionStorage.clear();
-    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-    document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+  const handleSignOut = async () => {
+    await authLogout();
     window.location.href = "/";
   };
 
@@ -352,7 +345,7 @@ function OfficerDashboard() {
                     {!loading && filteredComplaints.length === 0 && (
                       <div className="p-8 text-center text-white/40 text-sm">{searchQuery ? "No results." : "No complaints yet."}</div>
                     )}
-                    {filteredComplaints.map((c, i) => (
+                    {filteredComplaints.map((c) => (
                       <div key={c.id} onClick={() => setSelectedTask(c.id)}
                         className={`p-4 rounded-xl border cursor-pointer transition-all ${
                           selectedTask === c.id
@@ -392,6 +385,7 @@ function OfficerDashboard() {
                             <div className="flex gap-4 items-start">
                               <p className="text-sm text-white/70 leading-relaxed flex-1">{selectedComplaint.description}</p>
                               {selectedComplaint.image_url && (
+                                // eslint-disable-next-line @next/next/no-img-element
                                 <img 
                                   src={selectedComplaint.image_url} 
                                   alt="Complaint Image" 

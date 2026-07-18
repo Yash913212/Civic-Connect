@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Bell, Check, CheckCircle2, AlertTriangle, Info, Clock, Search as SearchIcon, History, UserPlus, FileText } from "lucide-react";
+import { Bell, Check, CheckCircle2, Info, Clock, Search as SearchIcon, History, UserPlus, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest } from "@/services/api";
 

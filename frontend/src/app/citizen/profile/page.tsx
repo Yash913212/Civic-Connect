@@ -24,15 +24,17 @@ import {
 } from "lucide-react";
 import { showSystemStatus } from "@/components/ui/CustomToasts";
 import { gamificationService, type GamificationProfile, type LeaderboardEntry } from "@/services/gamificationService";
+import { useAuth } from "@/auth/AuthProvider";
 
 export default function CitizenProfile() {
   const router = useRouter();
+  const { user } = useAuth();
   
   // Profile settings state
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [region, setRegion] = useState("Zone 4 - Municipal Smart Grid");
-  const [role, setRole] = useState("Smart City Lead");
+  const [role, setRole] = useState("Validated Citizen");
   const [bio, setBio] = useState("Computer Science Student building automated smart city models & neural infrastructure.");
   
   // Notification toggles
@@ -49,18 +51,16 @@ export default function CitizenProfile() {
   const [gameLoading, setGameLoading] = useState(false);
 
   useEffect(() => {
-    // Read session details
-    const storedName = sessionStorage.getItem("user-name");
-    const storedEmail = sessionStorage.getItem("user-email");
-    if (storedName && storedEmail) {
-      setName(storedName);
-      setEmail(storedEmail);
-      setRole(storedEmail.includes("admin") || storedName.toLowerCase().includes("yash") || storedName.toLowerCase().includes("yaswanth") ? "Smart City Lead" : "Validated Citizen");
+    // Read user from auth context
+    if (user) {
+      setName(user.full_name);
+      setEmail(user.email);
+      setRole(user.role === "ADMIN" ? "Smart City Lead" : user.role === "OFFICER" ? "Officer" : "Validated Citizen");
     } else {
-      // Default fallback developer credentials
-      setName("Amjuri Yaswanth");
-      setEmail("yash@civicai.org");
-      setRole("Smart City Lead");
+      // Default fallback
+      setName("Citizen");
+      setEmail("");
+      setRole("Validated Citizen");
     }
     
     // Fetch gamification stats
@@ -78,7 +78,7 @@ export default function CitizenProfile() {
         console.error("Failed to load gamification data:", err);
         setGameLoading(false);
       });
-  }, []);
+  }, [user]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();

@@ -21,10 +21,10 @@ export const withRoleGuard = (WrappedComponent: any, allowedRoles: User['role'][
         if (!isAuthenticated) {
           router.push('/');
         } else if (user && !allowedRoles.includes(user.role)) {
-          window.location.href = dashRoutes[user.role] || '/';
+          router.push(dashRoutes[user.role] || '/');
         }
       }
-    }, [loading, isAuthenticated, user, router, mounted]);
+    }, [loading, isAuthenticated, user, mounted, router]);
 
     // During SSR or initial hydration, return the stable wrapper but keep children hidden/skeletonized
     // if we don't know the auth state yet, to prevent hydration insertBefore crashes.

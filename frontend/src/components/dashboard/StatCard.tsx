@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { motion, useMotionValue, useTransform, useSpring, type PanInfo } from "framer-motion";
+import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { AnimatedCounter } from "./AnimatedCounter";
 import { Shimmer } from "./Shimmer";

@@ -11,7 +11,7 @@ export const withAuthGuard = (WrappedComponent: any) => {
 
     useEffect(() => {
       if (!loading && !isAuthenticated) {
-        router.push('/'); // Redirect to login
+        router.push('/');
       }
     }, [loading, isAuthenticated, router]);
 

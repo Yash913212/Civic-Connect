@@ -1,22 +1,59 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import gsap from "gsap";
 
+const LOADER_STYLES = `
+  @keyframes gridScroll {
+    0% { background-position-y: 0px; }
+    100% { background-position-y: 1000px; }
+  }
+  @keyframes floatBlob1 {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(10%, 8%) scale(1.1); }
+    100% { transform: translate(-5%, 15%) scale(0.95); }
+  }
+  @keyframes floatBlob2 {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-12%, -10%) scale(0.9); }
+    100% { transform: translate(8%, -4%) scale(1.05); }
+  }
+  @keyframes floatBlob3 {
+    0% { transform: translate(0, 0) scale(0.95); }
+    50% { transform: translate(-8%, 12%) scale(1.15); }
+    100% { transform: translate(12%, -8%) scale(1); }
+  }
+  @keyframes scanlineDrift {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(200%); }
+  }
+  .text-glow-premium {
+    text-shadow: 0 0 15px rgba(255,255,255,0.2), 0 0 30px rgba(0,240,255,0.3);
+  }
+`;
+
 export default function Loader() {
-  const [progress, setProgress] = useState(() => {
-    if (typeof window !== "undefined" && sessionStorage.getItem("transition-from-login") === "true") {
-      return 85;
-    }
-    return 0;
-  });
+  // Always initialize to 0 for SSR consistency; check sessionStorage in useEffect
+  const [progress, setProgress] = useState(0);
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  const words = ["Detect", "Analyze", "Route", "Predict", "Resolve"];
+  const words = useMemo(() => ["Detect", "Analyze", "Route", "Predict", "Resolve"], []);
+
+  // Inject loader-specific keyframe styles on mount (avoids inline <style> JSX)
+  useEffect(() => {
+    const styleEl = document.createElement("style");
+    styleEl.setAttribute("data-loader-styles", "");
+    styleEl.textContent = LOADER_STYLES;
+    document.head.appendChild(styleEl);
+    return () => {
+      styleEl.remove();
+    };
+  }, []);
 
   useEffect(() => {
-    const isFromLogin = typeof window !== "undefined" && sessionStorage.getItem("transition-from-login") === "true";
+    const isFromLogin = sessionStorage.getItem("transition-from-login") === "true";
     if (isFromLogin) {
+      setProgress(85);
       sessionStorage.removeItem("transition-from-login");
     }
 
@@ -107,50 +144,14 @@ export default function Loader() {
     }, loaderRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [words]);
 
   return (
     <div
       ref={loaderRef}
       className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black overflow-hidden select-none"
     >
-      {/* Self-contained premium animations */}
-      <style>{`
-        @keyframes gridScroll {
-          0% {
-            background-position-y: 0px;
-          }
-          100% {
-            background-position-y: 1000px;
-          }
-        }
-        @keyframes floatBlob1 {
-          0% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(10%, 8%) scale(1.1); }
-          100% { transform: translate(-5%, 15%) scale(0.95); }
-        }
-        @keyframes floatBlob2 {
-          0% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(-12%, -10%) scale(0.9); }
-          100% { transform: translate(8%, -4%) scale(1.05); }
-        }
-        @keyframes floatBlob3 {
-          0% { transform: translate(0, 0) scale(0.95); }
-          50% { transform: translate(-8%, 12%) scale(1.15); }
-          100% { transform: translate(12%, -8%) scale(1); }
-        }
-        @keyframes scanlineDrift {
-          0% {
-            transform: translateY(-100%);
-          }
-          100% {
-            transform: translateY(200%);
-          }
-        }
-        .text-glow-premium {
-          text-shadow: 0 0 15px rgba(255,255,255,0.2), 0 0 30px rgba(0,240,255,0.3);
-        }
-      `}</style>
+      {/* Styles are injected via useEffect to avoid React 19 inline style tag warnings */}
 
       {/* Layer 1: Ambient Glowing Neon Aura Blobs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 opacity-70">

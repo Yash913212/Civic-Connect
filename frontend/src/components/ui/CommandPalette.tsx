@@ -11,7 +11,6 @@ import {
   Shield,
   BarChart3,
   Settings,
-  LogOut,
   HelpCircle,
   MessageSquare,
   Bell,
@@ -21,7 +20,7 @@ import {
   Users,
   Building2,
 } from "lucide-react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface CommandItem {
   id: string;
@@ -38,7 +37,6 @@ export default function CommandPalette() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const pathname = usePathname();
 
   const navigate = useCallback(
     (path: string) => {

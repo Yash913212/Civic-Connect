@@ -49,7 +49,7 @@ export default function NeuralNetwork() {
     }
 
     return { positions: pos, colors: col, initialPositions: initPos };
-  }, []);
+  }, [particleCount]);
 
   useFrame((state) => {
     if (!pointsRef.current) return;

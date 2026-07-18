@@ -73,22 +73,21 @@ def login(user_in: UserLogin, db: Session = Depends(get_db)):
     
     return response
 
-from pydantic import BaseModel
-
-class RefreshRequest(BaseModel):
-    refresh_token: str
+from fastapi import Cookie
 
 @router.post("/refresh")
-def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
+def refresh_token(refresh_token: str | None = Cookie(None), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    if not refresh_token:
+        raise credentials_exception
     try:
         from jose import jwt, JWTError
         from app.core.config import settings
-        payload = jwt.decode(request.refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
             raise credentials_exception
@@ -104,7 +103,7 @@ def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
     response = JSONResponse({"access_token": access_token})
     response.set_cookie(
         key="refresh_token",
-        value=request.refresh_token,
+        value=refresh_token,
         httponly=True,
         secure=True,
         samesite="strict",

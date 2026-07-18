@@ -6,17 +6,12 @@ import {
   MessageSquare,
   X,
   Send,
-  Zap,
   MapPin,
   ClipboardList,
   HelpCircle,
-  ChevronDown,
   Bot,
-  User,
   Loader2,
   Sparkles,
-  Home,
-  Search,
 } from "lucide-react";
 import { API_BASE } from "@/services/api";
 

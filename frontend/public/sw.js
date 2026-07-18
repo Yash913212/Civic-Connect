@@ -102,8 +102,8 @@ async function syncOfflineComplaints() {
           });
         });
       }
-    } catch (error) {
-      console.error("Failed to sync complaint:", error);
+  } catch {
+      console.error("Failed to sync complaint");
     }
   }
 }
@@ -131,7 +131,7 @@ async function networkFirstWithCache(request, cacheName) {
       cache.put(request, response.clone());
     }
     return response;
-  } catch (error) {
+  } catch {
     const cached = await caches.match(request);
     if (cached) {
       return cached;

@@ -53,10 +53,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const refreshToken = localStorage.getItem('refresh_token');
-        if (!refreshToken) throw new Error('Session expired. Please login again.');
-        
-        const response = await axios.post(`${API_URL}/auth/refresh`, { refresh_token: refreshToken }, {
+        const response = await axios.post(`${API_URL}/auth/refresh`, {}, {
           withCredentials: true
         });
         const { access_token } = response.data;
@@ -64,7 +61,7 @@ apiClient.interceptors.response.use(
         localStorage.setItem('access_token', access_token);
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
         return apiClient(originalRequest);
-      } catch (refreshError) {
+      } catch {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');

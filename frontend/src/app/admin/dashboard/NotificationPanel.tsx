@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, CheckCircle, AlertTriangle, Users, Building2, FileText } from "lucide-react";
+import { CheckCircle, AlertTriangle, Users, Building2, FileText } from "lucide-react";
 import { useMemo } from "react";
 
 export function NotificationPanel({ open, onClose }: { open: boolean; onClose: () => void }) {

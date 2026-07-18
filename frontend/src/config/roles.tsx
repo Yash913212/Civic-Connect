@@ -1,4 +1,4 @@
-import { User, Briefcase, Shield, Activity } from "lucide-react";
+import { User, Briefcase, Shield } from "lucide-react";
 
 export type Role = "CITIZEN" | "OFFICER" | "ADMIN";
 
@@ -22,8 +22,8 @@ export const roleStyles: Record<Role, RoleStyle> = {
     accent: "text-emerald-400",
     bgHover: "hover:bg-emerald-500/10",
     bgActive: "bg-emerald-500/20 border-emerald-500/60",
-    glowColor: "shadow-[0_0_30px_rgba(59,130,246,0.5)]",
-    pillBg: "bg-emerald-500/25 border border-emerald-400/50 shadow-[0_0_20px_rgba(59,130,246,0.35)]",
+    glowColor: "shadow-[0_0_30px_rgba(16,185,129,0.5)]",
+    pillBg: "bg-emerald-500/25 border border-emerald-400/50 shadow-[0_0_20px_rgba(16,185,129,0.35)]",
     icon: <User size={17} />,
     label: "Public Portal",
     emoji: "🌐",
@@ -58,7 +58,7 @@ export interface RoleColors {
 }
 
 export const roleColors: Record<Role, RoleColors> = {
-  CITIZEN: { bg: "bg-emerald-500/20 text-emerald-500", hex: "#3B82F6" },
+  CITIZEN: { bg: "bg-emerald-500/20 text-emerald-500", hex: "#10B981" },
   OFFICER: { bg: "bg-green-500/20 text-green-500", hex: "#22C55E" },
   ADMIN: { bg: "bg-purple-500/20 text-purple-500", hex: "#A855F7" },
 };

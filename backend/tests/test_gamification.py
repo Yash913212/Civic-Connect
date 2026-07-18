@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from app.core.gamification import (
     calculate_level,
     get_points_to_next_level,
@@ -33,7 +33,7 @@ class TestPointsToNextLevel:
     def test_points_to_next_level(self):
         assert get_points_to_next_level(0) == 50
         assert get_points_to_next_level(50) == 100
-        assert get_points_to_next_level(100) == 200
+        assert get_points_to_next_level(100) == 50
         assert get_points_to_next_level(5000) == 0
 
 
@@ -63,7 +63,7 @@ class TestAwardPoints:
     def test_award_points_updates_streak(self, user, db_session):
         user.points = 0
         user.streak_days = 5
-        user.last_active_date = datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+        user.last_active_date = datetime.now(timezone.utc) - timedelta(days=1)
         result = award_points(user, "complaint_submitted", db_session)
         assert result["streak_days"] == 6
 

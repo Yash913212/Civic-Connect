@@ -81,6 +81,8 @@ def seed_gamification_data():
                 existing.points = citizen_data["points"]
                 existing.level = citizen_data["level"]
                 existing.streak_days = citizen_data["streak_days"]
+                if not existing.phone_number:
+                    existing.phone_number = f"555{str(uuid.uuid4().int)[:7]}"
                 print(f"Updated {citizen_data['full_name']}")
             else:
                 new_user = User(

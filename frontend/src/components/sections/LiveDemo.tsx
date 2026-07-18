@@ -125,28 +125,6 @@ function ShimmerBadge({ children, color }: { children: React.ReactNode; color: s
   );
 }
 
-function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: string }) {
-  const [display, setDisplay] = useState(0);
-  useEffect(() => {
-    if (value === 0) return;
-    const duration = 800;
-    const steps = 20;
-    const increment = value / steps;
-    let current = 0;
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= value) {
-        setDisplay(value);
-        clearInterval(timer);
-      } else {
-        setDisplay(Math.floor(current));
-      }
-    }, duration / steps);
-    return () => clearInterval(timer);
-  }, [value]);
-  return <span>{display}{suffix}</span>;
-}
-
 export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: () => void }) {
   const router = useRouter();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -312,11 +290,6 @@ const proceedToRegister = async () => {
     show: { opacity: 1, y: 0, scale: 1 },
   };
 
-  const priorityColors: Record<string, string> = {
-    high: "text-red-500 bg-red-500/20 border-red-500/40",
-    medium: "text-amber-500 bg-amber-500/20 border-amber-500/40",
-    low: "text-emerald-500 bg-emerald-500/20 border-emerald-500/40",
-  };
   const priorityShimmers: Record<string, string> = {
     high: "border-red-500/40",
     medium: "border-amber-500/40",
@@ -391,6 +364,7 @@ const proceedToRegister = async () => {
                     className="relative h-64 rounded-xl overflow-hidden border border-primary/20 mb-4 group/image cursor-pointer flex-shrink-0"
                     onClick={() => setShowFullPreview(true)}
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={previewUrl} alt="Preview" className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-105" />
                     <AnimatePresence>{showScan && <ScanOverlay />}</AnimatePresence>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />

@@ -115,7 +115,7 @@ const teamMembers: TeamMember[] = [
 ];
 
 // Interactive 3D Card Sub-component
-function TeamCard({ member, index }: { member: TeamMember; index: number }) {
+function TeamCard({ member }: { member: TeamMember; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
@@ -178,6 +178,7 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
       <div>
         {/* Profile Image with Zoom Container */}
         <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-black/30 border border-white/5 mb-6 group">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={member.image}
             alt={member.name}

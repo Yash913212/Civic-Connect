@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session, joinedload
@@ -102,7 +103,6 @@ def _complaint_to_dict(c: DBComplaint, db: Session, officer_cache: dict[str, str
 
 
 @router.post("")
-@router.post("/complaint")
 def create_complaint(
     complaint: Complaint,
     db: Session = Depends(get_db),
@@ -135,6 +135,7 @@ def create_complaint(
                 f"Your complaint '{db_complaint.title}' has been submitted successfully.",
                 NotificationType.COMPLAINT_SUBMITTED, db_complaint.id)
             
+            user.complaints_submitted = (user.complaints_submitted or 0) + 1
             award_points(user, "complaint_submitted", db)
 
         db.commit()
@@ -146,7 +147,8 @@ def create_complaint(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Complaint creation failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="An internal error occurred while submitting complaint.")
 
 
 # ──────────────────────────────────────────────
@@ -197,19 +199,21 @@ def update_complaint(
     db.commit()
     db.refresh(complaint)
 
-    try:
-        import asyncio
-        asyncio.create_task(manager.send_personal_message(
-            json.dumps({
-                "type": "STATUS_UPDATE",
-                "complaint_id": str(complaint.id),
-                "status": complaint.status.value,
-                "title": complaint.title
-            }),
-            str(complaint.user_id)
-        ))
-    except Exception as e:
-        logger.warning(f"Failed to send WebSocket notification: {e}")
+    if complaint.user_id:
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                loop.create_task(manager.send_personal_message(
+                    json.dumps({
+                        "type": "STATUS_UPDATE",
+                        "complaint_id": str(complaint.id),
+                        "status": complaint.status.value if hasattr(complaint.status, 'value') else complaint.status,
+                        "title": complaint.title
+                    }),
+                    str(complaint.user_id)
+                ))
+        except Exception as e:
+            logger.warning(f"Failed to send WebSocket notification: {e}")
 
     return _complaint_to_dict(complaint, db)
 

@@ -55,6 +55,7 @@ export default function Footer() {
         <div className="md:col-span-1">
           <div className="flex items-center gap-4 mb-6">
             <div className="relative h-14 w-14 rounded-xl overflow-hidden flex items-center justify-center bg-gradient-to-br from-primary/20 to-purple-500/20">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full" />
             </div>
             <span className="text-xl font-bold font-heading text-slate-900 dark:text-white tracking-wider">

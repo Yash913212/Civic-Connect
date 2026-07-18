@@ -1,7 +1,7 @@
 from app.database.database import SessionLocal
 from app.database.models import Complaint as DBComplaint, ComplaintStatus
 from sqlalchemy import func, case
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 db = SessionLocal()
 try:
@@ -16,7 +16,7 @@ try:
         func.sum(case((DBComplaint.status == ComplaintStatus.RESOLVED, 1), else_=0)).label('resolved')
     ).group_by(DBComplaint.department).all()
     print("Trends...")
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     target_date = today - timedelta(days=0)
     new_count = db.query(DBComplaint).filter(func.date(DBComplaint.created_at) == target_date).count()
     print("Success")

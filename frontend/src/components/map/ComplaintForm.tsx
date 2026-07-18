@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapPin, Send, CheckCircle2, Loader2, Upload, Brain, ArrowRight, LayoutDashboard, WifiOff } from "lucide-react";
+import { MapPin, CheckCircle2, Loader2, Upload, Brain, ArrowRight, LayoutDashboard, WifiOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
@@ -342,6 +342,7 @@ export default function ComplaintForm() {
                 <input type="file" accept="image/*" className="hidden" id="manual-upload" onChange={handleManualFile} />
                 {manualPreview ? (
                   <div className="relative h-32 rounded-xl overflow-hidden border border-black/10 dark:border-white/10">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={manualPreview} alt="Preview" className="w-full h-full object-cover" />
                     <button onClick={() => { setManualFile(null); if (manualPreview) URL.revokeObjectURL(manualPreview); setManualPreview(null); }} className="absolute top-2 right-2 p-1 rounded-full bg-black/60 text-white text-xs">✕</button>
                   </div>

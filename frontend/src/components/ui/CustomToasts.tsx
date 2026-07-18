@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { 
   Camera, 
@@ -153,7 +153,7 @@ export const AIAnalysisToast = ({ t }: { t: string | number }) => {
 };
 
 // 3. Success Complaint
-export const ComplaintSuccessToast = ({ trackingId, t }: { trackingId: string, t?: string | number }) => (
+export const ComplaintSuccessToast = ({ trackingId }: { trackingId: string, t?: string | number }) => (
   <GlassContainer glowingColor="emerald">
     <div className="flex gap-4">
       <div className="relative">

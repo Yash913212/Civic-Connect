@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Trophy, Star, Award, ChevronRight, Share2 } from "lucide-react";
+import { Trophy, Star, ChevronRight, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { gamificationService, GamificationProfile, LeaderboardEntry } from "@/services/gamificationService";
 import { useRouter } from "next/navigation";

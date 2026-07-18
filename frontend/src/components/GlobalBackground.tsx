@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Canvas } from "@react-three/fiber";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/ThemeProvider";
 import NeuralNetwork from "@/components/canvas/NeuralNetwork";
 import CinematicVideo from "@/components/ui/CinematicVideo";
 
@@ -14,13 +14,15 @@ export default function GlobalBackground() {
   const glowRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const animationStartedRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || animationStartedRef.current) return;
+    animationStartedRef.current = true;
 
     gsap.registerPlugin(ScrollTrigger);
 
@@ -74,7 +76,8 @@ export default function GlobalBackground() {
     }, containerRef);
 
     return () => ctx.revert();
-  }, [mounted]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Derive resolved theme only after mount to avoid SSR/client mismatch.
   // Before mount, default to "dark" so the initial DOM structure is stable.
@@ -133,8 +136,8 @@ export default function GlobalBackground() {
         style={{ opacity: isLight ? 0.6 : 0 }}
       >
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-300/40 mix-blend-multiply filter blur-[120px] animate-blob" />
-        <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-teal-200/40 mix-blend-multiply filter blur-[120px] animate-blob animation-delay-2000" />
-        <div className="absolute bottom-[-20%] left-[20%] w-[50%] h-[50%] rounded-full bg-emerald-300/40 mix-blend-multiply filter blur-[120px] animate-blob animation-delay-4000" />
+        <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-teal-200/40 mix-blend-multiply filter blur-[120px] animate-blob [animation-delay:2s]" />
+        <div className="absolute bottom-[-20%] left-[20%] w-[50%] h-[50%] rounded-full bg-emerald-300/40 mix-blend-multiply filter blur-[120px] animate-blob [animation-delay:4s]" />
       </div>
 
       {/* Layer 5 & 6: Neural Network Animation (R3F Canvas - Dark Mode Only) — always rendered, hidden via CSS */}
@@ -142,9 +145,11 @@ export default function GlobalBackground() {
         className="absolute inset-0 z-10 transition-opacity duration-1000"
         style={{ opacity: isLight ? 0 : 0.7 }}
       >
-        <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
-          <NeuralNetwork />
-        </Canvas>
+        {mounted && (
+          <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
+            <NeuralNetwork />
+          </Canvas>
+        )}
       </div>
 
       {/* Layer 7 is the actual page content sitting in front of this fixed container */}

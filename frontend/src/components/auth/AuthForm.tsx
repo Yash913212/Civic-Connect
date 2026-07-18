@@ -11,7 +11,6 @@ import { Role } from "@/config/roles";
 import { dashRoutes } from "@/config/roles";
 import { authService } from "@/auth/authService";
 import { useAuth } from "@/auth/AuthProvider";
-import { useRouter } from "next/navigation";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -34,7 +33,6 @@ export function AuthForm({ role }: AuthFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { login: setAuthUser } = useAuth();
-  const router = useRouter();
 
   useEffect(() => {
     if (role !== 'CITIZEN' && mode === 'register') {

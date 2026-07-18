@@ -1,8 +1,8 @@
 "use client";
 
-import { CheckCircle, Clock, Activity, Target, TrendingUp, BarChart3, ChevronRight, FileText, MapPin, AlertTriangle, Users, Award, Trophy } from "lucide-react";
+import { CheckCircle, Clock, Activity, Target, TrendingUp, BarChart3, FileText, MapPin, AlertTriangle, Users, Award, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
-import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from "recharts";
+import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { GlassCard } from "@/components/dashboard/GlassCard";
 import { SectionHeader } from "@/components/dashboard/SectionHeader";

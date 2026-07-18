@@ -216,6 +216,7 @@ function CitizenComplaints() {
                     <div className="flex gap-4">
                       {c.image_url && (
                         <div className="shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img 
                             src={c.image_url} 
                             alt="Complaint image" 

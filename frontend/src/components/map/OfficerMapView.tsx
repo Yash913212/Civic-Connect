@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
-import { Search, Loader2, MapPin, Layers, Clock, RefreshCw, Crosshair, TrendingUp, Zap } from "lucide-react";
+import { Search, Loader2, MapPin, Layers, RefreshCw, Zap } from "lucide-react";
 import "@/lib/leafletSetup";
 import MarkerCluster from "./MarkerCluster";
 import HotspotOverlay from "./HotspotOverlay";
-import { API_BASE } from "@/services/api";
+
 import { complaintService } from "@/services/complaintService";
 
 const DEFAULT_CENTER: [number, number] = [17.385, 78.4867];

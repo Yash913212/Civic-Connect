@@ -7,8 +7,7 @@ from app.database.database import get_db
 from app.database.models import User
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from PIL import Image
-import io
+from app.core.utils import compress_image
 import logging
 
 logger = logging.getLogger(__name__)
@@ -71,15 +70,4 @@ def get_optional_user(
     return None
 
 
-def compress_image(contents: bytes, max_size=(1024, 1024), quality=80) -> bytes:
-    try:
-        img = Image.open(io.BytesIO(contents))
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
-        img.thumbnail(max_size, Image.Resampling.LANCZOS)
-        output = io.BytesIO()
-        img.save(output, format="JPEG", quality=quality, optimize=True)
-        return output.getvalue()
-    except Exception as e:
-        print(f"Image compression failed: {e}")
-        return contents
+

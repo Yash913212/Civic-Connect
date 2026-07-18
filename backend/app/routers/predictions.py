@@ -6,7 +6,7 @@ from app.database.models import Complaint as DBComplaint
 from app.database.models import User, RoleEnum
 from app.auth.dependencies import get_current_user, require_role
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import random
 import math
 
@@ -22,7 +22,7 @@ def get_hotspot_predictions(
     Predicts complaint hotspots for the upcoming week.
     Uses historical density + departmental trends to compute risk zones.
     """
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     thirty_days_ago = now - timedelta(days=30)
 
     complaints = (
@@ -90,7 +90,7 @@ def get_prediction_analytics(
     db: Session = Depends(get_db),
 ):
     """Aggregated prediction analytics for the prediction tab."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     thirty_days_ago = now - timedelta(days=30)
 
     total = db.query(DBComplaint).filter(

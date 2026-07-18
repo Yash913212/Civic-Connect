@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
-import "leaflet.markercluster";
 
 interface ClusterMarker {
   position: [number, number];
@@ -61,10 +60,13 @@ export default function MarkerCluster({ markers }: MarkerClusterProps) {
         const count = cluster.getChildCount();
         let color = "#22c55e";
         const markers = cluster.getAllChildMarkers() as L.Marker[];
-        const priorities = markers.map((m) => (m as any).__priority as string);
-        if (priorities.some((p) => p === "high" || p === "critical" || p === "urgent")) {
+        const priorities = markers.map((m) => (m as any).__priority as string | undefined);
+        if (priorities.some((p) => {
+          const lower = p?.toLowerCase();
+          return lower === "high" || lower === "critical" || lower === "urgent";
+        })) {
           color = "#ef4444";
-        } else if (priorities.some((p) => p === "medium")) {
+        } else if (priorities.some((p) => p?.toLowerCase() === "medium")) {
           color = "#f59e0b";
         }
 

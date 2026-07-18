@@ -47,7 +47,9 @@ def get_sla_deadline(department: str, priority: str, created_at: datetime) -> da
     multiplier = sla_config.priority_multipliers.get(priority, 1.0)
     
     sla_hours = int(base_sla.hours * multiplier)
-    return created_at + timedelta(hours=sla_hours)
+    created_utc = _ensure_tz(created_at)
+    deadline = created_utc + timedelta(hours=sla_hours)
+    return deadline
 
 
 def get_escalation_target(department: str, current_level: int = 0) -> Optional[str]:
@@ -55,6 +57,12 @@ def get_escalation_target(department: str, current_level: int = 0) -> Optional[s
     if current_level >= len(sla_config.escalation_chain):
         return None
     return sla_config.escalation_chain[current_level]
+
+
+def _ensure_tz(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
 
 
 def check_sla_violation(complaint_created_at: datetime, department: str, priority: str) -> tuple[bool, Optional[int]]:
@@ -65,25 +73,23 @@ def check_sla_violation(complaint_created_at: datetime, department: str, priorit
     deadline = get_sla_deadline(department, priority, complaint_created_at)
     now = datetime.now(timezone.utc)
     
-    if complaint_created_at.tzinfo is None:
-        complaint_created_at = complaint_created_at.replace(tzinfo=timezone.utc)
+    created_utc = _ensure_tz(complaint_created_at)
+    deadline_utc = _ensure_tz(deadline)
     
-    if now > deadline:
-        overdue_hours = int((now - deadline).total_seconds() / 3600)
+    if now > deadline_utc:
+        overdue_hours = int((now - deadline_utc).total_seconds() / 3600)
         return True, overdue_hours
     return False, None
 
 
 def get_sla_status(complaint_created_at: datetime, department: str, priority: str) -> dict:
     """Get comprehensive SLA status for a complaint."""
-    deadline = get_sla_deadline(department, priority, complaint_created_at)
+    created_utc = _ensure_tz(complaint_created_at)
+    deadline = get_sla_deadline(department, priority, created_utc)
     now = datetime.now(timezone.utc)
     
-    if complaint_created_at.tzinfo is None:
-        complaint_created_at = complaint_created_at.replace(tzinfo=timezone.utc)
-    
-    total_hours = int((deadline - complaint_created_at).total_seconds() / 3600)
-    elapsed_hours = int((now - complaint_created_at).total_seconds() / 3600)
+    total_hours = int((deadline - created_utc).total_seconds() / 3600)
+    elapsed_hours = int((now - created_utc).total_seconds() / 3600)
     remaining_hours = max(0, total_hours - elapsed_hours)
     
     is_overdue = now > deadline

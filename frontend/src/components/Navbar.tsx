@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Menu, X, User, LogOut, ShieldCheck, Settings, Terminal, Activity, MessageSquare } from "lucide-react";
+import { Menu, X, LogOut, ShieldCheck, Settings, Terminal, Activity, MessageSquare } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "./ui/NotificationBell";
@@ -15,7 +15,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout } = useAuth();
 
   const pathname = usePathname();
   const router = useRouter();
@@ -72,7 +72,7 @@ export default function Navbar() {
 
   const showNavLinks = !pathname.includes('/admin/dashboard') && !pathname.includes('/officer/dashboard');
 
-  if (pathname === "/" || pathname.startsWith("/admin") || pathname.startsWith("/officer")) return null;
+  if (pathname === "/") return null;
 
   return (
     <>
@@ -90,6 +90,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/home" className="flex items-center gap-3 group">
             <div className="relative h-10 w-10 rounded-md group-hover:scale-105 transition-transform duration-300 flex items-center justify-center overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full" />
             </div>
             <span className="text-xl font-bold font-sans text-slate-900 dark:text-white tracking-wider group-hover:text-sky-600 dark:group-hover:text-teal-400 transition-colors">

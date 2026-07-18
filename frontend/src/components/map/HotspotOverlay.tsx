@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Circle, Tooltip, useMap } from "react-leaflet";
-import { TrendingUp, Loader2, Zap, MapPin } from "lucide-react";
+import { Loader2, Zap } from "lucide-react";
 import { API_BASE } from "@/services/api";
 
 interface Hotspot {
@@ -17,7 +17,7 @@ interface Hotspot {
 }
 
 function HotspotCircles({ hotspots }: { hotspots: Hotspot[] }) {
-  const map = useMap();
+  useMap();
 
   return (
     <>

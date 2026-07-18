@@ -100,17 +100,21 @@ POINTS = {
 
 def calculate_level(points: int) -> int:
     """Calculate user level based on points."""
+    if points is None:
+        points = 0
     level = 1
     for i, threshold in enumerate(LEVEL_THRESHOLDS):
         if points >= threshold:
             level = i + 1
         else:
             break
-    return level
+    return min(level, 10)
 
 
 def get_points_to_next_level(points: int) -> int:
     """Get points needed to reach next level."""
+    if points is None:
+        points = 0
     current_level = calculate_level(points)
     if current_level >= len(LEVEL_THRESHOLDS):
         return 0
@@ -119,6 +123,13 @@ def get_points_to_next_level(points: int) -> int:
 
 def award_points(user: User, action: str, db: Session) -> dict:
     """Award points to user for an action."""
+    if user.points is None:
+        user.points = 0
+    if user.level is None:
+        user.level = 1
+    if user.streak_days is None:
+        user.streak_days = 0
+
     points = POINTS.get(action, 0)
     if points == 0:
         return {"points_added": 0, "total_points": user.points, "level": user.level}
@@ -134,7 +145,7 @@ def award_points(user: User, action: str, db: Session) -> dict:
         if last_active.tzinfo is None:
             last_active = last_active.replace(tzinfo=timezone.utc)
         
-        days_since_last = (now - last_active).days
+        days_since_last = (now.date() - last_active.date()).days if last_active.date() != now.date() else 0
         if days_since_last == 1:
             user.streak_days += 1
         elif days_since_last > 1:
@@ -164,6 +175,9 @@ def award_points(user: User, action: str, db: Session) -> dict:
 
 def check_badge_eligibility(user: User, db: Session) -> list[dict]:
     """Check if user is eligible for any new badges and award them."""
+    if user.streak_days is None:
+        user.streak_days = 0
+
     earned_user_badges = db.query(UserBadge).filter(UserBadge.user_id == str(user.id)).all()
     earned_badge_ids = {ub.badge_id for ub in earned_user_badges}
     new_badges = []
@@ -209,6 +223,15 @@ def check_badge_eligibility(user: User, db: Session) -> list[dict]:
                     "description": badge_info.description,
                     "icon": badge_info.icon,
                     "points": badge_info.points,
+                })
+            elif badge_id in BADGES:
+                local_info = BADGES[badge_id]
+                new_badges.append({
+                    "id": badge_id,
+                    "name": local_info["name"],
+                    "description": local_info["description"],
+                    "icon": local_info.get("icon"),
+                    "points": local_info["points"],
                 })
     
     if new_badges:

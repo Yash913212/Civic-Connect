@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -22,7 +23,7 @@ try:
 except Exception as e:
     logger.error("Database initialization failed: %s", e)
 
-if not settings.DATABASE_URL.startswith("sqlite"):
+if not str(engine.url).startswith("sqlite"):
     pg_migrations = [
         ("complaints", "image_url", "VARCHAR"),
         ("complaints", "latitude", "VARCHAR"),
@@ -57,7 +58,29 @@ if not settings.DATABASE_URL.startswith("sqlite"):
         except Exception as e:
             logger.debug("Table creation skipped for %s: %s", table, e)
 
-app = FastAPI(title="CivicConnect API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from app.core.sla_monitor import start_sla_monitor
+    from app.core.gamification import seed_badges
+    from app.database.database import SessionLocal, IS_TESTING
+
+    if not IS_TESTING:
+        start_sla_monitor()
+
+    db = SessionLocal()
+    try:
+        seed_badges(db)
+        logger.info("Badges seeded successfully")
+    except Exception as e:
+        logger.warning(f"Badge seeding skipped: {e}")
+    finally:
+        db.close()
+
+    yield
+
+
+app = FastAPI(title="CivicConnect API", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -65,12 +88,16 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 async def limit_request_size(request, call_next):
     max_size = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
     content_length = request.headers.get("content-length")
-    if content_length and int(content_length) > max_size:
-        from fastapi.responses import JSONResponse
-        return JSONResponse(
-            status_code=413,
-            content={"detail": f"Request body too large. Maximum size is {settings.MAX_UPLOAD_SIZE_MB}MB."}
-        )
+    if content_length:
+        try:
+            if int(content_length) > max_size:
+                from fastapi.responses import JSONResponse
+                return JSONResponse(
+                    status_code=413,
+                    content={"detail": f"Request body too large. Maximum size is {settings.MAX_UPLOAD_SIZE_MB}MB."}
+                )
+        except (ValueError, TypeError):
+            pass
     response = await call_next(request)
     return response
 
@@ -126,24 +153,6 @@ app.include_router(api_router)
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
-
-
-@app.on_event("startup")
-async def startup_event():
-    from app.core.sla_monitor import start_sla_monitor
-    from app.core.gamification import seed_badges
-    from app.database.database import SessionLocal
-    
-    start_sla_monitor()
-    
-    db = SessionLocal()
-    try:
-        seed_badges(db)
-        logger.info("Badges seeded successfully")
-    except Exception as e:
-        logger.warning(f"Badge seeding skipped: {e}")
-    finally:
-        db.close()
 
 
 @app.websocket("/ws/notifications/{user_id}")

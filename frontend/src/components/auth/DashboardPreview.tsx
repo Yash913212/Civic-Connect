@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Role } from "@/config/roles";
 import { CitizenDashboardPreview } from "./dashboard/CitizenDashboardPreview";
 import { OfficerDashboardPreview } from "./dashboard/OfficerDashboardPreview";

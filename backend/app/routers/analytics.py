@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database.database import get_db
 from app.database.models import Complaint, ComplaintStatus
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import func, case
 
 router = APIRouter()
@@ -40,7 +40,7 @@ def get_analytics(db: Session = Depends(get_db)):
             "fill": colors[i % len(colors)]
         })
 
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     trends = []
     for i in range(6, -1, -1):
         target_date = today - timedelta(days=i)

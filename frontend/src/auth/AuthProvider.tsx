@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         const freshUser = await authService.getCurrentUser();
         setUser(freshUser);
-      } catch (error) {
+      } catch {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');
@@ -49,13 +49,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (user && !loading) {
+    if (!user || loading) return;
+
+    let ws: WebSocket | null = null;
+    let reconnectTimeout: ReturnType<typeof setTimeout>;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 10;
+
+    const connect = () => {
       const wsBase = (process.env.NEXT_PUBLIC_WS_URL || "wss://civic-connect-gzm1.onrender.com").replace(/\/+$/, '');
       const wsUrl = `${wsBase}/ws/notifications/${user.id}`;
-      const ws = new WebSocket(wsUrl);
+      ws = new WebSocket(wsUrl);
 
-      ws.onopen = () => console.log("WebSocket Connected");
-      
+      ws.onopen = () => {
+        reconnectAttempts = 0;
+      };
+
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
@@ -77,12 +86,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       };
 
-      return () => {
-        if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
-          ws.close();
+      ws.onclose = () => {
+        if (reconnectAttempts < maxReconnectAttempts) {
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+          reconnectTimeout = setTimeout(() => {
+            reconnectAttempts++;
+            connect();
+          }, delay);
         }
       };
-    }
+    };
+
+    connect();
+
+    return () => {
+      clearTimeout(reconnectTimeout);
+      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+        ws.close();
+      }
+    };
   }, [user, loading]);
 
   const login = (userData: User, accessToken: string, refreshToken: string) => {

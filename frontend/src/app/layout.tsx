@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -33,6 +34,10 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#059669",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -44,14 +49,17 @@ export default function RootLayout({
         className={`${inter.variable} ${sora.variable} antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#059669" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Civic Connect" />
-      </head>
       <body className="min-h-full flex flex-col font-sans overflow-x-hidden transition-colors duration-500">
+        <Script id="theme-script" strategy="beforeInteractive">
+          {`
+            try {
+              var theme = localStorage.getItem('theme') || 'system';
+              var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+              document.documentElement.classList.add(isDark ? 'dark' : 'light');
+              document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+            } catch (e) {}
+          `}
+        </Script>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Toaster theme="system" position="top-right" richColors closeButton />
           <AuthProvider>
@@ -60,10 +68,10 @@ export default function RootLayout({
               <Navbar />
               {children}
             </SmoothScroll>
+            <CivicAI />
+            <CommandPalette />
+            <ServiceWorkerRegister />
           </AuthProvider>
-          <CivicAI />
-          <CommandPalette />
-          <ServiceWorkerRegister />
         </ThemeProvider>
       </body>
     </html>

@@ -8,7 +8,8 @@ from app.ai.predict import predict_issue
 from app.ai.captioning import generate_caption
 from app.ai.transcriber import transcribe_audio
 from app.ai.request_note import generate_request_note
-from app.core.dependencies import limiter, compress_image
+from app.core.dependencies import limiter
+from app.core.utils import compress_image
 from slowapi.util import get_remote_address
 import os
 import json

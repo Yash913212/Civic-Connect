@@ -129,9 +129,12 @@ def verify_resolution(
         complaint.verified_by = str(current_user.id)
         complaint.verified_at = datetime.now(timezone.utc)
         
-        # Notify citizen
+        # Notify and update citizen
         if complaint.user_id:
             from app.database.models import Notification, NotificationType
+            citizen = db.query(User).filter(User.id == complaint.user_id).first()
+            if citizen:
+                citizen.complaints_verified = (citizen.complaints_verified or 0) + 1
             notif = Notification(
                 user_id=complaint.user_id,
                 title="Complaint Resolved",

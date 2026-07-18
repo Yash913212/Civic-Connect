@@ -2,39 +2,34 @@
 
 import { withRoleGuard } from "@/middleware/roleGuard";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Building2, Users, FileText, Map, Settings, AlertTriangle,
-  CheckCircle, FolderOpen, Activity, Clock, Bell,
-  LogOut, Download, Filter, Search, Database,
-  TrendingUp, Zap, Shield, BarChart3, RefreshCw, ChevronDown, Trash2,
+  Building2, Users, Map, Settings, AlertTriangle,
+  FolderOpen, Activity, Clock, Bell,
+  LogOut, Filter, Search,
+  TrendingUp, Shield, BarChart3, RefreshCw, ChevronDown, Trash2,
   ShieldAlert, Radio, Wallet, Menu, ChevronLeft, LayoutDashboard,
-  Plus, Globe, ArrowUpRight, ArrowDownRight,
-  Edit3, List, Grid3X3, ChevronRight, Sparkles,
-  MessageCircle, Inbox, Target, HeartHandshake, Flag, UserCog,
+  Plus, Edit3, List, Grid3X3, Sparkles,
+  Target,
 } from "lucide-react";
 import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell,
+  BarChart, Bar, Cell,
   LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-  ComposedChart, ScatterChart, Scatter, ReferenceLine, Legend,
 } from "recharts";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/auth/AuthProvider";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
-import { showTextLoading, showSystemStatus, showOfficerAssigned, showAIFuturistic } from "@/components/ui/CustomToasts";
+import { showAIFuturistic } from "@/components/ui/CustomToasts";
 import { complaintService, type OfficerData } from "@/services/complaintService";
 import { adminService, type UserData, type DepartmentData } from "@/services/adminService";
-import { apiRequest } from "@/services/api";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { PriorityBadge } from "@/components/dashboard/PriorityBadge";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { GlassCard } from "@/components/dashboard/GlassCard";
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import { ROLE_ORDER } from "@/config/roles";
-import { StatCard } from "@/components/dashboard/StatCard";
 import { Shimmer } from "@/components/dashboard/Shimmer";
 import { AnimatedCounter } from "@/components/dashboard/AnimatedCounter";
 import { OverviewTab } from "./OverviewTab";
@@ -291,10 +286,10 @@ function CustomTooltip({ active, payload, label }: any) {
   );
 }
 
-function ComplaintsTab({ complaints, officers, searchQuery, setSearchQuery, complaintView, setComplaintView, handleStatusChange, handleAssign, loading }: {
+function ComplaintsTab({ complaints, officers, searchQuery, setSearchQuery, complaintView, setComplaintView, handleStatusChange, handleAssign }: {
   complaints: any[]; officers: OfficerData[]; searchQuery: string; setSearchQuery: (s: string) => void;
   complaintView: "list" | "grid"; setComplaintView: (v: "list" | "grid") => void;
-  handleStatusChange: (id: string, did: string, s: string) => void; handleAssign: (id: string, did: string, oid: string | null) => void; loading: boolean;
+  handleStatusChange: (id: string, did: string, s: string) => void; handleAssign: (id: string, did: string, oid: string | null) => void;
 }) {
   const filtered = complaints.filter(c =>
     c.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -574,7 +569,6 @@ function UsersTab({ users, loadingUsers, loadUsers, departments }: { users: User
 }
 
 function AdminDashboard() {
-  const router = useRouter();
   const { logout: authLogout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<TabId>("overview");
@@ -583,7 +577,6 @@ function AdminDashboard() {
   const [complaints, setComplaints] = useState<any[]>([]);
   const [liveTime, setLiveTime] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
-  const [loadingComplaints, setLoadingComplaints] = useState(true);
   const [officers, setOfficers] = useState<OfficerData[]>([]);
   const [users, setUsers] = useState<UserData[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
@@ -614,15 +607,12 @@ function AdminDashboard() {
   }, []);
 
   const loadComplaints = useCallback(() => {
-    setLoadingComplaints(true);
     complaintService.getAll()
       .then(data => {
         setComplaints([...data, ...complaintFallbacks]);
-        setLoadingComplaints(false);
       })
       .catch(() => {
         setComplaints(complaintFallbacks);
-        setLoadingComplaints(false);
       });
   }, []);
 
@@ -792,7 +782,7 @@ function AdminDashboard() {
             {activeTab === "complaints" && (
               <ComplaintsTab complaints={complaints} officers={officers} searchQuery={searchQuery} setSearchQuery={setSearchQuery}
                 complaintView={complaintView} setComplaintView={setComplaintView}
-                handleStatusChange={handleStatusChange} handleAssign={handleAssign} loading={loadingComplaints} />
+                handleStatusChange={handleStatusChange} handleAssign={handleAssign} />
             )}
             {activeTab === "departments" && (
               <DepartmentsTab departments={departments} complaints={complaints} loadingDepts={loadingDepts}
@@ -852,7 +842,7 @@ function AdminDashboard() {
                         { label: "SLA Compliance", value: "94%", change: "+3%", color: "#06b6d4" },
                         { label: "Escalation Rate", value: "8%", change: "-2%", color: "#8b5cf6" },
                         { label: "Citizen Satisfaction", value: "4.7/5", change: "+0.3", color: "#f59e0b" },
-                      ].map((m, i) => (
+                      ].map((m) => (
                         <div key={m.label} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.03] border border-white/[0.04]">
                           <span className="text-xs text-white/60">{m.label}</span>
                           <div className="flex items-center gap-2">

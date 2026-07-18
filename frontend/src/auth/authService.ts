@@ -20,6 +20,7 @@ export const authService = {
     const response = await authApi.post('/auth/login', credentials);
     const { access_token, refresh_token, user } = response.data;
     localStorage.setItem('access_token', access_token);
+    localStorage.setItem('refresh_token', refresh_token);
     localStorage.setItem('user', JSON.stringify(user));
     return response.data;
   },
@@ -32,7 +33,7 @@ export const authService = {
   logout: async (): Promise<void> => {
     try {
       await authApi.post('/auth/logout');
-    } catch (e) {
+    } catch {
     }
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
