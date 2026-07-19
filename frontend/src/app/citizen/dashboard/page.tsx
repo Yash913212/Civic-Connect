@@ -13,7 +13,6 @@ import Heatmap from "@/components/sections/Heatmap";
 import CommandCenter from "@/components/sections/CommandCenter";
 import FutureRoadmap from "@/components/sections/FutureRoadmap";
 import ImpactMetrics from "@/components/sections/ImpactMetrics";
-import Team from "@/components/sections/Team";
 import CTA from "@/components/sections/CTA";
 
 function CitizenDashboard() {
@@ -35,7 +34,6 @@ function CitizenDashboard() {
         <CommandCenter />
         <FutureRoadmap />
         <ImpactMetrics />
-        <Team />
         <CTA />
       </div>
       <Footer />

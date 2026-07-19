@@ -66,6 +66,7 @@ export default function Footer() {
               { label: "Technology", href: "/home#technology" },
               { label: "Live Demo", href: "/home#live-demo" },
               { label: "Roadmap", href: "/home#roadmap" },
+              { label: "Team", href: "/team" },
             ].map((link) => (
               <li key={link.label}>
                 <Link
@@ -154,6 +155,12 @@ export default function Footer() {
           &copy; {new Date().getFullYear()} Civic Connect. All rights reserved.
         </div>
         <div className="flex items-center gap-6">
+          <Link
+            href="/team"
+            className="text-xs font-semibold px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 hover:border-primary/50 transition-all duration-300"
+          >
+            Team Section
+          </Link>
           <button
             onClick={scrollToTop}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"

@@ -3,10 +3,9 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Mic, MessageCircle, Cpu, Drone, Globe, ArrowRight } from "lucide-react";
+import { MessageCircle, Cpu, Drone, Globe, ArrowRight } from "lucide-react";
 
 const milestones = [
-  { year: 2026, title: "Voice Complaints", desc: "Native multilingual audio processing for inclusive civic reporting.", icon: Mic },
   { year: 2027, title: "WhatsApp Integration", desc: "Report issues directly via chat — meet citizens where they are.", icon: MessageCircle },
   { year: 2028, title: "IoT Sensors", desc: "Automated anomaly detection from smart city sensor networks.", icon: Cpu },
   { year: 2029, title: "Drone Monitoring", desc: "Aerial surveys of infrastructure with AI-powered damage detection.", icon: Drone },
