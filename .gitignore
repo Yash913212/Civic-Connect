@@ -43,5 +43,6 @@ next-env.d.ts
 backend/venv/
 **/__pycache__/
 backend/*.db
+/civic.db
 backend/uploads/
 backend/civic_model_multimodal.pth
