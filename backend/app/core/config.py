@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     OPENROUTER_API_KEY: str = ""
     MAX_UPLOAD_SIZE_MB: int = 10
+    ALLOWED_ORIGINS: str = ""
 
     class Config:
         env_file = ".env"

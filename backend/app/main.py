@@ -100,16 +100,21 @@ async def limit_request_size(request, call_next):
     response = await call_next(request)
     return response
 
+origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "https://civic-connect-self.vercel.app",
+]
+
+if settings.ALLOWED_ORIGINS:
+    origins.extend([o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:3001",
-        "https://civic-connect-self.vercel.app",
-        "https://civic-connect-self.vercel.app/",
-    ],
+    allow_origins=origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Set-Cookie"],
