@@ -1,8 +1,6 @@
 import axios from 'axios';
 
-let API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
-if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
-if (!API_URL.endsWith('/api')) API_URL = `${API_URL}/api`;
+const API_URL = '/api';
 
 interface ErrorResponse {
   detail?: string | string[];

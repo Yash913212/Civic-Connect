@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Circle, Tooltip, useMap } from "react-leaflet";
 import { Loader2, Zap } from "lucide-react";
-import { API_BASE } from "@/services/api";
+import { apiRequest } from "@/services/api";
 
 interface Hotspot {
   lat: number;
@@ -70,8 +70,13 @@ export default function HotspotOverlay({ enabled }: HotspotOverlayProps) {
     if (!enabled) return;
     setLoading(true);
     Promise.all([
-      fetch(`${API_BASE}/predictions/hotspots`).then((r) => r.json()),
-      fetch(`${API_BASE}/predictions/analytics`).then((r) => r.json()),
+      apiRequest<{ hotspots: Hotspot[]; total_predicted: number }>('/predictions/hotspots'),
+      apiRequest<{
+        total_complaints_30d: number;
+        unresolved: number;
+        resolution_rate: number;
+        departments: { name: string; count: number }[];
+      }>('/predictions/analytics'),
     ])
       .then(([hotspotData, analyticsData]) => {
         setHotspots(hotspotData.hotspots || []);

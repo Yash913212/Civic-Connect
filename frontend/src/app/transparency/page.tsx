@@ -13,7 +13,7 @@ import {
   MapPin,
   RefreshCw
 } from "lucide-react";
-import { API_BASE } from "@/services/api";
+import { apiRequest } from "@/services/api";
 
 interface PublicStats {
   total_complaints: number;
@@ -57,16 +57,16 @@ export default function TransparencyPage() {
     setLoading(true);
     try {
       const [statsRes, trendingRes, perfRes, wardsRes] = await Promise.all([
-        fetch(`${API_BASE}/transparency/public/stats`),
-        fetch(`${API_BASE}/transparency/public/trending`),
-        fetch(`${API_BASE}/transparency/public/performance`),
-        fetch(`${API_BASE}/transparency/public/wards`),
+        apiRequest<PublicStats>('/transparency/public/stats'),
+        apiRequest<{ top_departments: TrendingIssue[]; top_locations: TrendingIssue[] }>('/transparency/public/trending'),
+        apiRequest<DepartmentPerformance[]>('/transparency/public/performance'),
+        apiRequest<WardStats[]>('/transparency/public/wards'),
       ]);
 
-      if (statsRes.ok) setStats(await statsRes.json());
-      if (trendingRes.ok) setTrending(await trendingRes.json());
-      if (perfRes.ok) setPerformance(await perfRes.json());
-      if (wardsRes.ok) setWards(await wardsRes.json());
+      setStats(statsRes);
+      setTrending(trendingRes);
+      setPerformance(perfRes);
+      setWards(wardsRes);
       
       setLastUpdated(new Date());
     } catch (error) {

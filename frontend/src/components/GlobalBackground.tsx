@@ -22,6 +22,10 @@ export default function GlobalBackground() {
 
   useEffect(() => {
     if (!mounted || animationStartedRef.current) return;
+    
+    // Ensure refs are available
+    if (!containerRef.current || !videoRef.current || !glowRef.current) return;
+    
     animationStartedRef.current = true;
 
     gsap.registerPlugin(ScrollTrigger);
@@ -38,7 +42,6 @@ export default function GlobalBackground() {
       });
 
       // Hero -> Problem (0% to ~20%)
-      // Video zooms slowly and darkens
       tl.to(videoRef.current, {
         scale: 1,
         filter: "brightness(0.3) blur(4px)",
@@ -46,14 +49,12 @@ export default function GlobalBackground() {
       }, 0);
 
       // Problem -> Solution/AI Workflow (~20% to ~40%)
-      // Video brightens again
       tl.to(videoRef.current, {
         filter: "brightness(0.7) blur(2px)",
         duration: 1,
       }, 1);
 
       // Dashboard / Command Center (~40% to ~60%)
-      // Gains blue holographic glow
       tl.to(glowRef.current, {
         opacity: 0.8,
         scale: 1.2,
@@ -66,7 +67,6 @@ export default function GlobalBackground() {
       }, 2);
 
       // Roadmap -> Footer (~60% to 100%)
-      // Fade out
       tl.to(videoRef.current, {
         opacity: 0,
         y: "20%",
@@ -76,8 +76,7 @@ export default function GlobalBackground() {
     }, containerRef);
 
     return () => ctx.revert();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [mounted]);
 
   // Derive resolved theme only after mount to avoid SSR/client mismatch.
   // Before mount, default to "dark" so the initial DOM structure is stable.

@@ -8,7 +8,7 @@ export default function NeuralNetwork() {
   const pointsRef = useRef<THREE.Points>(null);
   
   // High-density grid for a premium "data wave" effect
-  const gridSize = 75;
+  const gridSize = 40;
   const particleCount = gridSize * gridSize;
   const spacing = 1.2;
   

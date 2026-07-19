@@ -2,7 +2,7 @@
 
 ### *AI-Powered Neural Infrastructure & Grievance Routing for Modern Smart Cities*
 
-[![Next.js Version](https://img.shields.io/badge/Next.js-16.2.6-black?style=flat-for-the-badge&logo=next.js)](https://nextjs.org/)
+[![Next.js Version](https://img.shields.io/badge/Next.js-15.5.6-black?style=flat-for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React Version](https://img.shields.io/badge/React-19.2.4-blue?style=flat-for-the-badge&logo=react)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-cyan?style=flat-for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
 [![Three.js](https://img.shields.io/badge/Three.js-r184-black?style=flat-for-the-badge&logo=three.js)](https://threejs.org/)
@@ -379,7 +379,7 @@ Tracks top 10 citizens by total points.
 
 | Domain | Technology | Description |
 | :--- | :--- | :--- |
-| **Frontend** | Next.js 16.2.6 (App Router), React 19.2.4, TypeScript | Server and Client rendering |
+| **Frontend** | Next.js 15.5.6 (App Router), React 19.2.4, TypeScript | Server and Client rendering |
 | **3D Graphics** | `@react-three/fiber`, `@react-three/drei`, Three.js r184 | WebGL particulate canvas |
 | **Styling** | Tailwind CSS v4, Shadcn UI Tokens | Utility-first styling |
 | **Motion** | GSAP 3.15.0 + ScrollTrigger, Framer Motion 12 | Fluid transitions |
@@ -475,9 +475,8 @@ civic-connect/
 │   │   ├── auth/                      # Auth context, provider, API client
 │   │   ├── hooks/                     # Custom React hooks
 │   │   ├── lib/                       # Utility functions
-│   │   ├── middleware/                # Role/auth guard HOCs
-│   │   ├── services/                  # API service layer
-│   │   └── proxy.ts                   # Next.js 16 Proxy (formerly Middleware)
+│   │   ├── middleware/                # Role & auth guard HOCs
+│   │   └── services/                  # API service layer
 │   ├── public/                        # Static assets
 │   ├── next.config.ts                 # Rewrites, headers, config
 │   ├── jest.config.js                 # Jest test configuration

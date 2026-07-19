@@ -1,10 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
-import SmoothScroll from "@/components/SmoothScroll";
 import Navbar from "@/components/Navbar";
-import GlobalBackground from "@/components/GlobalBackground";
 import { AuthProvider } from "@/auth/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "sonner";
@@ -50,24 +47,23 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans overflow-x-hidden transition-colors duration-500">
-        <Script id="theme-script" strategy="beforeInteractive">
-          {`
-            try {
-              var theme = localStorage.getItem('theme') || 'system';
-              var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-              document.documentElement.classList.add(isDark ? 'dark' : 'light');
-              document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
-            } catch (e) {}
-          `}
-        </Script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var theme = localStorage.getItem('theme') || 'system';
+                var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.classList.add(isDark ? 'dark' : 'light');
+                document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+              } catch (e) {}
+            `,
+          }}
+        />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Toaster theme="system" position="top-right" richColors closeButton />
           <AuthProvider>
-            <SmoothScroll>
-              <GlobalBackground />
-              <Navbar />
-              {children}
-            </SmoothScroll>
+            <Navbar />
+            {children}
             <CivicAI />
             <CommandPalette />
             <ServiceWorkerRegister />

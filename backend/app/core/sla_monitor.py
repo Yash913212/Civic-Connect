@@ -2,6 +2,7 @@ import asyncio
 import logging
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import OperationalError, DisconnectionError
 from app.database.database import SessionLocal
 from app.database.models import Complaint, ComplaintStatus, NotificationType, Notification, User, RoleEnum
 from app.core.sla import check_sla_violation, get_sla_status, get_escalation_target
@@ -11,29 +12,55 @@ import json
 logger = logging.getLogger(__name__)
 
 SLA_CHECK_INTERVAL = 300  # 5 minutes
+MAX_RETRIES = 3
+RETRY_DELAY = 5  # seconds
 
 
 async def monitor_sla_violations():
     """Background task to monitor SLA violations and trigger escalations."""
     while True:
-        try:
-            db = SessionLocal()
+        db = None
+        retry_count = 0
+        
+        while retry_count < MAX_RETRIES:
             try:
-                # Get all active complaints (not resolved)
-                active_complaints = db.query(Complaint).filter(
-                    Complaint.status.in_([
-                        ComplaintStatus.PENDING.value,
-                        ComplaintStatus.ASSIGNED.value,
-                        ComplaintStatus.IN_PROGRESS.value
-                    ])
-                ).all()
+                db = SessionLocal()
+                try:
+                    # Get all active complaints (not resolved)
+                    active_complaints = db.query(Complaint).filter(
+                        Complaint.status.in_([
+                            ComplaintStatus.PENDING.value,
+                            ComplaintStatus.ASSIGNED.value,
+                            ComplaintStatus.IN_PROGRESS.value
+                        ])
+                    ).all()
 
-                for complaint in active_complaints:
-                    await process_complaint_sla(complaint, db)
-            finally:
-                db.close()
-        except Exception as e:
-            logger.error(f"SLA monitoring error: {e}")
+                    for complaint in active_complaints:
+                        await process_complaint_sla(complaint, db)
+                finally:
+                    if db:
+                        db.close()
+                break  # Success, exit retry loop
+            except (OperationalError, DisconnectionError) as e:
+                retry_count += 1
+                logger.warning(f"Database connection error in SLA monitor (attempt {retry_count}/{MAX_RETRIES}): {e}")
+                if db:
+                    try:
+                        db.close()
+                    except:
+                        pass
+                if retry_count < MAX_RETRIES:
+                    await asyncio.sleep(RETRY_DELAY)
+                else:
+                    logger.error(f"SLA monitoring failed after {MAX_RETRIES} retries")
+            except Exception as e:
+                logger.error(f"SLA monitoring error: {e}")
+                if db:
+                    try:
+                        db.close()
+                    except:
+                        pass
+                break
         
         await asyncio.sleep(SLA_CHECK_INTERVAL)
 
