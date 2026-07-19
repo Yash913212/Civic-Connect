@@ -23,40 +23,39 @@ try:
 except Exception as e:
     logger.error("Database initialization failed: %s", e)
 
-if not str(engine.url).startswith("sqlite"):
-    pg_migrations = [
-        ("complaints", "image_url", "VARCHAR"),
-        ("complaints", "latitude", "VARCHAR"),
-        ("complaints", "longitude", "VARCHAR"),
-        ("complaints", "address", "VARCHAR"),
-        ("complaints", "user_id", "VARCHAR"),
-        ("complaints", "assigned_to", "VARCHAR"),
-        ("complaints", "ai_summary", "VARCHAR"),
-        ("complaints", "ai_request_letter", "VARCHAR"),
-        ("users", "department", "VARCHAR"),
-    ]
-    for table, column, col_type in pg_migrations:
-        try:
-            with engine.begin() as conn:
-                conn.execute(text(f"""
-                    DO $$
-                    BEGIN
-                        IF NOT EXISTS (
-                            SELECT 1 FROM information_schema.columns
-                            WHERE table_name = '{table}' AND column_name = '{column}'
-                        ) THEN
-                            ALTER TABLE {table} ADD COLUMN {column} {col_type};
-                        END IF;
-                    END $$;
-                """))
-        except Exception as e:
-            logger.warning("Migration failed for %s.%s: %s", table, column, e)
+migrations = [
+    ("complaints", "image_url", "VARCHAR"),
+    ("complaints", "latitude", "VARCHAR"),
+    ("complaints", "longitude", "VARCHAR"),
+    ("complaints", "address", "VARCHAR"),
+    ("complaints", "user_id", "VARCHAR"),
+    ("complaints", "assigned_to", "VARCHAR"),
+    ("complaints", "ai_summary", "VARCHAR"),
+    ("complaints", "ai_request_letter", "VARCHAR"),
+    ("complaints", "verification_status", "VARCHAR DEFAULT 'PENDING'"),
+    ("users", "department", "VARCHAR"),
+    ("users", "points", "INTEGER DEFAULT 0"),
+    ("users", "level", "INTEGER DEFAULT 1"),
+    ("users", "streak_days", "INTEGER DEFAULT 0"),
+    ("users", "last_active_date", "TIMESTAMP"),
+    ("users", "complaints_submitted", "INTEGER DEFAULT 0"),
+    ("users", "complaints_verified", "INTEGER DEFAULT 0"),
+]
 
-    for table in ["notifications", "departments", "badges"]:
-        try:
-            Base.metadata.tables[table].create(bind=engine, checkfirst=True)
-        except Exception as e:
-            logger.debug("Table creation skipped for %s: %s", table, e)
+for table, column, col_type in migrations:
+    try:
+        with engine.begin() as conn:
+            conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}"))
+            logger.info(f"Added column {column} to table {table}")
+    except Exception as e:
+        pass
+
+for table in ["notifications", "departments", "badges", "user_badges"]:
+    try:
+        Base.metadata.tables[table].create(bind=engine, checkfirst=True)
+        logger.info(f"Table {table} verified/created.")
+    except Exception as e:
+        logger.debug(f"Table creation skipped for {table}: {e}")
 
 
 @asynccontextmanager

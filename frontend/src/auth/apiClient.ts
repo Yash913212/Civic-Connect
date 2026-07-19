@@ -1,29 +1,12 @@
 import axios from 'axios';
 
-const API_URL = '/api';
-
-interface ErrorResponse {
-  detail?: string | string[];
-  message?: string;
-}
-
-const handleApiError = (error: any): string => {
-  if (error.response?.data) {
-    const data = error.response.data as ErrorResponse;
-    if (typeof data.detail === 'string') return data.detail;
-    if (Array.isArray(data.detail)) return data.detail.join(', ');
-    if (data.message) return data.message;
-  }
-  if (error.message) return error.message;
-  return 'An unexpected error occurred';
-};
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 export const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
 });
 
 apiClient.interceptors.request.use((config) => {
@@ -35,60 +18,37 @@ apiClient.interceptors.request.use((config) => {
 });
 
 apiClient.interceptors.response.use(
-  (response) => {
-    if (response.data?.access_token) {
-      localStorage.setItem('access_token', response.data.access_token);
-    }
-    return response;
-  },
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
     
+    // Do not intercept 401s for login or refresh endpoints
     if (originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/auth/refresh')) {
-      return Promise.reject(new Error(handleApiError(error)));
+      return Promise.reject(error);
     }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const response = await axios.post(`${API_URL}/auth/refresh`, {}, {
-          withCredentials: true
-        });
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (!refreshToken) throw new Error('No refresh token');
+        
+        const response = await axios.post(`${API_URL}/auth/refresh`, { refresh_token: refreshToken });
         const { access_token } = response.data;
         
         localStorage.setItem('access_token', access_token);
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
         return apiClient(originalRequest);
-      } catch {
+      } catch (refreshError) {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');
         if (typeof window !== 'undefined') {
           window.location.href = '/';
         }
-        return Promise.reject(new Error('Session expired. Please login again.'));
+        return Promise.reject(refreshError);
       }
     }
-    return Promise.reject(new Error(handleApiError(error)));
-  }
-);
-
-export const authApi = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true,
-});
-
-authApi.interceptors.response.use(
-  (response) => {
-    if (response.data?.access_token) {
-      localStorage.setItem('access_token', response.data.access_token);
-    }
-    return response;
-  },
-  (error) => {
-    return Promise.reject(new Error(handleApiError(error)));
+    return Promise.reject(error);
   }
 );

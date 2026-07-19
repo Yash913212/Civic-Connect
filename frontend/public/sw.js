@@ -41,6 +41,11 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Ignore non-http(s) requests (e.g., chrome-extension://, moz-extension://, etc.)
+  if (!url.protocol.startsWith("http")) {
+    return;
+  }
+
   // API requests: network-first with cache fallback
   if (API_CACHE_PATTERNS.some((pattern) => pattern.test(url.pathname))) {
     event.respondWith(networkFirstWithCache(request, API_CACHE));

@@ -1,13 +1,13 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
+import SmoothScroll from "@/components/SmoothScroll";
 import Navbar from "@/components/Navbar";
+import GlobalBackground from "@/components/GlobalBackground";
 import { AuthProvider } from "@/auth/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "sonner";
 import CivicAI from "@/components/chatbot/CivicAI";
-import CommandPalette from "@/components/ui/CommandPalette";
-import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -31,10 +31,6 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = {
-  themeColor: "#059669",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -47,26 +43,15 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans overflow-x-hidden transition-colors duration-500">
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                var theme = localStorage.getItem('theme') || 'system';
-                var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                document.documentElement.classList.add(isDark ? 'dark' : 'light');
-                document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
-              } catch (e) {}
-            `,
-          }}
-        />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Toaster theme="system" position="top-right" richColors closeButton />
           <AuthProvider>
-            <Navbar />
-            {children}
-            <CivicAI />
-            <CommandPalette />
-            <ServiceWorkerRegister />
+            <SmoothScroll>
+              <GlobalBackground />
+              <Navbar />
+              {children}
+              <CivicAI />
+            </SmoothScroll>
           </AuthProvider>
         </ThemeProvider>
       </body>

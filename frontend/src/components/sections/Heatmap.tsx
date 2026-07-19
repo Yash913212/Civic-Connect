@@ -4,18 +4,19 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
 export default function Heatmap() {
-  const mountRef = useRef<HTMLCanvasElement>(null);
+  const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const canvas = mountRef.current;
-    if (!canvas) return;
+    if (!mountRef.current) return;
     const scene = new THREE.Scene();
-    const width = canvas.clientWidth || window.innerWidth;
-    const height = canvas.clientHeight || 500;
+    const container = mountRef.current;
+    const width = container.clientWidth || window.innerWidth;
+    const height = container.clientHeight || 500;
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(width, height);
+    container.appendChild(renderer.domElement);
 
     // Glowing Holographic Terrain Grid
     const geo = new THREE.PlaneGeometry(30, 30, 40, 40);
@@ -122,8 +123,9 @@ export default function Heatmap() {
     camera.lookAt(0, 0, 0);
 
     let time = 0;
+    let frameId = 0;
     const animate = () => {
-      requestAnimationFrame(animate);
+      frameId = requestAnimationFrame(animate);
       time += 0.01;
 
       // Undulate grid
@@ -179,6 +181,7 @@ export default function Heatmap() {
     window.addEventListener("resize", handleResize);
 
     return () => {
+      cancelAnimationFrame(frameId);
       window.removeEventListener("resize", handleResize);
       geo.dispose();
       mat.dispose();
@@ -198,6 +201,9 @@ export default function Heatmap() {
           (child.material as THREE.Material).dispose();
         }
       });
+      if (renderer.domElement.parentNode === container) {
+        container.removeChild(renderer.domElement);
+      }
       renderer.dispose();
     };
   }, []);
@@ -207,7 +213,7 @@ export default function Heatmap() {
       id="use-cases"
       className="relative w-full min-h-[70vh] md:h-[90vh] bg-transparent overflow-hidden border-y border-white/5"
     >
-      <canvas className="absolute inset-0 z-0 block" ref={mountRef} style={{ width: '100%', height: '100%' }} />
+      <div className="absolute inset-0 z-0" ref={mountRef} />
       <div className="relative z-10 p-6 md:p-16 max-w-7xl mx-auto h-full flex flex-col justify-between gap-6">
         <div className="pointer-events-none">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-semibold uppercase tracking-wider mb-4">

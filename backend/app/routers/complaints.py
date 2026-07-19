@@ -161,7 +161,7 @@ def get_my_complaints(
     db: Session = Depends(get_db)
 ):
     complaints = db.query(DBComplaint).filter(
-        DBComplaint.user_id == str(current_user.id)
+        DBComplaint.user_id == current_user.id
     ).order_by(DBComplaint.created_at.desc()).all()
     return [_complaint_to_dict(c, db) for c in complaints]
 
@@ -177,9 +177,9 @@ def update_complaint(
     if not complaint:
         raise HTTPException(status_code=404, detail="Complaint not found")
 
-    is_owner = complaint.user_id and str(complaint.user_id) == str(current_user.id)
+    is_owner = complaint.user_id == current_user.id
     is_admin = current_user.role == RoleEnum.ADMIN
-    is_assigned = complaint.assigned_to and str(complaint.assigned_to) == str(current_user.id)
+    is_assigned = complaint.assigned_to == current_user.id
 
     if not (is_owner or is_admin or is_assigned):
         raise HTTPException(status_code=403, detail="Not authorized to update this complaint")
@@ -228,7 +228,7 @@ def delete_complaint(
     if not complaint:
         raise HTTPException(status_code=404, detail="Complaint not found")
 
-    is_owner = complaint.user_id and str(complaint.user_id) == str(current_user.id)
+    is_owner = complaint.user_id == current_user.id
     is_admin = current_user.role == RoleEnum.ADMIN
 
     if not (is_owner or is_admin):
@@ -281,6 +281,39 @@ def update_complaint_status(
             "Complaint Resolved",
             f"Your complaint '{complaint.title}' has been resolved!",
             NotificationType.COMPLAINT_RESOLVED, complaint.id)
+
+    if new_status == "Resolved":
+        # 1. Award points to the officer (current_user)
+        priority_action_map = {
+            "Critical": "officer_resolved_critical",
+            "High": "officer_resolved_high",
+            "Medium": "officer_resolved_medium",
+            "Low": "officer_resolved_low",
+        }
+        priority_str = complaint.priority or "Low"
+        if hasattr(priority_str, 'value'):
+            priority_str = priority_str.value
+        priority_val = priority_str.title()
+        action = priority_action_map.get(priority_val, "officer_resolved_low")
+        
+        from app.core.gamification import award_points
+        award_points(current_user, action, db)
+        
+        # 2. Check if resolved before SLA deadline for SLA bonus
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        if complaint.sla_deadline:
+            sla_dl = complaint.sla_deadline
+            if sla_dl.tzinfo is None:
+                sla_dl = sla_dl.replace(tzinfo=timezone.utc)
+            if now <= sla_dl:
+                award_points(current_user, "officer_sla_bonus", db)
+                
+        # 3. Award points to the citizen who submitted the complaint
+        if complaint.user_id:
+            citizen = db.query(User).filter(User.id == complaint.user_id).first()
+            if citizen:
+                award_points(citizen, "complaint_verified", db)
 
     if complaint.assigned_to and complaint.assigned_to != current_user.id:
         _create_notification(db, complaint.assigned_to,

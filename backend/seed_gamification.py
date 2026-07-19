@@ -3,7 +3,7 @@ import sys
 import uuid
 from sqlalchemy.orm import Session
 from app.database.database import SessionLocal, engine, Base
-from app.database.models import User, Badge, UserBadge
+from app.database.models import User, Badge, UserBadge, RoleEnum
 from app.core.security import get_password_hash
 from app.core.gamification import BADGES
 
@@ -86,12 +86,12 @@ def seed_gamification_data():
                 print(f"Updated {citizen_data['full_name']}")
             else:
                 new_user = User(
-                    id=str(uuid.uuid4()),
+                    id=uuid.uuid4(),
                     email=citizen_data["email"],
                     phone_number=f"555{str(uuid.uuid4().int)[:7]}",
                     password_hash=get_password_hash("password123"),
                     full_name=citizen_data["full_name"],
-                    role="CITIZEN",
+                    role=RoleEnum.CITIZEN,
                     points=citizen_data["points"],
                     level=citizen_data["level"],
                     streak_days=citizen_data["streak_days"],
@@ -104,15 +104,72 @@ def seed_gamification_data():
                     db.add(UserBadge(user_id=new_user.id, badge_id=badge_id))
                 
                 print(f"Created {citizen_data['full_name']}")
+
+        fake_officers = [
+            {
+                "full_name": "Officer Sarah",
+                "email": "sarah.officer@civicconnect.com",
+                "points": 4250,
+                "level": 10,
+                "streak_days": 15
+            },
+            {
+                "full_name": "Officer Marcus",
+                "email": "marcus.officer@civicconnect.com",
+                "points": 3890,
+                "level": 9,
+                "streak_days": 8
+            },
+            {
+                "full_name": "Officer David",
+                "email": "david.officer@civicconnect.com",
+                "points": 3100,
+                "level": 7,
+                "streak_days": 3
+            }
+        ]
+
+        for officer_data in fake_officers:
+            existing = db.query(User).filter(User.email == officer_data["email"]).first()
+            if existing:
+                existing.points = officer_data["points"]
+                existing.level = officer_data["level"]
+                existing.streak_days = officer_data["streak_days"]
+                print(f"Updated {officer_data['full_name']}")
+            else:
+                new_officer = User(
+                    id=uuid.uuid4(),
+                    email=officer_data["email"],
+                    phone_number=f"555{str(uuid.uuid4().int)[:7]}",
+                    password_hash=get_password_hash("password123"),
+                    full_name=officer_data["full_name"],
+                    role=RoleEnum.OFFICER,
+                    points=officer_data["points"],
+                    level=officer_data["level"],
+                    streak_days=officer_data["streak_days"],
+                    is_active=True
+                )
+                db.add(new_officer)
+                print(f"Created {officer_data['full_name']}")
+
+        default_off = db.query(User).filter(User.email == "officer@civicconnect.com").first()
+        if default_off:
+            default_off.points = 3450
+            default_off.level = 8
+            default_off.streak_days = 4
+            print("Updated default officer with sample points!")
         
-        me = db.query(User).filter(User.email == "yash@civicai.org").first()
-        if me and me.points == 0:
-            me.points = 420
-            me.level = 4
-            me.streak_days = 3
-            for badge_id in ["first_complaint", "complaint_warrior", "streak_master"]:
-                db.add(UserBadge(user_id=me.id, badge_id=badge_id))
-            print(f"Updated your user (yash@civicai.org) with sample points!")
+        for email in ["yash@civicai.org", "yaswanthamjuri@gmail.com"]:
+            me = db.query(User).filter(User.email == email).first()
+            if me and me.points == 0:
+                me.points = 1420
+                me.level = 8
+                me.streak_days = 4
+                for badge_id in ["first_complaint", "complaint_warrior", "streak_master"]:
+                    badge_exists = db.query(UserBadge).filter(UserBadge.user_id == me.id, UserBadge.badge_id == badge_id).first()
+                    if not badge_exists:
+                        db.add(UserBadge(user_id=me.id, badge_id=badge_id))
+                print(f"Updated user ({email}) with sample points!")
 
         db.commit()
         print("Successfully seeded gamification data!")

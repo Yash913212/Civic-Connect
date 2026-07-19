@@ -26,10 +26,11 @@ def get_gamification_profile(
 @router.get("/leaderboard")
 def get_gamification_leaderboard(
     limit: int = 10,
+    role: str = "CITIZEN",
     db: Session = Depends(get_db)
 ):
     """Get public leaderboard."""
-    return get_leaderboard(db, limit)
+    return get_leaderboard(db, limit, role)
 
 
 @router.get("/badges")

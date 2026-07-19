@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Mic, MessageCircle, Cpu, Drone, Globe, ArrowRight } from "lucide-react";
@@ -18,9 +18,13 @@ export default function FutureRoadmap() {
   const lineRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
+    if (!containerRef.current) return;
+
     gsap.registerPlugin(ScrollTrigger);
     const mm = gsap.matchMedia();
+    const container = containerRef.current;
+
     mm.add("(min-width: 768px)", () => {
       const items = gsap.utils.toArray(".roadmap-item");
       if (!items.length) return;
@@ -29,7 +33,7 @@ export default function FutureRoadmap() {
         yPercent: -100 * (items.length - 1),
         ease: "none",
         scrollTrigger: {
-          trigger: containerRef.current,
+          trigger: container,
           pin: true,
           scrub: 1,
           snap: 1 / (items.length - 1),
@@ -40,7 +44,7 @@ export default function FutureRoadmap() {
 
       // Animate timeline dot
       ScrollTrigger.create({
-        trigger: containerRef.current,
+        trigger: container,
         start: "top top",
         end: () => "+=" + (window.innerHeight * items.length),
         scrub: 1,

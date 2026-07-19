@@ -1,6 +1,15 @@
-import { apiClient } from '@/auth/apiClient';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+  ? (process.env.NEXT_PUBLIC_API_URL.endsWith('/api') ? process.env.NEXT_PUBLIC_API_URL : `${process.env.NEXT_PUBLIC_API_URL}/api`)
+  : "http://localhost:8000/api";
 
-const API_BASE = '/api';
+function getAuthHeaders(): Record<string, string> {
+  const token = typeof window !== 'undefined'
+    ? (localStorage.getItem('access_token') || sessionStorage.getItem('access_token'))
+    : null;
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+}
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -13,14 +22,23 @@ interface RequestOptions {
 export async function apiRequest<T = unknown>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, headers = {} } = options;
 
-  const response = await apiClient.request({
-    url: path,
-    method: method.toLowerCase() as any,
-    data: body,
-    headers,
+  const res = await fetch(`${API_BASE}${path}`, {
+    method,
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+    body: body ? JSON.stringify(body) : undefined,
   });
 
-  return response.data as T;
+  if (!res.ok) {
+    const detail = await res.json().then(d => d.detail).catch(() => res.statusText);
+    throw new Error(detail || `Request failed: ${res.status}`);
+  }
+
+  const text = await res.text();
+  return text ? JSON.parse(text) : undefined as T;
 }
 
-export { API_BASE };
+export { API_BASE, getAuthHeaders };

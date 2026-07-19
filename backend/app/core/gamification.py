@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
-from app.database.models import User, Complaint, ComplaintStatus, Badge, UserBadge
+from app.database.models import User, Complaint, ComplaintStatus, Badge, UserBadge, RoleEnum
 from sqlalchemy import insert
 import logging
 
@@ -95,6 +95,12 @@ POINTS = {
     "complaint_verified": 25,
     "upvote_received": 5,
     "daily_active": 2,
+    # Officer points
+    "officer_resolved_critical": 150,
+    "officer_resolved_high": 100,
+    "officer_resolved_medium": 50,
+    "officer_resolved_low": 25,
+    "officer_sla_bonus": 50,
 }
 
 
@@ -178,26 +184,26 @@ def check_badge_eligibility(user: User, db: Session) -> list[dict]:
     if user.streak_days is None:
         user.streak_days = 0
 
-    earned_user_badges = db.query(UserBadge).filter(UserBadge.user_id == str(user.id)).all()
+    earned_user_badges = db.query(UserBadge).filter(UserBadge.user_id == user.id).all()
     earned_badge_ids = {ub.badge_id for ub in earned_user_badges}
     new_badges = []
     
     complaint_count = db.query(Complaint).filter(
-        Complaint.user_id == str(user.id)
+        Complaint.user_id == user.id
     ).count()
     
     verified_count = db.query(Complaint).filter(
-        Complaint.user_id == str(user.id),
+        Complaint.user_id == user.id,
         Complaint.status == ComplaintStatus.RESOLVED.value,
         Complaint.verification_status == "VERIFIED"
     ).count()
     
     departments = db.query(Complaint.department).filter(
-        Complaint.user_id == str(user.id)
+        Complaint.user_id == user.id
     ).distinct().count()
     
     high_priority_count = db.query(Complaint).filter(
-        Complaint.user_id == str(user.id),
+        Complaint.user_id == user.id,
         Complaint.priority == "High"
     ).count()
     
@@ -214,7 +220,7 @@ def check_badge_eligibility(user: User, db: Session) -> list[dict]:
     
     for badge_id, condition in badge_checks.items():
         if condition and badge_id not in earned_badge_ids:
-            db.add(UserBadge(user_id=str(user.id), badge_id=badge_id))
+            db.add(UserBadge(user_id=user.id, badge_id=badge_id))
             badge_info = db.query(Badge).filter(Badge.id == badge_id).first()
             if badge_info:
                 new_badges.append({
@@ -242,7 +248,7 @@ def check_badge_eligibility(user: User, db: Session) -> list[dict]:
 
 def get_user_gamification_profile(user: User, db: Session) -> dict:
     """Get comprehensive gamification profile for a user."""
-    earned_user_badges = db.query(UserBadge).filter(UserBadge.user_id == str(user.id)).all()
+    earned_user_badges = db.query(UserBadge).filter(UserBadge.user_id == user.id).all()
     earned_badge_ids = {ub.badge_id for ub in earned_user_badges}
     
     all_badges = []
@@ -274,7 +280,7 @@ def get_user_gamification_profile(user: User, db: Session) -> dict:
         progress_percentage = int(((user.points - current_threshold) / (next_threshold - current_threshold)) * 100)
     
     leaderboard_position = db.query(User).filter(
-        User.role == "CITIZEN",
+        User.role == user.role,
         User.points > user.points
     ).count() + 1
     
@@ -293,16 +299,17 @@ def get_user_gamification_profile(user: User, db: Session) -> dict:
     }
 
 
-def get_leaderboard(db: Session, limit: int = 10) -> list[dict]:
+def get_leaderboard(db: Session, limit: int = 10, role: str = "CITIZEN") -> list[dict]:
     """Get top users by points."""
+    role_enum = RoleEnum.CITIZEN if role == "CITIZEN" else RoleEnum.OFFICER
     top_users = db.query(User).filter(
-        User.role == "CITIZEN",
+        User.role == role_enum,
         User.is_active == True
     ).order_by(User.points.desc()).limit(limit).all()
     
     results = []
     for i, user in enumerate(top_users):
-        badge_count = db.query(UserBadge).filter(UserBadge.user_id == str(user.id)).count()
+        badge_count = db.query(UserBadge).filter(UserBadge.user_id == user.id).count()
         results.append({
             "rank": i + 1,
             "user_id": str(user.id),

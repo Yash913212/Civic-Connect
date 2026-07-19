@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
+import "leaflet.markercluster";
 
 interface ClusterMarker {
   position: [number, number];
@@ -21,9 +22,10 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  "Pending": "#6b7280",
+  "Unassigned": "#6b7280",
   "Assigned": "#3b82f6",
   "In Progress": "#f59e0b",
+  "Escalated": "#ef4444",
   "Resolved": "#22c55e",
 };
 
@@ -47,7 +49,11 @@ export default function MarkerCluster({ markers }: MarkerClusterProps) {
 
   useEffect(() => {
     if (clusterGroupRef.current) {
-      map.removeLayer(clusterGroupRef.current);
+      clusterGroupRef.current.clearLayers();
+      if (map.hasLayer(clusterGroupRef.current)) {
+        map.removeLayer(clusterGroupRef.current);
+      }
+      clusterGroupRef.current = null;
     }
 
     const mcg = L.markerClusterGroup({
@@ -60,13 +66,10 @@ export default function MarkerCluster({ markers }: MarkerClusterProps) {
         const count = cluster.getChildCount();
         let color = "#22c55e";
         const markers = cluster.getAllChildMarkers() as L.Marker[];
-        const priorities = markers.map((m) => (m as any).__priority as string | undefined);
-        if (priorities.some((p) => {
-          const lower = p?.toLowerCase();
-          return lower === "high" || lower === "critical" || lower === "urgent";
-        })) {
+        const priorities = markers.map((m) => (m as any).__priority as string);
+        if (priorities.some((p) => p === "high" || p === "critical" || p === "urgent")) {
           color = "#ef4444";
-        } else if (priorities.some((p) => p?.toLowerCase() === "medium")) {
+        } else if (priorities.some((p) => p === "medium")) {
           color = "#f59e0b";
         }
 
@@ -105,7 +108,11 @@ export default function MarkerCluster({ markers }: MarkerClusterProps) {
 
     return () => {
       if (clusterGroupRef.current) {
-        map.removeLayer(clusterGroupRef.current);
+        clusterGroupRef.current.clearLayers();
+        if (map.hasLayer(clusterGroupRef.current)) {
+          map.removeLayer(clusterGroupRef.current);
+        }
+        clusterGroupRef.current = null;
       }
     };
   }, [map, markers]);

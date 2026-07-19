@@ -32,7 +32,6 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-backend/.env
 
 # vercel
 .vercel
@@ -43,6 +42,5 @@ next-env.d.ts
 backend/venv/
 **/__pycache__/
 backend/*.db
-/civic.db
 backend/uploads/
 backend/civic_model_multimodal.pth

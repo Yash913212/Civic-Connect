@@ -1,17 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import Link from "next/link";
-import { MessageSquare, GitBranch, Mail, MapPin, ArrowUpRight, X, Users } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import Team from "./Team";
+import { MessageSquare, GitBranch, Mail, MapPin, ArrowUpRight } from "lucide-react";
 
 export default function Footer() {
   const marqueeRef = useRef<HTMLDivElement>(null);
-  const [isTeamOpen, setIsTeamOpen] = useState(false);
 
   useEffect(() => {
+    if (!marqueeRef.current) return;
+
     const ctx = gsap.context(() => {
       gsap.to(".marquee-inner", {
         xPercent: -50,
@@ -22,18 +21,6 @@ export default function Footer() {
     }, marqueeRef);
     return () => ctx.revert();
   }, []);
-
-  // Block body scroll when the team modal is open
-  useEffect(() => {
-    if (isTeamOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isTeamOpen]);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -55,7 +42,6 @@ export default function Footer() {
         <div className="md:col-span-1">
           <div className="flex items-center gap-4 mb-6">
             <div className="relative h-14 w-14 rounded-xl overflow-hidden flex items-center justify-center bg-gradient-to-br from-primary/20 to-purple-500/20">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full" />
             </div>
             <span className="text-xl font-bold font-heading text-slate-900 dark:text-white tracking-wider">
@@ -91,15 +77,6 @@ export default function Footer() {
                 </Link>
               </li>
             ))}
-            <li>
-              <button
-                onClick={() => setIsTeamOpen(true)}
-                className="text-sm text-muted-foreground hover:text-slate-900 dark:hover:text-white transition-all duration-300 flex items-center gap-1 group text-left"
-              >
-                Meet the Team
-                <ArrowUpRight className="w-3 h-3 opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all" />
-              </button>
-            </li>
           </ul>
         </div>
 
@@ -133,7 +110,7 @@ export default function Footer() {
             <li>
               <Link
                 href="/feedback"
-                className="text-sm flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 hover:bg-amber-500/20 transition-all font-semibold animate-pulse"
+                className="text-sm flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 hover:bg-amber-500/20 transition-all font-semibold"
               >
                 <MessageSquare className="w-4 h-4" />
                 Send Feedback
@@ -178,13 +155,6 @@ export default function Footer() {
         </div>
         <div className="flex items-center gap-6">
           <button
-            onClick={() => setIsTeamOpen(true)}
-            className="text-xs text-emerald-500 hover:text-emerald-400 font-bold transition-all duration-300 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:scale-105 hover:bg-emerald-500/20"
-          >
-            <Users className="w-3.5 h-3.5" />
-            Meet the Team
-          </button>
-          <button
             onClick={scrollToTop}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
           >
@@ -193,40 +163,6 @@ export default function Footer() {
           </button>
         </div>
       </div>
-
-      {/* Modal Overlay for Team Section */}
-      <AnimatePresence>
-        {isTeamOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[150] w-screen h-screen bg-slate-950/98 dark:bg-black/95 backdrop-blur-2xl overflow-y-auto"
-            onClick={() => setIsTeamOpen(false)}
-          >
-            {/* Close button in top-right - fixed so it stays visible while scrolling */}
-            <button
-              onClick={() => setIsTeamOpen(false)}
-              className="fixed top-6 right-6 md:top-8 md:right-8 z-[160] p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all backdrop-blur-md hover:scale-110"
-              aria-label="Close Team Modal"
-            >
-              <X className="w-6 h-6" />
-            </button>
-
-            {/* Scrollable window container */}
-            <motion.div
-              initial={{ scale: 0.95, y: 30 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 30 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.8 }}
-              className="w-full max-w-7xl mx-auto px-6 py-20 min-h-screen flex flex-col justify-start"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Team animateImmediately={true} isModal={true} />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </footer>
   );
 }

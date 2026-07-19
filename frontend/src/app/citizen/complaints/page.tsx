@@ -25,36 +25,72 @@ function PriorityBadge({ priority }: { priority: string }) {
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    Pending: "bg-slate-500/15 border-slate-500/30 text-slate-400",
+    Unassigned: "bg-slate-500/15 border-slate-500/30 text-slate-400",
     Assigned: "bg-teal-500/15 border-teal-500/30 text-teal-400",
     "In Progress": "bg-amber-500/15 border-amber-500/30 text-amber-400",
+    Escalated: "bg-purple-500/15 border-purple-500/30 text-purple-400",
     Resolved: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
   };
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${colors[status] || colors.Pending}`}>
+    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${colors[status] || colors.Unassigned}`}>
       {status}
     </span>
   );
 }
 
-function ComplaintTracker({ status }: { status: string }) {
-  const steps = ["Pending", "Assigned", "In Progress", "Resolved"];
-  const currentIndex = steps.indexOf(status) !== -1 ? steps.indexOf(status) : 0;
+function ProgressStepper({ status }: { status: string }) {
+  const steps = [
+    { label: "Submitted", desc: "Complaint received by portal" },
+    { label: "Assigned", desc: "Assigned to department officer" },
+    { label: "In Progress", desc: "Officer is investigating/fixing" },
+    { label: "Resolved", desc: "Issue resolved and verified" },
+  ];
+
+  let currentStep = 0; // default Submitted
+  if (status === "Assigned") {
+    currentStep = 1;
+  } else if (status === "In Progress" || status === "Escalated") {
+    currentStep = 2;
+  } else if (status === "Resolved") {
+    currentStep = 3;
+  }
 
   return (
-    <div className="mt-5 pt-5 border-t border-black/5 dark:border-white/5">
-      <div className="relative flex justify-between">
-        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-black/10 dark:bg-white/10 -translate-y-1/2 rounded-full" />
+    <div className="mt-4 border-t border-black/5 dark:border-white/5 pt-4">
+      <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-3">Resolution Progress</p>
+      <div className="relative flex justify-between items-center w-full max-w-2xl">
+        {/* Connection line background */}
+        <div className="absolute top-4 left-4 right-4 h-0.5 bg-black/10 dark:bg-white/10 -z-0" />
+        {/* Connection line active fill */}
         <div 
-          className="absolute top-1/2 left-0 h-0.5 bg-primary -translate-y-1/2 rounded-full transition-all duration-500 ease-in-out" 
-          style={{ width: `${(currentIndex / (steps.length - 1)) * 100}%` }}
+          className="absolute top-4 left-4 h-0.5 bg-gradient-to-r from-primary to-purple-500 -z-0 transition-all duration-500 ease-out" 
+          style={{ width: `${(currentStep / 3) * 88}%` }}
         />
-        {steps.map((step, index) => (
-          <div key={step} className="relative z-10 flex flex-col items-center gap-1.5 bg-white/70 dark:bg-black/50 px-2 rounded">
-            <div className={`w-3 h-3 rounded-full border-2 transition-colors duration-500 ${index <= currentIndex ? 'bg-primary border-primary shadow-[0_0_8px_rgba(168,85,247,0.5)]' : 'bg-white dark:bg-black border-black/20 dark:border-white/20'}`} />
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${index <= currentIndex ? 'text-primary' : 'text-muted-foreground'}`}>{step}</span>
-          </div>
-        ))}
+
+        {steps.map((step, idx) => {
+          const isCompleted = idx <= currentStep;
+          return (
+            <div key={step.label} className="flex flex-col items-center text-center flex-1 relative z-10">
+              <div 
+                className={`w-8 h-8 rounded-full flex items-center justify-center border text-[11px] font-bold transition-all duration-300 ${
+                  isCompleted 
+                    ? "bg-gradient-to-r from-primary to-purple-500 border-transparent text-white shadow-[0_0_10px_rgba(168,85,247,0.3)] scale-105" 
+                    : "bg-white dark:bg-zinc-900 border-black/10 dark:border-white/10 text-muted-foreground"
+                }`}
+              >
+                {isCompleted ? "✓" : idx + 1}
+              </div>
+              <span className={`text-[10px] font-semibold mt-1.5 transition-colors duration-200 ${
+                isCompleted ? "text-foreground font-bold" : "text-muted-foreground"
+              }`}>
+                {step.label}
+              </span>
+              <span className="text-[8px] text-muted-foreground/60 hidden md:block max-w-[120px] leading-tight mt-0.5">
+                {step.desc}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -86,16 +122,6 @@ function CitizenComplaints() {
   };
 
   useEffect(() => { load(); }, []);
-
-  useEffect(() => {
-    const handleRefresh = () => { if (document.visibilityState === 'visible') load(); };
-    window.addEventListener('focus', load);
-    document.addEventListener('visibilitychange', handleRefresh);
-    return () => {
-      window.removeEventListener('focus', load);
-      document.removeEventListener('visibilitychange', handleRefresh);
-    };
-  }, []);
 
   const handleDelete = async (c: ComplaintData) => {
     setDeleteTarget(c);
@@ -138,9 +164,9 @@ function CitizenComplaints() {
   };
 
   const filtered = complaints.filter(c =>
-    (c.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-    (c.dept?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-    (c.id?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+    c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.dept.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -211,67 +237,54 @@ function CitizenComplaints() {
                 className="group relative bg-white/70 dark:bg-black/50 backdrop-blur-xl rounded-2xl p-5 border border-black/10 dark:border-white/10 hover:border-primary/30 hover:shadow-lg transition-all"
               >
                 <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-primary/10 to-purple-500/10 opacity-0 group-hover:opacity-100 blur transition duration-500" />
-                <div className="relative flex flex-col md:flex-row justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex gap-4">
-                      {c.image_url && (
-                        <div className="shrink-0">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img 
-                            src={c.image_url} 
-                            alt="Complaint image" 
-                            className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl border border-black/10 dark:border-white/10"
-                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                          />
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        {editingId === c.id ? (
-                          <div className="space-y-2 mb-3">
-                            <input type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)}
-                              className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-bold text-foreground focus:outline-none focus:border-primary/50" />
-                            <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={2}
-                              className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-muted-foreground focus:outline-none focus:border-primary/50 resize-none" />
-                            <div className="flex gap-2">
-                              <button onClick={() => saveEdit(c)}
-                                className="px-3 py-1 bg-primary/10 border border-primary/30 rounded-lg text-xs font-semibold text-primary hover:bg-primary/20 transition-all">Save</button>
-                              <button onClick={cancelEdit}
-                                className="px-3 py-1 bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground transition-all">Cancel</button>
-                            </div>
+                <div className="relative flex flex-col gap-4">
+                  <div className="flex flex-col md:flex-row justify-between gap-4">
+                    <div className="flex-1">
+                      {editingId === c.id ? (
+                        <div className="space-y-2 mb-3">
+                          <input type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)}
+                            className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-bold text-foreground focus:outline-none focus:border-primary/50" />
+                          <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={2}
+                            className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-muted-foreground focus:outline-none focus:border-primary/50 resize-none" />
+                          <div className="flex gap-2">
+                            <button onClick={() => saveEdit(c)}
+                              className="px-3 py-1 bg-primary/10 border border-primary/30 rounded-lg text-xs font-semibold text-primary hover:bg-primary/20 transition-all">Save</button>
+                            <button onClick={cancelEdit}
+                              className="px-3 py-1 bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground transition-all">Cancel</button>
                           </div>
-                        ) : (
-                          <>
-                            <div className="flex items-center gap-2 flex-wrap mb-1">
-                              <span className="text-xs font-mono text-muted-foreground">#{c.id.substring(0, 8)}</span>
-                              <h4 className="font-bold text-foreground">{c.title}</h4>
-                            </div>
-                            <p className="text-sm text-muted-foreground line-clamp-3 mb-3">{c.description}</p>
-                          </>
-                        )}
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="text-xs font-mono text-muted-foreground">#{c.id.substring(0, 8)}</span>
+                            <h4 className="font-bold text-foreground">{c.title}</h4>
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-3 mb-3">{c.description}</p>
+                        </>
+                      )}
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1"><Building2 size={12} /> {c.dept}</span>
+                        <span className="flex items-center gap-1"><MapPin size={12} /> {c.address?.substring(0, 40) || c.location}</span>
+                        <span className="flex items-center gap-1"><Clock size={12} /> {new Date(c.time).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-3">
-                      <span className="flex items-center gap-1"><Building2 size={12} /> {c.dept}</span>
-                      <span className="flex items-center gap-1"><MapPin size={12} /> {c.address?.substring(0, 40) || c.location}</span>
-                      <span className="flex items-center gap-1"><Clock size={12} /> {new Date(c.time).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <PriorityBadge priority={c.priority} />
+                      <StatusBadge status={c.status} />
+                      <div className="flex items-center gap-1 ml-2">
+                        <button onClick={() => startEdit(c)}
+                          className="p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all">
+                          <Pencil size={14} />
+                        </button>
+                        <button onClick={() => handleDelete(c)}
+                          className="p-1.5 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-400 transition-all">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <PriorityBadge priority={c.priority} />
-                    <StatusBadge status={c.status} />
-                    <div className="flex items-center gap-1 ml-2">
-                      <button onClick={() => startEdit(c)}
-                        className="p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all">
-                        <Pencil size={14} />
-                      </button>
-                      <button onClick={() => handleDelete(c)}
-                        className="p-1.5 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-400 transition-all">
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
+                  <ProgressStepper status={c.status} />
                 </div>
-                <ComplaintTracker status={c.status} />
               </motion.div>
             ))}
           </div>

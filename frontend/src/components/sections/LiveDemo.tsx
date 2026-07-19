@@ -1,10 +1,13 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Upload, Mic, CheckCircle2, X, Brain, MessageSquareText, MapPin, ArrowRight, Zap, Sparkles, Loader2, ClipboardList } from "lucide-react";
+import { Upload, Mic, CheckCircle2, X, Brain, MessageSquareText, MapPin, ArrowRight, Zap, Sparkles, Loader2, ClipboardList, Trophy } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { API_BASE } from "@/services/api";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+  ? (process.env.NEXT_PUBLIC_API_URL.endsWith('/api') ? process.env.NEXT_PUBLIC_API_URL : `${process.env.NEXT_PUBLIC_API_URL}/api`)
+  : "http://localhost:8000/api";
 
 const DEPT_LABELS: Record<string, string> = {
   roads: "Roads Dept", drainage: "Drainage Dept", garbage: "Sanitation",
@@ -15,7 +18,7 @@ const DEPT_LABELS: Record<string, string> = {
 function ParticleField() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  if (!mounted) return <div className="absolute inset-0 pointer-events-none overflow-hidden" />;
+  if (!mounted) return null;
 
   const particles = Array.from({ length: 20 }, (_, i) => ({
     id: i,
@@ -125,7 +128,29 @@ function ShimmerBadge({ children, color }: { children: React.ReactNode; color: s
   );
 }
 
-export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: () => void }) {
+function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: string }) {
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    if (value === 0) return;
+    const duration = 800;
+    const steps = 20;
+    const increment = value / steps;
+    let current = 0;
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= value) {
+        setDisplay(value);
+        clearInterval(timer);
+      } else {
+        setDisplay(Math.floor(current));
+      }
+    }, duration / steps);
+    return () => clearInterval(timer);
+  }, [value]);
+  return <span>{display}{suffix}</span>;
+}
+
+export default function LiveDemo({ onViewMyComplaints, onOpenGamification }: { onViewMyComplaints?: () => void; onOpenGamification?: () => void }) {
   const router = useRouter();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -187,17 +212,8 @@ export default function LiveDemo({ onViewMyComplaints }: { onViewMyComplaints?: 
       setShowScan(false);
     }
   };
-const proceedToRegister = async () => {
+const proceedToRegister = () => {
   if (!analysisResult) return;
-
-  let base64Image = "";
-  if (selectedFile) {
-    base64Image = await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.readAsDataURL(selectedFile);
-    });
-  }
 
   const payload = {
     title: analysisResult.issue || "Civic Issue",
@@ -205,7 +221,7 @@ const proceedToRegister = async () => {
     request_note: analysisResult.request_note || "",
     department: analysisResult.department || "General",
     priority: analysisResult.priority || "low",
-    imageUrl: base64Image,
+    imageUrl: previewUrl || "",
     issue: analysisResult.issue,
     modality: analysisResult.modality,
   };
@@ -290,6 +306,11 @@ const proceedToRegister = async () => {
     show: { opacity: 1, y: 0, scale: 1 },
   };
 
+  const priorityColors: Record<string, string> = {
+    high: "text-red-500 bg-red-500/20 border-red-500/40",
+    medium: "text-amber-500 bg-amber-500/20 border-amber-500/40",
+    low: "text-emerald-500 bg-emerald-500/20 border-emerald-500/40",
+  };
   const priorityShimmers: Record<string, string> = {
     high: "border-red-500/40",
     medium: "border-amber-500/40",
@@ -364,7 +385,6 @@ const proceedToRegister = async () => {
                     className="relative h-64 rounded-xl overflow-hidden border border-primary/20 mb-4 group/image cursor-pointer flex-shrink-0"
                     onClick={() => setShowFullPreview(true)}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={previewUrl} alt="Preview" className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-105" />
                     <AnimatePresence>{showScan && <ScanOverlay />}</AnimatePresence>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
@@ -682,48 +702,40 @@ const proceedToRegister = async () => {
         </motion.div>
 
         {onViewMyComplaints && (
-          <div className="mt-12 flex flex-wrap justify-center gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-5"
+          >
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.98 }}
               onClick={onViewMyComplaints}
-              className="relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-primary/20 to-teal-500/20 backdrop-blur-xl border border-primary/40 rounded-2xl text-sm font-bold text-foreground hover:shadow-[0_0_30px_rgba(var(--primary),0.3)] transition-all group overflow-hidden"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 bg-gradient-to-r from-teal-500/10 via-emerald-500/5 to-teal-500/10 dark:from-teal-400/10 dark:to-emerald-400/10 backdrop-blur-xl border border-teal-500/30 hover:border-teal-500/60 rounded-xl text-sm font-bold text-teal-700 dark:text-teal-300 shadow-[0_4px_20px_rgba(20,184,166,0.05)] hover:shadow-[0_4px_25px_rgba(20,184,166,0.15)] transition-all duration-300 group"
             >
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
-                animate={{ x: ["-150%", "250%"] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              />
-              <motion.div
-                className="absolute inset-0 rounded-2xl border-2 border-primary/50"
-                animate={{ opacity: [0, 1, 0], scale: [1, 1.05, 1.1] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-              />
-              <ClipboardList className="w-5 h-5 text-primary relative z-10 group-hover:rotate-12 transition-transform duration-300" />
-              <span className="relative z-10">View My Complaints & Tracking</span>
-              <ArrowRight className="w-5 h-5 text-primary relative z-10 group-hover:translate-x-1.5 transition-transform duration-300" />
+              <ClipboardList className="w-[18px] h-[18px] text-teal-500 dark:text-teal-400 group-hover:scale-110 transition-transform duration-300" />
+              <span>View My Complaints</span>
+              <ArrowRight className="w-4 h-4 text-teal-500 dark:text-teal-400 group-hover:translate-x-1.5 transition-transform duration-300" />
             </motion.button>
+
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push('/citizen/profile')}
-              className="relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-xl border border-amber-500/40 rounded-2xl text-sm font-bold text-foreground hover:shadow-[0_0_30px_rgba(245,158,11,0.3)] transition-all group overflow-hidden"
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                if (onOpenGamification) {
+                  onOpenGamification();
+                } else {
+                  document.getElementById('gamification')?.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-500/10 dark:from-amber-400/10 dark:to-orange-400/10 backdrop-blur-xl border border-amber-500/30 hover:border-amber-500/60 rounded-xl text-sm font-bold text-amber-700 dark:text-amber-300 shadow-[0_4px_20px_rgba(245,158,11,0.05)] hover:shadow-[0_4px_25px_rgba(245,158,11,0.15)] transition-all duration-300 group"
             >
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
-                animate={{ x: ["-150%", "250%"] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              />
-              <motion.div
-                className="absolute inset-0 rounded-2xl border-2 border-amber-500/50"
-                animate={{ opacity: [0, 1, 0], scale: [1, 1.05, 1.1] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-              />
-              <Sparkles className="w-5 h-5 text-amber-500 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
-              <span className="relative z-10">Civic Score & Leaderboard</span>
-              <ArrowRight className="w-5 h-5 text-amber-500 relative z-10 group-hover:translate-x-1.5 transition-transform duration-300" />
+              <Trophy className="w-[18px] h-[18px] text-amber-500 dark:text-amber-400 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />
+              <span>Civic Rewards & Leaderboard</span>
+              <ArrowRight className="w-4 h-4 text-amber-500 dark:text-amber-400 group-hover:translate-x-1.5 transition-transform duration-300" />
             </motion.button>
-          </div>
+          </motion.div>
         )}
       </div>
 

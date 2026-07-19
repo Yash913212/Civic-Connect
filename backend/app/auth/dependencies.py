@@ -16,8 +16,13 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
+        user_id_str = payload.get("sub")
+        if user_id_str is None:
+            raise credentials_exception
+        import uuid
+        try:
+            user_id = uuid.UUID(user_id_str)
+        except ValueError:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
@@ -41,21 +46,20 @@ RequireCitizen = Depends(require_role([RoleEnum.CITIZEN, RoleEnum.OFFICER, RoleE
 RequireOfficer = Depends(require_role([RoleEnum.OFFICER, RoleEnum.ADMIN]))
 RequireAdmin = Depends(require_role([RoleEnum.ADMIN]))
 
-
 def get_optional_user(authorization: str | None = None, db: Session = Depends(get_db)):
-    """Get current user if token is provided, otherwise return None (for optional auth)."""
-    if not authorization:
+    if not authorization or not authorization.startswith("Bearer "):
         return None
+    token = authorization.split(" ")[1]
     try:
-        if authorization.startswith("Bearer "):
-            token = authorization[7:]
-        else:
-            token = authorization
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            return None
-        user = db.query(User).filter(User.id == user_id).first()
-        return user if user else None
+        user_id_str = payload.get("sub")
+        if user_id_str:
+            import uuid
+            try:
+                user_id = uuid.UUID(user_id_str)
+                return db.query(User).filter(User.id == user_id).first()
+            except ValueError:
+                pass
     except JWTError:
-        return None
+        pass
+    return None

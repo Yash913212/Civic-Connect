@@ -6,11 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ArrowRight, Mail, Lock, User as UserIcon } from "lucide-react";
-import Link from "next/link";
-import { Role } from "@/config/roles";
-import { dashRoutes } from "@/config/roles";
-import { authService } from "@/auth/authService";
-import { useAuth } from "@/auth/AuthProvider";
+import { Role } from "./AuthScreen";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -32,7 +28,6 @@ export function AuthForm({ role }: AuthFormProps) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { login: setAuthUser } = useAuth();
 
   useEffect(() => {
     if (role !== 'CITIZEN' && mode === 'register') {
@@ -54,17 +49,27 @@ export function AuthForm({ role }: AuthFormProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await authService.login(values);
-
-      if (response.user.role !== role) {
-        throw new Error(`Access denied. Please use the ${response.user.role === 'ADMIN' ? 'Admin' : response.user.role === 'OFFICER' ? 'Officer' : 'Citizen'} Portal to login.`);
-      }
-
-      setAuthUser(response.user, response.access_token, response.refresh_token);
-
+      // Simulate network delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // Mock successful login
+      document.cookie = `token=mock_${role}_token; path=/;`;
+      document.cookie = `role=${role}; path=/;`;
+      
+      const routes: Record<string, string> = {
+        CITIZEN: "/citizen",
+        OFFICER: "/officer",
+        ADMIN: "/admin",
+      };
+      // For now we map to the root of the portal, or /citizen/dashboard based on the prompt navigation
+      const dashRoutes = {
+        CITIZEN: "/citizen/dashboard",
+        OFFICER: "/officer/dashboard",
+        ADMIN: "/admin/dashboard",
+      };
       window.location.href = dashRoutes[role];
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || "Authentication failed");
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -74,12 +79,15 @@ export function AuthForm({ role }: AuthFormProps) {
     setIsLoading(true);
     setError(null);
     try {
-      await authService.register(values);
+      // Simulate network delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
       setMode('login');
+      // prefill the login form
       loginForm.setValue("email", values.email);
       loginForm.setValue("password", values.password);
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || "Registration failed");
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -169,7 +177,7 @@ export function AuthForm({ role }: AuthFormProps) {
                   </div>
                   <span className="text-sm text-white/60 group-hover:text-white transition-colors">Remember me</span>
                 </label>
-                <Link href="/forgot-password" className="text-sm text-white/60 hover:text-white transition-colors">Forgot password?</Link>
+                <button type="button" className="text-sm text-white/60 hover:text-white transition-colors">Forgot password?</button>
               </div>
 
               <button

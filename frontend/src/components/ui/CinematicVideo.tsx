@@ -85,6 +85,4 @@ const CinematicVideo = React.forwardRef<HTMLVideoElement, CinematicVideoProps>((
   )
 })
 
-CinematicVideo.displayName = "CinematicVideo";
-
 export default CinematicVideo

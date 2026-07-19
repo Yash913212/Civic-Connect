@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import Link from "next/link";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {

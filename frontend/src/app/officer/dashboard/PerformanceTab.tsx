@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { CheckCircle, Clock, Activity, Target, TrendingUp, BarChart3, FileText, MapPin, AlertTriangle, Users, Award, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
@@ -7,6 +8,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { GlassCard } from "@/components/dashboard/GlassCard";
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import type { ComplaintData } from "@/services/complaintService";
+import { gamificationService, type GamificationProfile, type LeaderboardEntry } from "@/services/gamificationService";
 
 const workloadData = [
   { name: 'Mon', tasks: 4 },
@@ -48,15 +50,27 @@ function CustomTooltip({ active, payload, label }: any) {
   );
 }
 
-function ActivityFeed() {
-  const activities = [
-    { icon: FileText, text: "New complaint assigned to you", time: "2m ago", color: "#10b981" },
-    { icon: CheckCircle, text: "C-8842 marked as Resolved", time: "15m ago", color: "#10b981" },
-    { icon: MapPin, text: "Field visit requested at 5th Ave", time: "1h ago", color: "#06b6d4" },
-    { icon: AlertTriangle, text: "Backup requested at Main St.", time: "2h ago", color: "#f59e0b" },
-    { icon: Users, text: "Shift swap approved", time: "4h ago", color: "#8b5cf6" },
-    { icon: Award, text: "Performance rating: 4.8/5", time: "6h ago", color: "#f97316" },
-  ];
+function ActivityFeed({ complaints }: { complaints: ComplaintData[] }) {
+  const resolvedComplaints = complaints.filter(c => c.status === "Resolved");
+  
+  const activities = resolvedComplaints.slice(0, 3).map(c => ({
+    icon: CheckCircle,
+    text: `C-${c.id.substring(0, 4).toUpperCase()} marked as Resolved`,
+    time: "Recently",
+    color: "#10b981"
+  }));
+
+  // Fallback default activities
+  if (activities.length < 5) {
+    const fallbacks = [
+      { icon: FileText, text: "New complaint assigned to you", time: "2m ago", color: "#10b981" },
+      { icon: MapPin, text: "Field visit requested at 5th Ave", time: "1h ago", color: "#06b6d4" },
+      { icon: AlertTriangle, text: "Backup requested at Main St.", time: "2h ago", color: "#f59e0b" },
+      { icon: Users, text: "Shift swap approved", time: "4h ago", color: "#8b5cf6" },
+      { icon: Award, text: "Performance rating: 4.8/5", time: "6h ago", color: "#f97316" },
+    ];
+    activities.push(...fallbacks.slice(0, 5 - activities.length));
+  }
 
   return (
     <div className="space-y-1">
@@ -83,11 +97,96 @@ export function PerformanceTab({ complaints, loading }: { complaints: ComplaintD
   const resolvedCount = complaints.filter(c => c.status === "Resolved").length;
   const resolutionRate = complaints.length > 0 ? Math.round((resolvedCount / complaints.length) * 100) : 0;
 
+  const [profile, setProfile] = useState<GamificationProfile | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        setCurrentUser(JSON.parse(userStr));
+      } catch {}
+    }
+  }, []);
+
+  useEffect(() => {
+    async function fetchGamificationData() {
+      try {
+        const [profileData, leaderboardData] = await Promise.all([
+          gamificationService.getProfile(),
+          gamificationService.getLeaderboard(10, "OFFICER")
+        ]);
+        setProfile(profileData);
+        setLeaderboard(leaderboardData);
+      } catch (err) {
+        console.error("Failed to load officer gamification data", err);
+      } finally {
+        setLoadingProfile(false);
+      }
+    }
+    fetchGamificationData();
+  }, [complaints]);
+
+  // Compute recent awards dynamically
+  const resolvedComplaints = complaints.filter(c => c.status === "Resolved");
+  const recentAwards = resolvedComplaints.map(c => {
+    let pts = 25;
+    if (c.priority === "Critical") pts = 150;
+    else if (c.priority === "High") pts = 100;
+    else if (c.priority === "Medium") pts = 50;
+
+    return {
+      title: `Resolved ${c.priority} Task (C-${c.id.substring(0, 4).toUpperCase()})`,
+      points: pts
+    };
+  });
+
+  // Default mock recent awards if none are resolved yet
+  if (recentAwards.length === 0) {
+    recentAwards.push(
+      { title: "Under 2Hr SLA Resolution", points: 50 },
+      { title: "5-Star Citizen Rating", points: 100 }
+    );
+  }
+
+  // Helper to resolve officer rank title
+  const getRankTitle = (lvl: number) => {
+    if (lvl >= 10) return "Master Responder";
+    if (lvl >= 9) return "Senior Resolver";
+    if (lvl >= 8) return "Field Expert";
+    if (lvl >= 6) return "Active Duty";
+    return "Cadet Officer";
+  };
+
+  const pointsVal = profile?.points ?? 3450;
+  const levelVal = profile?.level ?? 8;
+  const progressVal = profile?.level_progress_percentage ?? 75;
+  const toNextVal = profile?.points_to_next_level ?? 550;
+  const nextRank = getRankTitle(levelVal + 1);
+
+  // Render leaderboard entries (fall back to mock entries if empty/loading)
+  const renderedLeaderboard = leaderboard.length > 0 
+    ? leaderboard.map(entry => ({
+        rank: entry.rank,
+        name: entry.name,
+        points: entry.points,
+        badge: getRankTitle(entry.level),
+        isMe: entry.user_id === currentUser?.id || entry.name === currentUser?.full_name
+      }))
+    : [
+        { rank: 1, name: "Officer Sarah", points: 4250, badge: "Master Responder", isMe: false },
+        { rank: 2, name: "Officer Marcus", points: 3890, badge: "Senior Resolver", isMe: false },
+        { rank: 3, name: "You", points: 3450, badge: "Field Expert", isMe: true },
+        { rank: 4, name: "Officer David", points: 3100, badge: "Active Duty", isMe: false },
+      ];
+
   return (
     <motion.div key="performance" custom={1} variants={slideVariants} initial="enter" animate="center" exit="exit" className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white font-heading">Performance Metrics</h2>
-        <p className="text-sm text-white/40 mt-0.5">Track your field performance and resolution stats</p>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white font-heading">Performance Metrics</h2>
+        <p className="text-sm text-slate-500 dark:text-white/40 mt-0.5">Track your field performance and resolution stats</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -144,50 +243,39 @@ export function PerformanceTab({ complaints, loading }: { complaints: ComplaintD
           <div className="flex items-center gap-6 mb-6">
             <div className="relative w-20 h-20 rounded-full border-4 border-amber-500/30 flex items-center justify-center bg-black/40">
               <Trophy className="w-8 h-8 text-amber-500" />
-              <div className="absolute -bottom-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full border border-black">Lvl 12</div>
+              <div className="absolute -bottom-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full border border-black">Lvl {levelVal}</div>
             </div>
             <div className="flex-1">
-              <h3 className="text-3xl font-black text-white">3,450 <span className="text-sm font-medium text-white/50">PTS</span></h3>
-              <p className="text-xs text-amber-400 font-semibold mb-2">Rank: Field Expert</p>
+              <h3 className="text-3xl font-black text-slate-900 dark:text-white">{pointsVal.toLocaleString()} <span className="text-sm font-medium text-slate-500 dark:text-white/50">PTS</span></h3>
+              <p className="text-xs text-amber-400 font-semibold mb-2">Rank: {getRankTitle(levelVal)}</p>
               <div className="w-full bg-black/50 h-2 rounded-full overflow-hidden">
-                <div className="h-full bg-amber-500 w-[75%]" />
+                <div className="h-full bg-amber-500 animate-pulse" style={{ width: `${progressVal}%` }} />
               </div>
-              <p className="text-[9px] text-white/40 mt-1">550 pts to Next Rank (Master Responder)</p>
+              <p className="text-[9px] text-slate-500 dark:text-white/40 mt-1">{toNextVal} pts to Next Rank ({nextRank})</p>
             </div>
           </div>
           <div className="space-y-2">
-            <h4 className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">Recent Point Awards</h4>
-            <div className="flex justify-between items-center text-xs p-2.5 bg-black/40 rounded-lg border border-white/5">
-              <span className="text-white/80">Resolved Critical Task (C-8842)</span>
-              <span className="text-emerald-400 font-bold">+150 pts</span>
-            </div>
-            <div className="flex justify-between items-center text-xs p-2.5 bg-black/40 rounded-lg border border-white/5">
-              <span className="text-white/80">Under 2Hr SLA Resolution</span>
-              <span className="text-emerald-400 font-bold">+50 pts</span>
-            </div>
-            <div className="flex justify-between items-center text-xs p-2.5 bg-black/40 rounded-lg border border-white/5">
-              <span className="text-white/80">5-Star Citizen Rating</span>
-              <span className="text-emerald-400 font-bold">+100 pts</span>
-            </div>
+            <h4 className="text-[10px] font-bold text-slate-500 dark:text-white/50 uppercase tracking-wider mb-2">Recent Point Awards</h4>
+            {recentAwards.slice(0, 3).map((award, idx) => (
+              <div key={idx} className="flex justify-between items-center text-xs p-2.5 bg-black/40 rounded-lg border border-white/5">
+                <span className="text-slate-300 dark:text-white/80">{award.title}</span>
+                <span className="text-emerald-400 font-bold">+{award.points} pts</span>
+              </div>
+            ))}
           </div>
         </GlassCard>
 
         <GlassCard glow>
           <SectionHeader icon={Users} label="Department Leaderboard" />
           <div className="space-y-3">
-            {[
-              { rank: 1, name: "Officer Sarah", points: 4250, badge: "Master Responder" },
-              { rank: 2, name: "Officer Marcus", points: 3890, badge: "Senior Resolver" },
-              { rank: 3, name: "You", points: 3450, badge: "Field Expert", isMe: true },
-              { rank: 4, name: "Officer David", points: 3100, badge: "Active Duty" },
-            ].map((off, i) => (
+            {renderedLeaderboard.map((off, i) => (
               <div key={i} className={`flex items-center gap-4 p-3 rounded-xl border transition-all ${off.isMe ? 'bg-amber-500/10 border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.1)]' : 'bg-black/40 border-white/[0.06] hover:bg-white/[0.03]'}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ${off.rank === 1 ? 'bg-amber-400 text-black shadow-amber-500/30' : off.rank === 2 ? 'bg-slate-300 text-black' : off.rank === 3 ? 'bg-amber-700 text-white' : 'bg-white/10 text-white/50'}`}>
                   {off.rank}
                 </div>
                 <div className="flex-1">
-                  <p className={`text-sm font-bold ${off.isMe ? 'text-amber-400' : 'text-white'}`}>{off.name}</p>
-                  <p className="text-[10px] text-white/50">{off.badge}</p>
+                  <p className={`text-sm font-bold ${off.isMe ? 'text-amber-400' : 'text-slate-900 dark:text-white'}`}>{off.name}</p>
+                  <p className="text-[10px] text-slate-500 dark:text-white/50">{off.badge}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-emerald-400">{off.points.toLocaleString()} <span className="text-[10px] text-emerald-400/60">pts</span></p>
@@ -200,7 +288,7 @@ export function PerformanceTab({ complaints, loading }: { complaints: ComplaintD
 
       <GlassCard glow>
         <SectionHeader icon={Activity} label="Recent Activity" />
-        <ActivityFeed />
+        <ActivityFeed complaints={complaints} />
       </GlassCard>
     </motion.div>
   );

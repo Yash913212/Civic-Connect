@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapPin, CheckCircle2, Loader2, Upload, Brain, ArrowRight, LayoutDashboard, WifiOff } from "lucide-react";
+import { MapPin, Send, CheckCircle2, Loader2, Upload, Brain } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import MapPicker from "./MapPicker";
 import DuplicateWarning from "./DuplicateWarning";
-import { complaintService } from "@/services/complaintService";
-import { API_BASE } from "@/services/api";
-import { saveComplaintOffline, isOnline, registerOnlineListener } from "@/lib/offlineStorage";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+  ? (process.env.NEXT_PUBLIC_API_URL.endsWith('/api') ? process.env.NEXT_PUBLIC_API_URL : `${process.env.NEXT_PUBLIC_API_URL}/api`)
+  : "http://localhost:8000/api";
 
 interface LocationResult {
   lat: string;
@@ -28,10 +29,6 @@ interface DraftData {
   ai_caption?: string;
 }
 
-import { formatDepartment, formatPriority } from "@/utils/complaintFormatters";
-export { formatDepartment, formatPriority };
-
-
 export default function ComplaintForm() {
   const [draft, setDraft] = useState<DraftData | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<LocationResult | null>(null);
@@ -43,7 +40,6 @@ export default function ComplaintForm() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [requestNote, setRequestNote] = useState("");
   const [generatingNote, setGeneratingNote] = useState(false);
-  const [isOfflineMode, setIsOfflineMode] = useState(false);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("complaint_draft");
@@ -55,15 +51,6 @@ export default function ComplaintForm() {
     }
   }, []);
 
-  useEffect(() => {
-    setIsOfflineMode(!isOnline());
-    const unsubscribe = registerOnlineListener(() => {
-      setIsOfflineMode(false);
-      toast.success("You're back online! Pending complaints will sync automatically.");
-    });
-    return unsubscribe;
-  }, []);
-
   const submitComplaint = async () => {
     if (!selectedLocation) {
       toast.error("Please select a location on the map");
@@ -71,77 +58,38 @@ export default function ComplaintForm() {
     }
     setStatus("submitting");
     try {
-      let finalImageUrl = draft?.imageUrl || "";
-      if (manualFile) {
-        finalImageUrl = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(manualFile);
-        });
-      }
-
+      const token = localStorage.getItem('access_token');
       const payload = {
         title: draft?.title || manualFile?.name || "Civic Issue",
         description: draft?.description || manualDescription || "No description provided",
         location: selectedLocation.display_name,
-        latitude: String(selectedLocation.lat),
-        longitude: String(selectedLocation.lng),
+        latitude: selectedLocation.lat,
+        longitude: selectedLocation.lng,
         address: selectedLocation.display_name,
-        department: formatDepartment(draft?.department || "General"),
-        priority: formatPriority(draft?.priority || "low"),
-        image_url: finalImageUrl,
-        ai_summary: draft?.description || "",
-        ai_request_letter: requestNote || "",
+        department: draft?.department || "General",
+        priority: (draft?.priority || "low").charAt(0).toUpperCase() + (draft?.priority || "low").slice(1),
+        image_url: draft?.imageUrl || "",
       };
-
-      if (!isOnline()) {
-        // Save to IndexedDB for offline sync
-        const token = localStorage.getItem("access_token") || "";
-        await saveComplaintOffline({ ...payload, token });
-        setStatus("done");
-        toast.success("Complaint saved offline! It will sync when you're back online.");
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
-      } else {
-        await complaintService.create(payload);
-        setStatus("done");
-        toast.success("Complaint registered!");
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
-      }
-    } catch (err: any) {
-      // If network error, try offline mode
-      if (!isOnline()) {
-        const token = localStorage.getItem("access_token") || "";
-        await saveComplaintOffline({
-          title: draft?.title || "Civic Issue",
-          description: draft?.description || manualDescription || "No description provided",
-          location: selectedLocation.display_name,
-          latitude: String(selectedLocation.lat),
-          longitude: String(selectedLocation.lng),
-          address: selectedLocation.display_name,
-          department: formatDepartment(draft?.department || "General"),
-          priority: formatPriority(draft?.priority || "low"),
-          image_url: "",
-          ai_summary: draft?.description || "",
-          ai_request_letter: requestNote || "",
-          token,
-        });
-        setStatus("done");
-        toast.success("Complaint saved offline! It will sync when you're back online.");
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
-      } else {
-        toast.error(err.message || "Failed to register complaint");
-        setStatus("error");
-      }
+      const res = await fetch(`${API_BASE}/complaints`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setStatus("done");
+      toast.success("Complaint registered!");
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
+    } catch {
+      toast.error("Failed to register complaint");
+      setStatus("error");
     }
   };
   const generateRequestNote = async () => {
   if (!selectedLocation || !draft) {
     toast.error("Please select a location first.");
-    return;
-  }
-
-  if (!isOnline()) {
-    toast.error("Request note generation requires internet connection.");
     return;
   }
 
@@ -190,12 +138,6 @@ export default function ComplaintForm() {
     if (!manualFile && !manualDescription.trim()) {
       toast.error("Upload an image or describe the issue"); return;
     }
-
-    if (!isOnline()) {
-      toast.error("AI analysis requires internet connection. You can still submit a basic complaint.");
-      return;
-    }
-
     setIsAnalyzing(true);
     try {
       if (manualFile) {
@@ -229,6 +171,7 @@ export default function ComplaintForm() {
           imageUrl: "",
           issue: result.analysis?.title,
           modality: "text-only",
+          ai_caption: result.analysis?.ai_caption || "",
         });
       }
       setShowUpload(false);
@@ -257,39 +200,16 @@ export default function ComplaintForm() {
         </div>
         <h3 className="text-2xl font-bold mb-2">Complaint Registered!</h3>
         <p className="text-muted-foreground mb-1">Routed to {draft?.department || "concerned department"}.</p>
-        <p className="text-xs text-muted-foreground mb-8">Track its status from your complaints dashboard.</p>
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <button onClick={() => window.location.href = '/citizen/complaints'} className="px-6 py-3 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-all flex items-center gap-2">
-            View My Complaints <ArrowRight size={16} />
-          </button>
-          <button onClick={() => window.location.href = '/citizen/dashboard'} className="px-6 py-3 bg-black/10 dark:bg-white/10 text-foreground font-medium rounded-xl hover:bg-black/20 dark:hover:bg-white/20 transition-all flex items-center gap-2">
-            <LayoutDashboard size={16} /> Dashboard
-          </button>
-          <button onClick={() => window.location.reload()} className="px-6 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            Submit Another
-          </button>
-        </div>
+        <p className="text-xs text-muted-foreground mb-8">Track its status from your dashboard.</p>
+        <button onClick={() => window.location.reload()} className="px-6 py-3 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-all">
+          Submit Another
+        </button>
       </div>
     );
   }
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Offline Mode Banner */}
-      {isOfflineMode && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center gap-3"
-        >
-          <WifiOff className="w-5 h-5 text-amber-500" />
-          <div>
-            <p className="text-sm font-medium text-amber-500">Offline Mode</p>
-            <p className="text-xs text-muted-foreground">You can still submit complaints. They'll sync when you're back online.</p>
-          </div>
-        </motion.div>
-      )}
-
       {/* AI Analysis Summary */}
       {draft ? (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
@@ -342,7 +262,6 @@ export default function ComplaintForm() {
                 <input type="file" accept="image/*" className="hidden" id="manual-upload" onChange={handleManualFile} />
                 {manualPreview ? (
                   <div className="relative h-32 rounded-xl overflow-hidden border border-black/10 dark:border-white/10">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={manualPreview} alt="Preview" className="w-full h-full object-cover" />
                     <button onClick={() => { setManualFile(null); if (manualPreview) URL.revokeObjectURL(manualPreview); setManualPreview(null); }} className="absolute top-2 right-2 p-1 rounded-full bg-black/60 text-white text-xs">✕</button>
                   </div>
@@ -378,31 +297,25 @@ export default function ComplaintForm() {
         <MapPicker onLocationSelect={setSelectedLocation} selectedLocation={selectedLocation} />
       </div>
 
-      {/* Duplicate Check */}
-{draft && draft.description && selectedLocation && (
-        <DuplicateWarning
-          description={draft.description}
-          department={draft.department}
-          location={selectedLocation.display_name}
-          onContinue={() => {
-            document.getElementById("submit-section")?.scrollIntoView({ behavior: "smooth" });
-          }}
-        />
-      )}
-
-      {/* Submit Section */}
+      {/* Submit */}
       {draft && (
-        <div id="submit-section" className="space-y-4">
+        <div className="space-y-4">
+          <div className="border-t border-black/5 dark:border-white/10 pt-4 mt-4">
+            <DuplicateWarning
+              description={draft.description}
+              department={draft.department}
+              location={selectedLocation?.display_name}
+              onContinue={() => {}}
+            />
+          </div>
+
           <button
             onClick={generateRequestNote}
-            disabled={!selectedLocation || generatingNote || isOfflineMode}
-            className="w-full py-3 bg-blue-600 text-white rounded-xl disabled:opacity-50"
+            disabled={!selectedLocation || generatingNote}
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors font-medium flex items-center justify-center gap-2"
           >
-            {generatingNote
-              ? "Generating..."
-              : isOfflineMode
-              ? "Request Note (Offline)"
-              : "Generate Request Note"}
+            {generatingNote && <Loader2 className="w-4 h-4 animate-spin" />}
+            {generatingNote ? "Generating..." : "Generate AI Request Note"}
           </button>
 
           {requestNote && (
@@ -410,8 +323,7 @@ export default function ComplaintForm() {
               <h3 className="font-semibold text-blue-400 mb-3">
                 AI Generated Request Letter
               </h3>
-
-              <p className="whitespace-pre-line text-sm">
+              <p className="whitespace-pre-line text-sm text-muted-foreground">
                 {requestNote}
               </p>
             </div>
@@ -419,14 +331,11 @@ export default function ComplaintForm() {
 
           <button
             onClick={submitComplaint}
-            disabled={status === "submitting"}
-            className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl"
+            disabled={status === "submitting" || !selectedLocation}
+            className="w-full py-3.5 bg-primary hover:bg-primary/95 text-white font-semibold rounded-xl disabled:opacity-50 transition-all flex items-center justify-center gap-2"
           >
-            {status === "submitting"
-              ? "Submitting..."
-              : isOfflineMode
-              ? "Submit Offline"
-              : "Submit Complaint"}
+            {status === "submitting" && <Loader2 className="w-4 h-4 animate-spin" />}
+            {status === "submitting" ? "Submitting..." : "Submit Complaint"}
           </button>
         </div>
       )}

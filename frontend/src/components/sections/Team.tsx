@@ -3,40 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import { Mail, Award, Cpu, Globe, Users } from "lucide-react";
-
-function StatCounter({ target }: { target: number }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-10% 0px" });
-
-  useEffect(() => {
-    if (!isInView) return;
-    
-    const start = 0;
-    const end = target;
-    if (start === end) return;
-
-    const duration = 2000; // 2 seconds
-    const range = end - start;
-    let current = start;
-    const increment = end > start ? 1 : -1;
-    const stepTime = Math.abs(Math.floor(duration / range));
-    
-    const timer = setInterval(() => {
-      current += increment;
-      setCount(current);
-      if (current === end) {
-        clearInterval(timer);
-      }
-    }, Math.max(stepTime, 20)); // cap at 50fps max
-
-    return () => clearInterval(timer);
-  }, [isInView, target]);
-
-  return <span ref={ref}>{count}</span>;
-}
 
 interface TeamMember {
   name: string;
@@ -115,7 +83,7 @@ const teamMembers: TeamMember[] = [
 ];
 
 // Interactive 3D Card Sub-component
-function TeamCard({ member }: { member: TeamMember; index: number }) {
+function TeamCard({ member, index }: { member: TeamMember; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
@@ -178,7 +146,6 @@ function TeamCard({ member }: { member: TeamMember; index: number }) {
       <div>
         {/* Profile Image with Zoom Container */}
         <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-black/30 border border-white/5 mb-6 group">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={member.image}
             alt={member.name}
@@ -267,18 +234,14 @@ function TeamCard({ member }: { member: TeamMember; index: number }) {
   );
 }
 
-export default function Team({ 
-  animateImmediately = false,
-  isModal = false
-}: { 
-  animateImmediately?: boolean;
-  isModal?: boolean;
-}) {
+export default function Team() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
+    if (!sectionRef.current || !titleRef.current || !subtitleRef.current) return;
+
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
@@ -292,7 +255,7 @@ export default function Team({
           y: 0,
           duration: 1.2,
           ease: "power4.out",
-          scrollTrigger: animateImmediately ? undefined : {
+          scrollTrigger: {
             trigger: titleRef.current,
             start: "top 85%",
           },
@@ -309,7 +272,7 @@ export default function Team({
           duration: 1.2,
           delay: 0.15,
           ease: "power3.out",
-          scrollTrigger: animateImmediately ? undefined : {
+          scrollTrigger: {
             trigger: subtitleRef.current,
             start: "top 87%",
           },
@@ -328,14 +291,33 @@ export default function Team({
           duration: 1,
           stagger: 0.12,
           ease: "power4.out",
-          scrollTrigger: animateImmediately ? undefined : {
+          scrollTrigger: {
             trigger: ".team-cards-grid",
             start: "top 80%",
           },
         }
       );
 
-      // Stat cards count up handled by StatCounter component to avoid React reconciliation conflicts
+      // Stat cards count up on scroll
+      const countStats = gsap.utils.toArray(".team-count-stat");
+      countStats.forEach((stat: any) => {
+        const targetVal = parseInt(stat.getAttribute("data-target") || "0", 10);
+        gsap.fromTo(
+          stat,
+          { textContent: "0" },
+          {
+            textContent: targetVal,
+            duration: 2.5,
+            ease: "power3.out",
+            snap: { textContent: 1 },
+            scrollTrigger: {
+              trigger: stat,
+              start: "top 90%",
+              toggleActions: "play none none none",
+            },
+          }
+        );
+      });
 
       // Quote fade-in reveal
       gsap.fromTo(
@@ -347,7 +329,7 @@ export default function Team({
           scale: 1,
           duration: 1.4,
           ease: "power4.out",
-          scrollTrigger: animateImmediately ? undefined : {
+          scrollTrigger: {
             trigger: ".team-quote-block",
             start: "top 85%",
           },
@@ -356,13 +338,13 @@ export default function Team({
     }, sectionRef);
 
     return () => ctx.revert();
-  }, [animateImmediately]);
+  }, []);
 
   return (
     <section
       id="team"
       ref={sectionRef}
-      className={`${isModal ? "py-16" : "py-32"} w-full bg-transparent relative overflow-hidden flex flex-col items-center select-none`}
+      className="py-32 w-full bg-transparent relative overflow-hidden flex flex-col items-center select-none"
     >
       {/* Dynamic glow background effects */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0 opacity-40">
@@ -413,7 +395,7 @@ export default function Team({
               <Users className="w-6 h-6 animate-pulse" />
             </div>
             <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">
-              <StatCounter target={5} />
+              <span className="team-count-stat" data-target={5}>0</span>
             </div>
             <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-white/50">Team Members</div>
           </div>
@@ -424,7 +406,7 @@ export default function Team({
               <Globe className="w-6 h-6" />
             </div>
             <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">
-              <StatCounter target={20} />
+              <span className="team-count-stat" data-target={20}>0</span>
               <span className="text-purple-400 ml-0.5">+</span>
             </div>
             <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-white/50">Technologies</div>
@@ -436,7 +418,7 @@ export default function Team({
               <Cpu className="w-6 h-6" />
             </div>
             <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">
-              <StatCounter target={6} />
+              <span className="team-count-stat" data-target={6}>0</span>
             </div>
             <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-white/50">AI Models</div>
           </div>
@@ -447,7 +429,7 @@ export default function Team({
               <Award className="w-6 h-6" />
             </div>
             <div className="text-4xl font-bold font-mono text-slate-900 dark:text-white mb-1 flex justify-center items-baseline">
-              <StatCounter target={1} />
+              <span className="team-count-stat" data-target={1}>0</span>
             </div>
             <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-white/50">Shared Vision</div>
           </div>

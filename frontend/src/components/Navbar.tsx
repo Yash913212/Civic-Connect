@@ -3,19 +3,18 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Menu, X, LogOut, ShieldCheck, Settings, Terminal, Activity, MessageSquare } from "lucide-react";
+import { Menu, X, User, LogOut, ShieldCheck, Settings, Terminal, Activity, MessageSquare } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "./ui/NotificationBell";
 import { ThemeToggle } from "./ThemeToggle";
-import { getPortalLink, getPortalLabel } from "@/config/roles";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
 
   const pathname = usePathname();
   const router = useRouter();
@@ -90,7 +89,6 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/home" className="flex items-center gap-3 group">
             <div className="relative h-10 w-10 rounded-md group-hover:scale-105 transition-transform duration-300 flex items-center justify-center overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full" />
             </div>
             <span className="text-xl font-bold font-sans text-slate-900 dark:text-white tracking-wider group-hover:text-sky-600 dark:group-hover:text-teal-400 transition-colors">
@@ -199,12 +197,12 @@ export default function Navbar() {
                       {/* Dropdown Actions */}
                       <div className="space-y-1.5">
                         <Link
-                          href={getPortalLink(user.role)}
+                          href={user.role === 'ADMIN' ? '/admin/dashboard' : user.role === 'OFFICER' ? '/officer/dashboard' : '/citizen/dashboard'}
                           onClick={() => setDropdownOpen(false)}
                           className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-white/70 dark:hover:text-white bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 rounded-xl border border-black/5 dark:border-white/10 transition-all text-left"
                         >
                           <Activity className="w-4 h-4 text-teal-400" />
-                          <span>{getPortalLabel(user.role)}</span>
+                          <span>{user.role === 'ADMIN' ? 'Admin Portal' : user.role === 'OFFICER' ? 'Officer Portal' : 'Citizen Portal'}</span>
                         </Link>
                         <Link
                           href="/citizen/profile"
@@ -313,12 +311,12 @@ export default function Navbar() {
                   </div>
 
                   <Link
-                    href={getPortalLink(user.role)}
+                    href={user.role === 'ADMIN' ? '/admin/dashboard' : user.role === 'OFFICER' ? '/officer/dashboard' : '/citizen/dashboard'}
                     onClick={() => setMobileMenuOpen(false)}
                     className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
                   >
                     <Activity className="w-4 h-4 text-teal-400" />
-                    {getPortalLabel(user.role)}
+                    {user.role === 'ADMIN' ? 'Admin Portal' : user.role === 'OFFICER' ? 'Officer Portal' : 'Citizen Portal'}
                   </Link>
                     <Link
                       href="/citizen/profile"

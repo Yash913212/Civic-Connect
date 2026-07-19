@@ -14,6 +14,7 @@ import {
   UserCheck,
   Activity,
   ShieldCheck,
+  ArrowRight
 } from "lucide-react";
 
 // Intelligent Modules Data
@@ -267,11 +268,6 @@ const EngineScene = () => {
 // --- Main Section Component ---
 
 export default function Solution() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
     <section 
       id="platform" 
@@ -283,12 +279,10 @@ export default function Solution() {
 
       {/* Immersive 3D WebGL Canvas */}
       <div className="absolute inset-0 z-0">
-        {mounted && (
-          <Canvas dpr={[1, 2]}>
-            <ambientLight intensity={0.5} />
-            <EngineScene />
-          </Canvas>
-        )}
+        <Canvas dpr={[1, 2]}>
+          <ambientLight intensity={0.5} />
+          <EngineScene />
+        </Canvas>
       </div>
 
       {/* Overlay Typography Header */}

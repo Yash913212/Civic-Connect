@@ -1,19 +1,21 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect, Suspense } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/auth/AuthProvider";
 import { authService } from "@/auth/authService";
 import { cn } from "@/lib/utils";
-import dynamic from "next/dynamic";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import WarpTransition from "./WarpTransition";
 import { Lock, Shield, Key, Activity, Loader2, Eye, EyeOff, User, Briefcase, Check } from "lucide-react";
 import { toast } from "sonner";
 import { showTextLoading, showSystemStatus } from "@/components/ui/CustomToasts";
 import confetti from "canvas-confetti";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { dashRoutes } from "@/config/roles";
+
+import * as THREE from "three";
 
 type Uniforms = {
   [key: string]: {
@@ -243,30 +245,120 @@ const DotMatrix: React.FC<DotMatrixProps> = ({
 };
 
 
-// Lazy-loaded ShaderCanvas to avoid loading Three.js upfront
-const LazyShaderCanvas = dynamic(() => import("./ShaderCanvas"), {
-  ssr: false,
-  loading: () => <div className="absolute inset-0 h-full w-full bg-transparent" />,
-});
-
-const Shader: React.FC<{
+const ShaderMaterial = ({
+  source,
+  uniforms,
+  maxFps = 60,
+}: {
   source: string;
-  uniforms: Record<string, { value: number[] | number[][] | number; type: string }>;
+  hovered?: boolean;
   maxFps?: number;
-}> = ({ source, uniforms }) => {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  uniforms: Uniforms;
+}) => {
+  const { size } = useThree();
+  const ref = useRef<THREE.Mesh>(null);
+  let lastFrameTime = 0;
 
-  if (!mounted) {
-    return <div className="absolute inset-0 h-full w-full bg-transparent" />;
-  }
+  useFrame(({ clock }) => {
+    if (!ref.current) return;
+    const timestamp = clock.getElapsedTime();
+
+    lastFrameTime = timestamp;
+
+    const material: any = ref.current.material;
+    const timeLocation = material.uniforms.u_time;
+    timeLocation.value = timestamp;
+  });
+
+  const getUniforms = () => {
+    const preparedUniforms: any = {};
+
+    for (const uniformName in uniforms) {
+      const uniform: any = uniforms[uniformName];
+
+      switch (uniform.type) {
+        case "uniform1f":
+          preparedUniforms[uniformName] = { value: uniform.value, type: "1f" };
+          break;
+        case "uniform1i":
+          preparedUniforms[uniformName] = { value: uniform.value, type: "1i" };
+          break;
+        case "uniform3f":
+          preparedUniforms[uniformName] = {
+            value: new THREE.Vector3().fromArray(uniform.value as number[]),
+            type: "3f",
+          };
+          break;
+        case "uniform1fv":
+          preparedUniforms[uniformName] = { value: uniform.value, type: "1fv" };
+          break;
+        case "uniform3fv":
+          preparedUniforms[uniformName] = {
+            value: (uniform.value as number[][]).map((v: number[]) =>
+              new THREE.Vector3().fromArray(v)
+            ),
+            type: "3fv",
+          };
+          break;
+        case "uniform2f":
+          preparedUniforms[uniformName] = {
+            value: new THREE.Vector2().fromArray(uniform.value as number[]),
+            type: "2f",
+          };
+          break;
+        default:
+          console.error(`Invalid uniform type for '${uniformName}'.`);
+          break;
+      }
+    }
+
+    preparedUniforms["u_time"] = { value: 0, type: "1f" };
+    preparedUniforms["u_resolution"] = {
+      value: new THREE.Vector2(size.width * 2, size.height * 2),
+    }; // Initialize u_resolution
+    return preparedUniforms;
+  };
+
+  // Shader material
+  const material = useMemo(() => {
+    const materialObject = new THREE.ShaderMaterial({
+      vertexShader: `
+      precision mediump float;
+      in vec2 coordinates;
+      uniform vec2 u_resolution;
+      out vec2 fragCoord;
+      void main(){
+        float x = position.x;
+        float y = position.y;
+        gl_Position = vec4(x, y, 0.0, 1.0);
+        fragCoord = (position.xy + vec2(1.0)) * 0.5 * u_resolution;
+        fragCoord.y = u_resolution.y - fragCoord.y;
+      }
+      `,
+      fragmentShader: source,
+      uniforms: getUniforms(),
+      glslVersion: THREE.GLSL3,
+      blending: THREE.CustomBlending,
+      blendSrc: THREE.SrcAlphaFactor,
+      blendDst: THREE.OneFactor,
+    });
+
+    return materialObject;
+  }, [size.width, size.height, source]);
 
   return (
-    <Suspense fallback={<div className="absolute inset-0 h-full w-full bg-transparent" />}>
-      <LazyShaderCanvas source={source} uniforms={uniforms} />
-    </Suspense>
+    <mesh ref={ref as any}>
+      <planeGeometry args={[2, 2]} />
+      <primitive object={material} attach="material" />
+    </mesh>
+  );
+};
+
+const Shader: React.FC<ShaderProps> = ({ source, uniforms, maxFps = 60 }) => {
+  return (
+    <Canvas className="absolute inset-0  h-full w-full">
+      <ShaderMaterial source={source} uniforms={uniforms} maxFps={maxFps} />
+    </Canvas>
   );
 };
 
@@ -290,7 +382,6 @@ interface MiniNavbarProps {
   setIsSignUp: (val: boolean) => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [headerShapeClass, setHeaderShapeClass] = useState('rounded-full');
@@ -322,7 +413,6 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
 
   const logoElement = (
     <div className="relative h-8 w-8 sm:h-10 sm:w-10 group-hover:scale-105 transition-transform duration-300 bg-white rounded-lg overflow-hidden flex items-center justify-center">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full p-0.5" />
     </div>
   );
@@ -481,23 +571,182 @@ const roleInfo = {
 
 const roles: Role[] = ['CITIZEN', 'OFFICER', 'ADMIN'];
 
-import { CitizenWidgets } from "@/components/sign-in/CitizenWidgets";
-import { OfficerWidgets } from "@/components/sign-in/OfficerWidgets";
-import { AdminWidgets } from "@/components/sign-in/AdminWidgets";
-
 const DashboardWidgets = ({ role }: { role: Role }) => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 flex items-center justify-center">
       <AnimatePresence mode="wait">
-        {role === "CITIZEN" && <CitizenWidgets />}
-        {role === "OFFICER" && <OfficerWidgets />}
-        {role === "ADMIN" && <AdminWidgets />}
+        {role === 'CITIZEN' && (
+          <motion.div
+            key="citizen-widgets"
+            initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0 flex items-center justify-center max-w-7xl mx-auto w-full"
+          >
+            {/* Citizen Widget 1: Top Left */}
+            <motion.div
+              initial={{ x: -50, y: -100, opacity: 0 }}
+              animate={{ x: -400, y: -150, opacity: 0.8 }}
+              transition={{ duration: 1.2, delay: 0.1, type: "spring", bounce: 0.4 }}
+              className="absolute hidden lg:flex w-64 h-32 bg-slate-200/60 dark:bg-emerald-900/20 border border-slate-300 dark:border-emerald-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col justify-between shadow-[0_0_30px_rgba(59,130,246,0.15)]"
+            >
+              <div className="text-emerald-600 dark:text-emerald-300 text-xs font-semibold tracking-wide uppercase">Complaints Submitted</div>
+              <div className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                1,204 <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/20 px-2 py-1 rounded-full">+12%</span>
+              </div>
+              <div className="w-full h-1.5 bg-emerald-950/50 rounded-full overflow-hidden mt-2">
+                <motion.div className="h-full bg-emerald-400" initial={{ width: 0 }} animate={{ width: "70%" }} transition={{ duration: 1, delay: 0.5 }} />
+              </div>
+            </motion.div>
+
+            {/* Citizen Widget 2: Bottom Right */}
+            <motion.div
+              initial={{ x: 50, y: 100, opacity: 0 }}
+              animate={{ x: 400, y: 150, opacity: 0.8 }}
+              transition={{ duration: 1.2, delay: 0.2, type: "spring", bounce: 0.4 }}
+              className="absolute hidden lg:flex w-64 h-48 bg-slate-200/60 dark:bg-emerald-900/20 border border-slate-300 dark:border-emerald-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(59,130,246,0.15)]"
+            >
+              <div className="text-emerald-600 dark:text-emerald-300 text-xs font-semibold tracking-wide uppercase mb-4">Resolution Progress</div>
+              <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full border-4 border-emerald-950/50" />
+                <motion.div
+                  className="absolute inset-0 rounded-full border-4 border-transparent border-t-emerald-400 border-r-emerald-400"
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+                />
+                <div className="text-lg font-bold text-slate-900 dark:text-white">84%</div>
+              </div>
+            </motion.div>
+
+            {/* Ambient Map Pins */}
+            <motion.div animate={{ y: [0, -15, 0], opacity: [0.3, 0.6, 0.3] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="absolute hidden lg:block left-[15%] top-[60%] text-emerald-400">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {role === 'OFFICER' && (
+          <motion.div
+            key="officer-widgets"
+            initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0 flex items-center justify-center max-w-7xl mx-auto w-full"
+          >
+            {/* Officer Widget 1: Top Right */}
+            <motion.div
+              initial={{ x: 50, y: -100, opacity: 0 }}
+              animate={{ x: 400, y: -150, opacity: 0.8 }}
+              transition={{ duration: 1.2, delay: 0.1, type: "spring", bounce: 0.4 }}
+              className="absolute hidden lg:flex w-64 h-36 bg-slate-200/60 dark:bg-green-900/20 border border-slate-300 dark:border-green-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col justify-between shadow-[0_0_30px_rgba(34,197,94,0.15)]"
+            >
+              <div className="text-green-600 dark:text-green-300 text-xs font-semibold tracking-wide uppercase">Assigned Cases</div>
+              <div className="text-4xl font-bold text-slate-900 dark:text-white">42</div>
+              <div className="flex gap-1.5 mt-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: 1 }}
+                    transition={{ delay: 0.3 + i * 0.1, duration: 0.5 }}
+                    className={`h-2 flex-1 rounded-full origin-left ${i <= 3 ? 'bg-green-400' : 'bg-green-950/50'}`}
+                  />
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Officer Widget 2: Bottom Left */}
+            <motion.div
+              initial={{ x: -50, y: 100, opacity: 0 }}
+              animate={{ x: -400, y: 150, opacity: 0.8 }}
+              transition={{ duration: 1.2, delay: 0.2, type: "spring", bounce: 0.4 }}
+              className="absolute hidden lg:flex w-64 h-48 bg-slate-200/60 dark:bg-green-900/20 border border-slate-300 dark:border-green-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(34,197,94,0.15)]"
+            >
+              <div className="text-green-600 dark:text-green-300 text-xs font-semibold tracking-wide uppercase mb-4">Officer Performance</div>
+              <div className="w-full h-full flex items-end justify-between gap-2 pb-2">
+                {[40, 70, 45, 90, 65, 80].map((h, i) => (
+                  <motion.div
+                    key={i}
+                    className="w-6 bg-gradient-to-t from-green-500/20 to-green-400/80 rounded-t-md"
+                    initial={{ height: 0 }}
+                    animate={{ height: `${h}%` }}
+                    transition={{ duration: 1, delay: 0.4 + i * 0.1, type: "spring" }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {role === 'ADMIN' && (
+          <motion.div
+            key="admin-widgets"
+            initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0 flex items-center justify-center max-w-7xl mx-auto w-full"
+          >
+            {/* Admin Widget 1: Top Left */}
+            <motion.div
+              initial={{ x: -50, y: -100, opacity: 0 }}
+              animate={{ x: -420, y: -120, opacity: 0.8 }}
+              transition={{ duration: 1.2, delay: 0.1, type: "spring", bounce: 0.4 }}
+              className="absolute hidden lg:grid w-72 h-44 bg-slate-200/60 dark:bg-orange-900/20 border border-slate-300 dark:border-orange-500/30 rounded-2xl backdrop-blur-xl p-5 grid-cols-2 gap-4 shadow-[0_0_30px_rgba(249,115,22,0.15)]"
+            >
+              <div>
+                <div className="text-orange-600 dark:text-orange-300 text-[10px] font-semibold uppercase tracking-wider">Total Departments</div>
+                <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">12</div>
+              </div>
+              <div>
+                <div className="text-orange-600 dark:text-orange-300 text-[10px] font-semibold uppercase tracking-wider">Active Officers</div>
+                <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">148</div>
+              </div>
+              <div className="col-span-2 mt-2">
+                <div className="text-orange-600 dark:text-orange-300 text-[10px] font-semibold uppercase tracking-wider mb-2 flex justify-between">
+                  <span>Resolution Rate</span>
+                  <span className="text-orange-800 dark:text-orange-100">88%</span>
+                </div>
+                <div className="w-full h-1.5 bg-orange-950/50 rounded-full overflow-hidden">
+                  <motion.div className="h-full bg-orange-400" initial={{ width: 0 }} animate={{ width: "88%" }} transition={{ duration: 1, delay: 0.5 }} />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Admin Widget 2: Bottom Right */}
+            <motion.div
+              initial={{ x: 50, y: 100, opacity: 0 }}
+              animate={{ x: 420, y: 120, opacity: 0.8 }}
+              transition={{ duration: 1.2, delay: 0.2, type: "spring", bounce: 0.4 }}
+              className="absolute hidden lg:flex w-64 h-48 bg-slate-200/60 dark:bg-orange-900/20 border border-slate-300 dark:border-orange-500/30 rounded-2xl backdrop-blur-xl p-5 flex-col shadow-[0_0_30px_rgba(249,115,22,0.15)]"
+            >
+              <div className="text-orange-600 dark:text-orange-300 text-xs font-semibold tracking-wide uppercase mb-4">System Analytics</div>
+              <div className="flex gap-3 h-24">
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}
+                  className="flex-1 rounded-xl border border-orange-500/30 bg-orange-500/10 flex items-center justify-center text-orange-400 shadow-inner"
+                >
+                  <Activity size={24} />
+                </motion.div>
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}
+                  className="flex-1 rounded-xl border border-orange-500/30 bg-orange-500/10 flex items-center justify-center text-orange-400 shadow-inner"
+                >
+                  <Shield size={24} />
+                </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
 };
 
 export const SignInPage = ({ className }: SignInPageProps) => {
+  const router = useRouter();
   const { login: setAuthUser } = useAuth();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
@@ -611,14 +860,17 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleBackClick = () => {
     setStep("email");
     setReverseCanvasVisible(false);
     setInitialCanvasVisible(true);
   };
 
-  const currentRoutes = dashRoutes;
+  const currentRoutes = {
+    CITIZEN: "/citizen/dashboard",
+    OFFICER: "/officer/dashboard",
+    ADMIN: "/admin/dashboard",
+  };
 
   return (
     <div className={cn("flex w-[100%] flex-col min-h-screen bg-transparent relative overflow-hidden", className)}>
@@ -785,7 +1037,6 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                 >
                   <div className="space-y-4 text-center mb-8 relative">
                     <div className="mx-auto w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.05)] overflow-hidden relative z-10">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full transition-transform duration-300" />
                     </div>
                     <div className="space-y-2 relative h-[60px] w-full">

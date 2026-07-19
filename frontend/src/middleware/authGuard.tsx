@@ -10,17 +10,18 @@ export const withAuthGuard = (WrappedComponent: any) => {
     const router = useRouter();
 
     useEffect(() => {
+      if (typeof window === 'undefined') return;
       if (!loading && !isAuthenticated) {
-        router.push('/');
+        window.location.href = '/'; // Redirect to login
       }
-    }, [loading, isAuthenticated, router]);
+    }, [loading, isAuthenticated]);
 
-    if (loading || !isAuthenticated) {
+    if (typeof window === 'undefined' || loading || !isAuthenticated) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-black">
           <div className="flex flex-col items-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mb-4"></div>
-            <p className="text-white/70 animate-pulse">Authenticating...</p>
+            <p className="text-white/70 animate-pulse">Loading...</p>
           </div>
         </div>
       );

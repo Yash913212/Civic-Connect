@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database.database import get_db
 from app.auth.schemas import UserRegister, UserLogin, TokenResponse, UserResponse
 from app.database.models import User, RoleEnum
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, needs_password_rehash
 from app.auth.dependencies import get_current_user
-from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -55,39 +54,29 @@ def login(user_in: UserLogin, db: Session = Depends(get_db)):
     access_token = create_access_token(subject=user.id)
     refresh_token = create_refresh_token(subject=user.id)
     
-    response = JSONResponse({
+    return {
         "access_token": access_token,
         "refresh_token": refresh_token,
         "token_type": "bearer",
-        "user": {"id": str(user.id), "full_name": user.full_name, "email": user.email, "role": user.role.value}
-    })
-    
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        secure=True,
-        samesite="strict",
-        max_age=7 * 24 * 60 * 60
-    )
-    
-    return response
+        "user": user
+    }
 
-from fastapi import Cookie
+from pydantic import BaseModel
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
 
 @router.post("/refresh")
-def refresh_token(refresh_token: str | None = Cookie(None), db: Session = Depends(get_db)):
+def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    if not refresh_token:
-        raise credentials_exception
     try:
         from jose import jwt, JWTError
         from app.core.config import settings
-        payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(request.refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
             raise credentials_exception
@@ -99,24 +88,7 @@ def refresh_token(refresh_token: str | None = Cookie(None), db: Session = Depend
         raise credentials_exception
         
     access_token = create_access_token(subject=user.id)
-    
-    response = JSONResponse({"access_token": access_token})
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        secure=True,
-        samesite="strict",
-        max_age=7 * 24 * 60 * 60
-    )
-    return response
-
-
-@router.post("/logout")
-def logout():
-    response = JSONResponse({"message": "Logged out successfully"})
-    response.delete_cookie("refresh_token")
-    return response
+    return {"access_token": access_token}
 
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_user)):

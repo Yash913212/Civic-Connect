@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "./ThemeProvider";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { motion } from "framer-motion";
@@ -14,49 +14,43 @@ export function ThemeToggle() {
     setMounted(true);
   }, []);
 
-  // Always render the same element type (motion.button) to avoid
-  // server/client element-type mismatch. Before mount, render with
-  // no interactive behavior and a static placeholder.
-  const isDark = mounted ? theme === "dark" : false;
+  if (!mounted) {
+    return <div className="w-10 h-10 rounded-full border border-slate-200 dark:border-white/10" />;
+  }
+
+  const isDark = theme === "dark";
 
   return (
     <motion.button
-      onClick={mounted ? () => setTheme(isDark ? "light" : "dark") : undefined}
-      aria-label={mounted ? (isDark ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       className="relative flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-card border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden z-50 transition-colors"
-      whileHover={mounted ? { scale: 1.05 } : undefined}
-      whileTap={mounted ? { scale: 0.95 } : undefined}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
       initial={false}
     >
-      {mounted ? (
-        <>
-          <motion.div
-            initial={false}
-            animate={{
-              y: isDark ? 24 : 0,
-              opacity: isDark ? 0 : 1,
-            }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="absolute"
-          >
-            <Sun className="w-5 h-5 text-sky-500" />
-          </motion.div>
-          <motion.div
-            initial={false}
-            animate={{
-              y: isDark ? 0 : -24,
-              opacity: isDark ? 1 : 0,
-            }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="absolute"
-          >
-            <Moon className="w-5 h-5 text-[#00D9FF]" />
-          </motion.div>
-        </>
-      ) : (
-        /* Placeholder that matches the visual size but avoids hydration mismatch */
-        <span className="w-5 h-5" />
-      )}
+      <motion.div
+        initial={false}
+        animate={{
+          y: isDark ? 24 : 0,
+          opacity: isDark ? 0 : 1,
+        }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+        className="absolute"
+      >
+        <Sun className="w-5 h-5 text-sky-500" />
+      </motion.div>
+      <motion.div
+        initial={false}
+        animate={{
+          y: isDark ? 0 : -24,
+          opacity: isDark ? 1 : 0,
+        }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+        className="absolute"
+      >
+        <Moon className="w-5 h-5 text-[#00D9FF]" />
+      </motion.div>
     </motion.button>
   );
 }

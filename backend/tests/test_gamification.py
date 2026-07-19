@@ -1,4 +1,5 @@
 import pytest
+import uuid
 from datetime import datetime, timezone, timedelta
 from app.core.gamification import (
     calculate_level,
@@ -40,27 +41,41 @@ class TestPointsToNextLevel:
 class TestAwardPoints:
     @pytest.fixture
     def user(self):
-        return User(id="test-user-id", full_name="Test User", email="test@test.com", phone_number="1234567890")
+        return User(
+            id=uuid.uuid4(),
+            full_name="Test User",
+            email="test@test.com",
+            phone_number="1234567890",
+            password_hash="mock_password_hash"
+        )
 
     def test_award_points_increases_total(self, user, db_session):
+        db_session.add(user)
+        db_session.commit()
         user.points = 0
         result = award_points(user, "complaint_submitted", db_session)
         assert result["points_added"] == 10
         assert result["total_points"] == 10
 
     def test_award_points_updates_level(self, user, db_session):
+        db_session.add(user)
+        db_session.commit()
         user.points = 45
         result = award_points(user, "complaint_submitted", db_session)
         assert result["level"] == 2
         assert result["level_up"] == True
 
     def test_award_points_invalid_action(self, user, db_session):
+        db_session.add(user)
+        db_session.commit()
         user.points = 0
         result = award_points(user, "invalid_action", db_session)
         assert result["points_added"] == 0
         assert result["total_points"] == 0
 
     def test_award_points_updates_streak(self, user, db_session):
+        db_session.add(user)
+        db_session.commit()
         user.points = 0
         user.streak_days = 5
         user.last_active_date = datetime.now(timezone.utc) - timedelta(days=1)
@@ -71,16 +86,25 @@ class TestAwardPoints:
 class TestBadgeEligibility:
     @pytest.fixture
     def user(self):
-        return User(id="test-user-id", full_name="Test User", email="test@test.com", phone_number="1234567890")
+        return User(
+            id=uuid.uuid4(),
+            full_name="Test User",
+            email="test@test.com",
+            phone_number="1234567890",
+            password_hash="mock_password_hash"
+        )
 
     def test_first_complaint_badge(self, user, db_session):
+        db_session.add(user)
+        db_session.commit()
+        
         complaint = Complaint(
-            id="c1",
+            id=uuid.uuid4(),
             title="Test Complaint",
             description="Test description",
             location="Test Location",
-            user_id=str(user.id),
-            status=ComplaintStatus.PENDING.value
+            user_id=user.id,
+            status=ComplaintStatus.PENDING
         )
         db_session.add(complaint)
         db_session.commit()
@@ -90,13 +114,16 @@ class TestBadgeEligibility:
         assert "first_complaint" in badge_ids
 
     def test_no_duplicate_badges(self, user, db_session):
+        db_session.add(user)
+        db_session.commit()
+        
         complaint = Complaint(
-            id="c1",
+            id=uuid.uuid4(),
             title="Test Complaint",
             description="Test description",
             location="Test Location",
-            user_id=str(user.id),
-            status=ComplaintStatus.PENDING.value
+            user_id=user.id,
+            status=ComplaintStatus.PENDING
         )
         db_session.add(complaint)
         db_session.commit()

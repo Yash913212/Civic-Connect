@@ -33,7 +33,7 @@ export default function GamificationWidget() {
   if (loading) return <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-8 relative z-20 min-h-[300px]" />; // Stable DOM structure instead of null
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 md:px-8 py-8 relative z-20">
+    <section id="gamification" className="w-full max-w-7xl mx-auto px-4 md:px-8 py-8 relative z-20">
       <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-8 items-stretch relative overflow-hidden">
         
         {/* Decorative background glow */}
@@ -79,7 +79,7 @@ export default function GamificationWidget() {
 
           <div className="flex flex-wrap items-center gap-4 mt-2">
             <button 
-              onClick={() => router.push('/citizen/profile')}
+              onClick={() => window.open('/citizen/leaderboard', '_blank')}
               className="flex items-center gap-2 text-sm font-semibold text-teal-400 hover:text-teal-300 transition-colors"
             >
               View Badges & Full Leaderboard <ChevronRight className="w-4 h-4" />

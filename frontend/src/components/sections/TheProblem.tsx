@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Camera, Clock, Languages, Route, Frown, ArrowDown } from "lucide-react";
@@ -17,9 +17,13 @@ export default function TheProblem() {
   const containerRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
+    if (!containerRef.current) return;
+
     gsap.registerPlugin(ScrollTrigger);
     const mm = gsap.matchMedia();
+    const container = containerRef.current;
+
     mm.add("(min-width: 768px)", () => {
       const wrapper = document.querySelector(".problem-wrapper") as HTMLElement;
       if (!wrapper) return;
@@ -29,7 +33,7 @@ export default function TheProblem() {
         x: () => -(window.innerWidth * (steps.length - 1)),
         ease: "none",
         scrollTrigger: {
-          trigger: containerRef.current,
+          trigger: container,
           pin: true,
           scrub: 1,
           snap: 1 / (steps.length - 1),
@@ -40,7 +44,7 @@ export default function TheProblem() {
 
       // Update active step indicator
       ScrollTrigger.create({
-        trigger: containerRef.current,
+        trigger: container,
         start: "top top",
         end: () => "+=" + totalScroll,
         scrub: 1,

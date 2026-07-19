@@ -1,5 +1,3 @@
-import "./loading-keyframes.css";
-
 export default function Loading() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background relative overflow-hidden">
@@ -30,6 +28,13 @@ export default function Loading() {
       <p className="text-sm text-muted-foreground animate-pulse font-medium">
         Loading...
       </p>
+
+      <style>{`
+        @keyframes loading-bounce {
+          0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+          40% { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

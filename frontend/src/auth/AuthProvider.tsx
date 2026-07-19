@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { User, authService } from './authService';
 import { toast } from 'sonner';
 
@@ -27,19 +27,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        const localUser = authService.getLocalUser();
         const token = localStorage.getItem('access_token');
-        if (!token) {
-          setLoading(false);
-          return;
+        
+        if (localUser && token) {
+          setUser(localUser);
+          // Optionally fetch fresh user data here
         }
-        const freshUser = await authService.getCurrentUser();
-        setUser(freshUser);
-      } catch {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-        document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-        document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+      } catch (error) {
+        console.error('Failed to initialize auth', error);
       } finally {
         setLoading(false);
       }
@@ -48,23 +44,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     initAuth();
   }, []);
 
+  const wsRef = useRef<WebSocket | null>(null);
+
   useEffect(() => {
-    if (!user || loading) return;
-
-    let ws: WebSocket | null = null;
-    let reconnectTimeout: ReturnType<typeof setTimeout>;
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 10;
-
-    const connect = () => {
-      const wsBase = (process.env.NEXT_PUBLIC_WS_URL || "wss://civic-connect-gzm1.onrender.com").replace(/\/+$/, '');
+    if (user && !loading) {
+      const wsBase = process.env.NEXT_PUBLIC_WS_URL || "wss://civic-connect-gzm1.onrender.com";
       const wsUrl = `${wsBase}/ws/notifications/${user.id}`;
-      ws = new WebSocket(wsUrl);
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
 
-      ws.onopen = () => {
-        reconnectAttempts = 0;
-      };
-
+      ws.onopen = () => console.log("WebSocket Connected");
+      
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
@@ -86,25 +76,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       };
 
-      ws.onclose = () => {
-        if (reconnectAttempts < maxReconnectAttempts) {
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-          reconnectTimeout = setTimeout(() => {
-            reconnectAttempts++;
-            connect();
-          }, delay);
+      return () => {
+        if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+          ws.close();
         }
       };
-    };
-
-    connect();
-
-    return () => {
-      clearTimeout(reconnectTimeout);
-      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-        ws.close();
-      }
-    };
+    }
   }, [user, loading]);
 
   const login = (userData: User, accessToken: string, refreshToken: string) => {

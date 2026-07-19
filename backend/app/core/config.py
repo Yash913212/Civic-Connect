@@ -1,15 +1,13 @@
-import secrets
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "CivicConnect"
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/civic"
-    SECRET_KEY: str = ""
+    SECRET_KEY: str = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     OPENROUTER_API_KEY: str = ""
-    GROQ_API_KEY: str = ""
     MAX_UPLOAD_SIZE_MB: int = 10
 
     class Config:
@@ -17,10 +15,3 @@ class Settings(BaseSettings):
         extra = "ignore"
 
 settings = Settings()
-
-if not settings.SECRET_KEY:
-    raise ValueError(
-        "SECRET_KEY is not set! "
-        "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\" "
-        "and add it to your .env file."
-    )

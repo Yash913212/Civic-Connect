@@ -39,8 +39,8 @@ export const gamificationService = {
     return response.data;
   },
 
-  getLeaderboard: async (limit: number = 10): Promise<LeaderboardEntry[]> => {
-    const response = await apiClient.get(`/gamification/leaderboard?limit=${limit}`);
+  getLeaderboard: async (limit: number = 10, role: string = "CITIZEN"): Promise<LeaderboardEntry[]> => {
+    const response = await apiClient.get(`/gamification/leaderboard?limit=${limit}&role=${role}`);
     return response.data;
   },
 
