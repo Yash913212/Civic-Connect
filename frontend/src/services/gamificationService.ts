@@ -48,4 +48,14 @@ export const gamificationService = {
     const response = await apiClient.get('/gamification/badges');
     return response.data;
   },
+
+  awardPoints: async (payload: { user_id: string, action_type: string, description?: string }): Promise<any> => {
+    const response = await apiClient.post('/gamification/award', payload);
+    return response.data;
+  },
+
+  checkBadges: async (userId: string): Promise<any> => {
+    const response = await apiClient.post(`/gamification/check-badges/${userId}`);
+    return response.data;
+  },
 };

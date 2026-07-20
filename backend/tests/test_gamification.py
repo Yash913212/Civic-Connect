@@ -6,8 +6,6 @@ from app.core.gamification import (
     get_points_to_next_level,
     award_points,
     check_badge_eligibility,
-    LEVEL_THRESHOLDS,
-    POINTS,
 )
 from app.database.models import User, Complaint, ComplaintStatus
 
@@ -63,7 +61,7 @@ class TestAwardPoints:
         user.points = 45
         result = award_points(user, "complaint_submitted", db_session)
         assert result["level"] == 2
-        assert result["level_up"] == True
+        assert result["level_up"] is True
 
     def test_award_points_invalid_action(self, user, db_session):
         db_session.add(user)
@@ -97,7 +95,7 @@ class TestBadgeEligibility:
     def test_first_complaint_badge(self, user, db_session):
         db_session.add(user)
         db_session.commit()
-        
+
         complaint = Complaint(
             id=uuid.uuid4(),
             title="Test Complaint",
@@ -108,7 +106,7 @@ class TestBadgeEligibility:
         )
         db_session.add(complaint)
         db_session.commit()
-        
+
         new_badges = check_badge_eligibility(user, db_session)
         badge_ids = [b["id"] for b in new_badges]
         assert "first_complaint" in badge_ids
@@ -116,7 +114,7 @@ class TestBadgeEligibility:
     def test_no_duplicate_badges(self, user, db_session):
         db_session.add(user)
         db_session.commit()
-        
+
         complaint = Complaint(
             id=uuid.uuid4(),
             title="Test Complaint",
@@ -127,8 +125,9 @@ class TestBadgeEligibility:
         )
         db_session.add(complaint)
         db_session.commit()
-        
+
         first_check = check_badge_eligibility(user, db_session)
+        assert len(first_check) == 1
         second_check = check_badge_eligibility(user, db_session)
-        
+
         assert len(second_check) == 0

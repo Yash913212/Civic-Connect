@@ -89,7 +89,7 @@ function ResetPasswordForm() {
               </div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Reset Password</h2>
               <p className="text-sm text-slate-600 dark:text-white/50">
-                Establish new cryptographic credentials for your Civic Connect profile.
+                Establish new cryptographic credentials for your Nagara Netra profile.
               </p>
             </div>
 

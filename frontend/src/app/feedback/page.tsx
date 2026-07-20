@@ -47,7 +47,7 @@ function FeedbackPage() {
     // Simulate submission
     await new Promise((r) => setTimeout(r, 1200));
     toast.success("Feedback submitted", {
-      description: "Thank you! Your feedback helps us improve Civic Connect.",
+      description: "Thank you! Your feedback helps us improve Nagara Netra.",
     });
     setRating(0);
     setCategory("");
@@ -99,7 +99,7 @@ function FeedbackPage() {
             </span>
           </h1>
           <p className="text-sm text-muted-foreground max-w-lg leading-relaxed">
-            Help us improve Civic Connect. Share your experience, report issues, or suggest new features.
+            Help us improve Nagara Netra. Share your experience, report issues, or suggest new features.
           </p>
         </motion.div>
 

@@ -42,10 +42,10 @@ export default function Footer() {
         <div className="md:col-span-1">
           <div className="flex items-center gap-4 mb-6">
             <div className="relative h-14 w-14 rounded-xl overflow-hidden flex items-center justify-center bg-gradient-to-br from-primary/20 to-purple-500/20">
-              <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full" />
+              <img src="/logo.png" alt="Nagara Netra Logo" className="object-contain w-full h-full" />
             </div>
             <span className="text-xl font-bold font-heading text-slate-900 dark:text-white tracking-wider">
-              Civic Connect
+              Nagara Netra
             </span>
           </div>
           <div className="flex items-center gap-3 text-xs font-medium border border-black/10 dark:border-white/10 bg-white/70 dark:bg-black/50 w-fit px-4 py-2 rounded-full mb-6 backdrop-blur-xl">
@@ -119,7 +119,7 @@ export default function Footer() {
             </li>
             <li>
               <a
-                href="https://github.com/Yash913212/CivicConnect"
+                href="https://github.com/Yash913212/NagaraNetra"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm text-muted-foreground hover:text-slate-900 dark:hover:text-white transition-all flex items-center gap-2 group"
@@ -152,7 +152,7 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="max-w-7xl mx-auto px-6 py-6 border-t border-black/5 dark:border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="text-xs text-slate-500 dark:text-white/30">
-          &copy; {new Date().getFullYear()} Civic Connect. All rights reserved.
+          &copy; {new Date().getFullYear()} Nagara Netra. All rights reserved.
         </div>
         <div className="flex items-center gap-6">
           <Link

@@ -21,9 +21,9 @@ export function DailyBriefingTab({ myTaskCount, activeCount }: { myTaskCount: nu
   }, []);
 
   const tasksToday = [
-    { id: "C-8839", title: "Pedda gunta road repair", priority: "Critical", zone: "North", eta: "2h" },
-    { id: "C-8842", title: "Water pipe burst - Main St", priority: "Critical", zone: "Central", eta: "1h" },
-    { id: "C-8845", title: "Open manhole inspection", priority: "High", zone: "South", eta: "3h" },
+    { id: "C-8839", title: "Pedda gunta road repair", priority: "Critical", zone: "4", eta: "15 mins" },
+    { id: "C-8842", title: "Water pipe burst - Main St", priority: "Critical", zone: "2", eta: "25 mins" },
+    { id: "C-8845", title: "Open manhole Inspection", priority: "High", zone: "1", eta: "45 mins" },
   ];
 
   return (

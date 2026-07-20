@@ -4,6 +4,7 @@ import { Upload, Mic, CheckCircle2, X, Brain, MessageSquareText, MapPin, ArrowRi
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
   ? (process.env.NEXT_PUBLIC_API_URL.endsWith('/api') ? process.env.NEXT_PUBLIC_API_URL : `${process.env.NEXT_PUBLIC_API_URL}/api`)
@@ -152,6 +153,7 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
 
 export default function LiveDemo({ onViewMyComplaints, onOpenGamification }: { onViewMyComplaints?: () => void; onOpenGamification?: () => void }) {
   const router = useRouter();
+  const { user } = useAuth();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
@@ -221,7 +223,7 @@ const proceedToRegister = () => {
     request_note: analysisResult.request_note || "",
     department: analysisResult.department || "General",
     priority: analysisResult.priority || "low",
-    imageUrl: previewUrl || "",
+    imageUrl: analysisResult.image_url ? `${API_BASE.replace(/\/api$/, '')}${analysisResult.image_url}` : (previewUrl || ""),
     issue: analysisResult.issue,
     modality: analysisResult.modality,
   };
@@ -701,7 +703,7 @@ const proceedToRegister = () => {
           ))}
         </motion.div>
 
-        {onViewMyComplaints && (
+        {(onViewMyComplaints || (user && user.role === 'CITIZEN')) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -711,7 +713,10 @@ const proceedToRegister = () => {
             <motion.button
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              onClick={onViewMyComplaints}
+              onClick={() => {
+                if (onViewMyComplaints) onViewMyComplaints();
+                else router.push('/citizen/dashboard');
+              }}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 bg-gradient-to-r from-teal-500/10 via-emerald-500/5 to-teal-500/10 dark:from-teal-400/10 dark:to-emerald-400/10 backdrop-blur-xl border border-teal-500/30 hover:border-teal-500/60 rounded-xl text-sm font-bold text-teal-700 dark:text-teal-300 shadow-[0_4px_20px_rgba(20,184,166,0.05)] hover:shadow-[0_4px_25px_rgba(20,184,166,0.15)] transition-all duration-300 group"
             >
               <ClipboardList className="w-[18px] h-[18px] text-teal-500 dark:text-teal-400 group-hover:scale-110 transition-transform duration-300" />
@@ -726,7 +731,7 @@ const proceedToRegister = () => {
                 if (onOpenGamification) {
                   onOpenGamification();
                 } else {
-                  document.getElementById('gamification')?.scrollIntoView({ behavior: 'smooth' });
+                  router.push('/citizen/leaderboard');
                 }
               }}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-500/10 dark:from-amber-400/10 dark:to-orange-400/10 backdrop-blur-xl border border-amber-500/30 hover:border-amber-500/60 rounded-xl text-sm font-bold text-amber-700 dark:text-amber-300 shadow-[0_4px_20px_rgba(245,158,11,0.05)] hover:shadow-[0_4px_25px_rgba(245,158,11,0.15)] transition-all duration-300 group"

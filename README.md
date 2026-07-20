@@ -1,4 +1,4 @@
-# 🏛️ Civic Connect
+# 🏛️ Nagara Netra
 
 ### *AI-Powered Neural Infrastructure & Grievance Routing for Modern Smart Cities*
 
@@ -10,7 +10,7 @@
 
 ---
 
-**Civic Connect** is an ultra-high-fidelity, state-of-the-art smart city governance and complaint routing dashboard. It integrates real-time 3D WebGL visualizations, advanced computer vision, multilingual natural language processing (NLP), and automatic LLM priority assignment to revolutionize how citizens report municipal failures and how city agencies respond.
+**Nagara Netra** is an ultra-high-fidelity, state-of-the-art smart city governance and complaint routing dashboard. It integrates real-time 3D WebGL visualizations, advanced computer vision, multilingual natural language processing (NLP), and automatic LLM priority assignment to revolutionize how citizens report municipal failures and how city agencies respond.
 
 The system transitions from an ambient, cinematic login flow directly into a dynamic dashboard wrapped in a custom scroll-driven 3D neural grid, rendering high-density city metadata at 60fps.
 
@@ -110,7 +110,7 @@ graph TD
 *   **Complaint Lifecycle Management:** Complete update (`PUT /complaints/{id}`) and delete (`DELETE /complaints/{id}`) endpoints with strict authorization rules.
 
 ### 6. 🎨 Immersive UI/UX & PWA
-*   **Progressive Web App (PWA):** Configured with web app manifests and metadata, allowing Civic Connect to be seamlessly installed on citizen mobile devices for native-like reporting functionality.
+*   **Progressive Web App (PWA):** Configured with web app manifests and metadata, allowing Nagara Netra to be seamlessly installed on citizen mobile devices for native-like reporting functionality.
 *   **Animated Preloader:** Full-screen cyberpunk-style loading sequence with word animations, progress bar, and ambient grid — replaced the basic spinner for a premium first impression.
 *   **Live AI Demo Sandbox:** Interactive multimodal playground supporting image upload, voice recording, and AI classification with real-time animated results, scan overlays, and shimmer effects.
 *   **Technology Showcase Cards:** 6 glassmorphism feature cards with staggered scroll-reveal animations, unique icons, colored hover glows, and background image blending.
@@ -210,8 +210,8 @@ backend/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/Yash913212/CivicConnect.git
-cd CivicConnect
+git clone https://github.com/Yash913212/NagaraNetra.git
+cd NagaraNetra
 ```
 
 ### 2. Frontend Setup
@@ -232,7 +232,7 @@ pip install -r requirements.txt
 
 Configure your database and API keys in `backend/.env`:
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/civic_connect"
+DATABASE_URL="postgresql://user:password@localhost:5432/nagara_netra"
 OPENROUTER_API_KEY="sk-or-v1-..."
 ```
 

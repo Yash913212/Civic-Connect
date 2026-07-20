@@ -21,13 +21,13 @@ const sora = Sora({
 
 
 export const metadata: Metadata = {
-  title: "Civic Connect | Smart City Civic Intelligence Platform",
+  title: "Nagara Netra | Smart City Civic Intelligence Platform",
   description: "Transforming Civic Governance Through Artificial Intelligence. Detect issues, route automatically, and predict departments with 96.4% accuracy.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Civic Connect",
+    title: "Nagara Netra",
   },
 };
 

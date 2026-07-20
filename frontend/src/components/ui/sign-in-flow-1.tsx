@@ -413,7 +413,7 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
 
   const logoElement = (
     <div className="relative h-8 w-8 sm:h-10 sm:w-10 group-hover:scale-105 transition-transform duration-300 bg-white rounded-lg overflow-hidden flex items-center justify-center">
-      <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full p-0.5" />
+      <img src="/logo.png" alt="Nagara Netra Logo" className="object-contain w-full h-full p-0.5" />
     </div>
   );
 
@@ -474,7 +474,7 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
         <Link href="/" className="flex items-center gap-2.5 group">
           {logoElement}
           <span className="text-base font-bold font-heading text-white tracking-wider group-hover:text-teal-400 transition-colors">
-            Civic Connect
+            Nagara Netra
           </span>
         </Link>
 
@@ -1037,7 +1037,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                 >
                   <div className="space-y-4 text-center mb-8 relative">
                     <div className="mx-auto w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.05)] overflow-hidden relative z-10">
-                      <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full transition-transform duration-300" />
+                      <img src="/logo.png" alt="Nagara Netra Logo" className="object-contain w-full h-full transition-transform duration-300" />
                     </div>
                     <div className="space-y-2 relative h-[60px] w-full">
                       <AnimatePresence mode="wait">

@@ -31,7 +31,7 @@ const recentEvents = [
   { type: "error", msg: "DB connection timeout", time: "3 min ago", severity: "high" },
   { type: "warn", msg: "High memory usage on worker-3", time: "15 min ago", severity: "medium" },
   { type: "info", msg: "Auto-scaling triggered: +2 nodes", time: "42 min ago", severity: "low" },
-  { type: "success", msg: "SSL cert renewed for api.civicconnect.gov", time: "2h ago", severity: "info" },
+  { type: "success", msg: "SSL cert renewed for api.nagaranetra.gov", time: "2h ago", severity: "info" },
   { type: "error", msg: "Rate limit hit on /api/complaints", time: "3h ago", severity: "medium" },
 ];
 

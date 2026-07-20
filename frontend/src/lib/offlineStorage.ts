@@ -1,4 +1,4 @@
-const OFFLINE_DB_NAME = "civic-connect-offline";
+const OFFLINE_DB_NAME = "nagara-netra-offline";
 const OFFLINE_STORE = "pending-complaints";
 const DB_VERSION = 1;
 

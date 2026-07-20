@@ -222,7 +222,7 @@ export default function Loader() {
 
       {/* Center Content */}
       <div className="z-10 text-center font-heading">
-        <h1 className="text-5xl md:text-7xl font-bold mb-4 text-glow-premium text-slate-900 dark:text-white tracking-wider">Civic Connect</h1>
+        <h1 className="text-5xl md:text-7xl font-bold mb-4 text-glow-premium text-slate-900 dark:text-white tracking-wider">Nagara Netra</h1>
         <div className="h-10 relative overflow-hidden flex justify-center items-center text-primary text-xl font-medium tracking-wide">
           {words.map((word, i) => (
             <span key={word} className={`word-${i} absolute opacity-0 translate-y-8`}>

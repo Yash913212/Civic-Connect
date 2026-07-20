@@ -22,6 +22,7 @@ import confetti from "canvas-confetti";
 import { showTextLoading, showSystemStatus, showOfficerAssigned, showAIFuturistic } from "@/components/ui/CustomToasts";
 import { complaintService, type OfficerData } from "@/services/complaintService";
 import { adminService, type UserData, type DepartmentData } from "@/services/adminService";
+import { apiRequest } from "@/services/api";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { AdminSidebar } from "./AdminSidebar";
 import { SystemHealthTab } from "./SystemHealthTab";
@@ -380,10 +381,26 @@ function AdminDashboard() {
   };
 
   const loadAnalytics = async () => {
-    setTrendsData(defaultComplaintTrends);
-    setDeptPerfData(defaultDeptPerformance);
-    setPrioData(defaultPriorityData);
-    setKpis({ total: 1248, open: 142, closed: 1106, resolutionRate: 88 });
+    try {
+      const data = await apiRequest<any>('/analytics');
+      if (data.kpis && data.kpis.total > 0) {
+        setTrendsData(data.trends || defaultComplaintTrends);
+        setDeptPerfData(data.deptPerformance || defaultDeptPerformance);
+        setPrioData(data.priorityData || defaultPriorityData);
+        setKpis(data.kpis);
+      } else {
+        // Fallback to sample data for display if database is empty
+        setTrendsData(defaultComplaintTrends);
+        setDeptPerfData(defaultDeptPerformance);
+        setPrioData(defaultPriorityData);
+        setKpis({ total: 1248, open: 142, closed: 1106, resolutionRate: 88 });
+      }
+    } catch (e) {
+      setTrendsData(defaultComplaintTrends);
+      setDeptPerfData(defaultDeptPerformance);
+      setPrioData(defaultPriorityData);
+      setKpis({ total: 1248, open: 142, closed: 1106, resolutionRate: 88 });
+    }
   };
 
   useEffect(() => { loadComplaints(); loadAnalytics(); }, []);
@@ -437,6 +454,16 @@ function AdminDashboard() {
     }
   };
 
+  const handleVerifyResolution = async (complaintId: string, displayId: string) => {
+    try {
+      await complaintService.verifyResolution(complaintId, { is_valid: true, comments: 'Approved by admin' });
+      toast.success(`#${displayId} resolution verified! Points awarded.`);
+      confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
   const handleSignOut = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -460,7 +487,7 @@ function AdminDashboard() {
   };
 
   return (
-    <main className="bg-transparent text-slate-900 dark:text-white min-h-screen pt-16 pb-10 relative overflow-hidden flex flex-col selection:bg-emerald-500/20 dark:selection:bg-white/20">
+    <main className="bg-transparent text-slate-900 dark:text-white min-h-screen pt-28 pb-10 relative overflow-hidden flex flex-col selection:bg-emerald-500/20 dark:selection:bg-white/20">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <CanvasRevealEffect animationSpeed={3} containerClassName="bg-transparent" colors={[[168, 85, 247]]} dotSize={6} reverse={false} />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--background)_0%,_transparent_100%)] opacity-20" />
@@ -497,7 +524,8 @@ function AdminDashboard() {
               className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white shadow-sm border border-black/10 dark:bg-white/5 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition-all text-xs sm:text-sm font-semibold whitespace-nowrap">
               <Sparkles className="w-4 h-4 text-emerald-500 dark:text-teal-400" /> AI Insights
             </button>
-            <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white shadow-sm border border-black/10 dark:bg-white/5 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition-all text-xs sm:text-sm font-semibold whitespace-nowrap relative">
+            <button onClick={() => toast("3 system alerts require your attention. Please check SLA Compliance.", { icon: '🔔' })}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white shadow-sm border border-black/10 dark:bg-white/5 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition-all text-xs sm:text-sm font-semibold whitespace-nowrap relative">
               <Bell className="w-4 h-4 text-emerald-500 dark:text-teal-400" />
               Alerts
               <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 rounded-full text-[8px] flex items-center justify-center text-white font-bold">3</span>
@@ -713,6 +741,12 @@ function AdminDashboard() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap">
+                          {item.status === 'Resolved' && (
+                            <button onClick={() => handleVerifyResolution(item.id, item.id.substring(0, 8).toUpperCase())}
+                              className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold rounded-lg shadow-sm transition-all shadow-emerald-500/20">
+                              Verify
+                            </button>
+                          )}
                           <PriorityBadge priority={item.priority} />
                           <StatusDropdown
                             current={item.status}

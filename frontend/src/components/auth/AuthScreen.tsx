@@ -132,7 +132,7 @@ export function AuthScreen() {
                 transition={{ duration: 0.5 }}
                 className="text-4xl font-bold tracking-tight text-glow"
               >
-                CivicConnect
+                NagaraNetra
               </motion.h1>
               <p className="text-white/50 text-sm">Enterprise AI Governance Platform</p>
             </div>

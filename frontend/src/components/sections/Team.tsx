@@ -369,7 +369,7 @@ export default function Team() {
             ref={titleRef} 
             className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 text-slate-900 dark:text-white leading-tight"
           >
-            Meet The Minds Behind <span className="text-gradient">Civic Connect</span>
+            Meet The Minds Behind <span className="text-gradient">Nagara Netra</span>
           </h2>
           <p 
             ref={subtitleRef} 
@@ -447,7 +447,7 @@ export default function Team() {
           </blockquote>
           
           <cite className="text-xs uppercase tracking-[0.25em] font-semibold text-purple-400 mt-6 block not-italic">
-            — Core Team Mission, Civic Connect
+            — Core Team Mission, Nagara Netra
           </cite>
         </div>
 

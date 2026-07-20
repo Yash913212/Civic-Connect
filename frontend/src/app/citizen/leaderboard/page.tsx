@@ -40,7 +40,7 @@ function CitizenLeaderboard() {
   // Shared score helper
   const handleShare = () => {
     if (!profile) return;
-    const shareText = `I have earned ${profile.points} Civic Points and reached Level ${profile.level} on Civic Connect! 🌟 Join me in reporting community issues and winning rewards. #CivicConnect #SmartCity`;
+    const shareText = `I have earned ${profile.points} Civic Points and reached Level ${profile.level} on Nagara Netra! 🌟 Join me in reporting community issues and winning rewards. #NagaraNetra #SmartCity`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, '_blank');
   };
 

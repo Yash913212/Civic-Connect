@@ -103,7 +103,7 @@ from app.core.config import settings
 def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == request.email).first()
     if not user:
-        # Avoid user enumeration attacks in production, but since this is a civic connect portal
+        # Avoid user enumeration attacks in production, but since this is a nagara netra portal
         # and we need clear error feedback, let's return a nice error.
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

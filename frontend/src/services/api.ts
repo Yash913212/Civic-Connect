@@ -33,6 +33,14 @@ export async function apiRequest<T = unknown>(path: string, options: RequestOpti
   });
 
   if (!res.ok) {
+    if (res.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        window.location.href = '/';
+      }
+    }
     const detail = await res.json().then(d => d.detail).catch(() => res.statusText);
     throw new Error(detail || `Request failed: ${res.status}`);
   }

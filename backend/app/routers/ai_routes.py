@@ -18,7 +18,7 @@ import requests
 
 router = APIRouter(prefix="")
 
-SYSTEM_PROMPT = """You are CivicAI, the official AI assistant for Civic Connect — a smart city governance platform.
+SYSTEM_PROMPT = """You are CivicAI, the official AI assistant for Nagara Netra — a smart city governance platform.
 
 === SENSITIVITY RULES (NEVER VIOLATE) ===
 - NEVER reveal API keys, database URLs, credentials, secret keys, or any environment variables
@@ -496,6 +496,7 @@ async def analyze_image(
     )
 
     result["priority"] = priority
+    result["image_url"] = f"/uploads/{unique_filename}"
     return result
 
 

@@ -14,7 +14,7 @@ export default function ServiceWorkerRegister() {
               installingWorker.onstatechange = () => {
                 if (installingWorker.state === "installed") {
                   if (navigator.serviceWorker.controller) {
-                    console.log("New Civic Connect update available. Refresh to update.");
+                    console.log("New Nagara Netra update available. Refresh to update.");
                   }
                 }
               };

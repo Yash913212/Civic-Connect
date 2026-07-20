@@ -79,4 +79,24 @@ export const complaintService = {
   }): Promise<any> {
     return apiRequest('/complaints', { method: 'POST', body: payload });
   },
+
+  async uploadResolution(complaintId: string, payload: { image_url: string, notes?: string, status_update?: string }): Promise<any> {
+    return apiRequest(`/complaints/${complaintId}/resolution`, {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  async verifyResolution(complaintId: string, payload: { is_valid: boolean, comments?: string }): Promise<any> {
+    return apiRequest(`/complaints/${complaintId}/verify`, {
+      method: 'PATCH',
+      body: payload,
+    });
+  },
+
+  async getResolution(complaintId: string): Promise<any> {
+    return apiRequest(`/complaints/${complaintId}/resolution`, {
+      method: 'GET',
+    });
+  },
 };

@@ -86,7 +86,7 @@ export default function GamificationWidget() {
             </button>
             <button 
               onClick={() => {
-                const text = `I just reached Level ${profile?.level || 1} with ${profile?.points || 0} Civic Points on Civic Connect! 🌟 I'm reporting issues and making our city better. Join me! #CivicConnect #SmartCity`;
+                const text = `I just reached Level ${profile?.level || 1} with ${profile?.points || 0} Civic Points on Nagara Netra! 🌟 I'm reporting issues and making our city better. Join me! #NagaraNetra #SmartCity`;
                 window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
               }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1DA1F2]/10 text-[#1DA1F2] hover:bg-[#1DA1F2]/20 transition-all text-xs font-bold"

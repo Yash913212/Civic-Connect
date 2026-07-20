@@ -69,6 +69,7 @@ def get_sla_overview(
         "critical": 0,
         "overdue": 0,
         "by_department": {},
+        "breaches": [],
     }
     
     for complaint in active_complaints:
@@ -93,8 +94,18 @@ def get_sla_overview(
         elif urgency == "OVERDUE":
             overview["overdue"] += 1
         
+        if urgency in ["WARNING", "CRITICAL", "OVERDUE"]:
+            overview["breaches"].append({
+                "id": f"C-{str(complaint.id)[:4].upper()}",
+                "original_id": str(complaint.id),
+                "dept": complaint.department or "Unknown",
+                "hours": f"{sla_status['elapsed_hours']}h",
+                "priority": complaint.priority or "Normal",
+                "status": urgency.title(),
+            })
+
         # Count by department
-        dept = complaint.department
+        dept = complaint.department or "General"
         if dept not in overview["by_department"]:
             overview["by_department"][dept] = {
                 "total": 0,

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { MapPin, Send, CheckCircle2, Loader2, Upload, Brain } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
 import MapPicker from "./MapPicker";
 import DuplicateWarning from "./DuplicateWarning";
@@ -30,6 +31,7 @@ interface DraftData {
 }
 
 export default function ComplaintForm() {
+  const router = useRouter();
   const [draft, setDraft] = useState<DraftData | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<LocationResult | null>(null);
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
@@ -66,9 +68,12 @@ export default function ComplaintForm() {
         latitude: selectedLocation.lat,
         longitude: selectedLocation.lng,
         address: selectedLocation.display_name,
-        department: draft?.department || "General",
-        priority: (draft?.priority || "low").charAt(0).toUpperCase() + (draft?.priority || "low").slice(1),
+        department: draft?.department 
+          ? draft.department.charAt(0).toUpperCase() + draft.department.slice(1).toLowerCase() 
+          : "General",
+        priority: (draft?.priority || "low").charAt(0).toUpperCase() + (draft?.priority || "low").slice(1).toLowerCase(),
         image_url: draft?.imageUrl || "",
+        ai_request_letter: requestNote || "",
       };
       const res = await fetch(`${API_BASE}/complaints`, {
         method: "POST",
@@ -201,9 +206,17 @@ export default function ComplaintForm() {
         <h3 className="text-2xl font-bold mb-2">Complaint Registered!</h3>
         <p className="text-muted-foreground mb-1">Routed to {draft?.department || "concerned department"}.</p>
         <p className="text-xs text-muted-foreground mb-8">Track its status from your dashboard.</p>
-        <button onClick={() => window.location.reload()} className="px-6 py-3 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-all">
-          Submit Another
-        </button>
+        <div className="flex items-center gap-4">
+          <button onClick={() => router.push('/citizen/complaints')} className="px-6 py-3 bg-white/5 dark:bg-white/10 border border-black/10 dark:border-white/10 text-foreground font-medium rounded-xl hover:bg-black/5 dark:hover:bg-white/20 transition-all">
+            View My Complaints
+          </button>
+          <button onClick={() => {
+            sessionStorage.removeItem("complaint_draft");
+            window.location.reload();
+          }} className="px-6 py-3 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-all">
+            Submit Another
+          </button>
+        </div>
       </div>
     );
   }

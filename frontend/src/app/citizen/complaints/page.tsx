@@ -238,37 +238,52 @@ function CitizenComplaints() {
               >
                 <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-primary/10 to-purple-500/10 opacity-0 group-hover:opacity-100 blur transition duration-500" />
                 <div className="relative flex flex-col gap-4">
-                  <div className="flex flex-col md:flex-row justify-between gap-4">
-                    <div className="flex-1">
-                      {editingId === c.id ? (
-                        <div className="space-y-2 mb-3">
-                          <input type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)}
-                            className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-bold text-foreground focus:outline-none focus:border-primary/50" />
-                          <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={2}
-                            className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-muted-foreground focus:outline-none focus:border-primary/50 resize-none" />
-                          <div className="flex gap-2">
-                            <button onClick={() => saveEdit(c)}
-                              className="px-3 py-1 bg-primary/10 border border-primary/30 rounded-lg text-xs font-semibold text-primary hover:bg-primary/20 transition-all">Save</button>
-                            <button onClick={cancelEdit}
-                              className="px-3 py-1 bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground transition-all">Cancel</button>
-                          </div>
+                  <div className="flex flex-col lg:flex-row justify-between gap-4">
+                    <div className="flex-1 flex flex-col sm:flex-row gap-4 items-start w-full">
+                      <div className="shrink-0 w-full sm:w-36 h-48 sm:h-32 rounded-xl overflow-hidden border border-black/10 dark:border-white/10 shadow-sm relative group/img">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10 pointer-events-none" />
+                        <img 
+                          src={(c.image_url && !c.image_url.startsWith('blob:')) ? c.image_url : "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=400&q=80"} 
+                          alt="Complaint Issue" 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
+                          onError={(e) => {
+                            e.currentTarget.src = "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=400&q=80";
+                          }}
+                        />
+                      </div>
+                      <div className="flex-1 w-full flex flex-col h-full justify-between">
+                        <div>
+                          {editingId === c.id ? (
+                            <div className="space-y-2 mb-3">
+                              <input type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)}
+                                className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-bold text-foreground focus:outline-none focus:border-primary/50" />
+                              <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={2}
+                                className="w-full bg-white dark:bg-black/30 border border-black/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-muted-foreground focus:outline-none focus:border-primary/50 resize-none" />
+                              <div className="flex gap-2">
+                                <button onClick={() => saveEdit(c)}
+                                  className="px-3 py-1 bg-primary/10 border border-primary/30 rounded-lg text-xs font-semibold text-primary hover:bg-primary/20 transition-all">Save</button>
+                                <button onClick={cancelEdit}
+                                  className="px-3 py-1 bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground transition-all">Cancel</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-2 flex-wrap mb-1">
+                                <span className="text-xs font-mono text-muted-foreground">#{c.id.substring(0, 8)}</span>
+                                <h4 className="font-bold text-foreground text-lg">{c.title}</h4>
+                              </div>
+                              <p className="text-sm text-muted-foreground line-clamp-3 mb-3 leading-relaxed">{c.description}</p>
+                            </>
+                          )}
                         </div>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <span className="text-xs font-mono text-muted-foreground">#{c.id.substring(0, 8)}</span>
-                            <h4 className="font-bold text-foreground">{c.title}</h4>
-                          </div>
-                          <p className="text-sm text-muted-foreground line-clamp-3 mb-3">{c.description}</p>
-                        </>
-                      )}
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Building2 size={12} /> {c.dept}</span>
-                        <span className="flex items-center gap-1"><MapPin size={12} /> {c.address?.substring(0, 40) || c.location}</span>
-                        <span className="flex items-center gap-1"><Clock size={12} /> {new Date(c.time).toLocaleDateString()}</span>
+                        <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground pt-1 border-t border-black/5 dark:border-white/5 mt-auto">
+                          <span className="flex items-center gap-1 font-medium"><Building2 size={12} className="text-primary/70" /> {c.dept}</span>
+                          <span className="flex items-center gap-1"><MapPin size={12} className="text-teal-500/70" /> {c.address?.substring(0, 40) || c.location}</span>
+                          <span className="flex items-center gap-1"><Clock size={12} className="text-amber-500/70" /> {new Date(c.time).toLocaleDateString()}</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-start gap-3 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-black/5 dark:border-white/5 mt-2 lg:mt-0 lg:w-[140px]">
                       <PriorityBadge priority={c.priority} />
                       <StatusBadge status={c.status} />
                       <div className="flex items-center gap-1 ml-2">

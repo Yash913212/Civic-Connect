@@ -1,7 +1,7 @@
 "use client";
 
 import { withRoleGuard } from "@/middleware/roleGuard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ClipboardList, Map, Award, Clock,
@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { showUploadProgress, showTextLoading, showResolution, showAdminAlert } from "@/components/ui/CustomToasts";
 import { complaintService, type ComplaintData } from "@/services/complaintService";
+import { API_BASE } from "@/services/api";
 import { PerformanceTab } from "./PerformanceTab";
 import { OfficerSidebar } from "./OfficerSidebar";
 import { DailyBriefingTab } from "./DailyBriefingTab";
@@ -118,6 +119,40 @@ function OfficerDashboard() {
   const [isOffline, setIsOffline] = useState(false);
   const [pendingSync, setPendingSync] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadEvidence = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files.length) return;
+    const file = e.target.files[0];
+    if (!selectedTask) return;
+    try {
+      showUploadProgress();
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const uploadRes = await fetch(`${API_BASE}/ai/caption`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: formData
+      });
+      if (!uploadRes.ok) throw new Error("Failed to upload evidence");
+      const uploadData = await uploadRes.json();
+      
+      await complaintService.uploadResolution(selectedTask, {
+        image_url: uploadData.filename,
+        notes: `AI Caption: ${uploadData.caption}`,
+        status_update: 'Resolved'
+      });
+      
+      toast.success("Resolution evidence uploaded and captioned");
+      await handleStatusChange(selectedTask, "Resolved");
+    } catch (err: any) {
+      toast.error(err.message || "Upload failed");
+    }
+  };
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
@@ -194,7 +229,7 @@ function OfficerDashboard() {
   };
 
   return (
-    <main className="bg-transparent text-slate-900 dark:text-white min-h-screen pt-16 pb-10 relative overflow-hidden flex flex-col selection:bg-emerald-500/20 dark:selection:bg-white/20">
+    <main className="bg-transparent text-slate-900 dark:text-white min-h-screen pt-28 pb-10 relative overflow-hidden flex flex-col selection:bg-emerald-500/20 dark:selection:bg-white/20">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <CanvasRevealEffect
           animationSpeed={3}
@@ -230,7 +265,6 @@ function OfficerDashboard() {
             </div>
           </div>
           <div className="flex gap-2 sm:gap-3 w-full sm:w-auto overflow-x-auto">
-            <ThemeToggle />
             <button
               onClick={() => {
                 if(isOffline) {
@@ -246,7 +280,8 @@ function OfficerDashboard() {
               className={`flex items-center gap-2 px-3 sm:px-4 py-2 bg-white shadow-sm border border-black/10 dark:bg-white/5 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition-all text-xs sm:text-sm font-semibold whitespace-nowrap ${isOffline ? 'text-amber-500' : 'text-slate-600 dark:text-white/80'}`}>
               {isOffline ? <><CloudOff className="w-4 h-4" /> {pendingSync} Pending</> : <><RefreshCw className="w-4 h-4" /> Online</>}
             </button>
-            <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white shadow-sm border border-black/10 dark:bg-white/5 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition-all text-xs sm:text-sm font-semibold whitespace-nowrap relative">
+            <button onClick={() => toast("2 new assignments require field inspection.", { icon: '🔔' })}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white shadow-sm border border-black/10 dark:bg-white/5 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition-all text-xs sm:text-sm font-semibold whitespace-nowrap relative">
               <Bell className="w-4 h-4 text-emerald-600 dark:text-teal-400" />
               Alerts
               <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 rounded-full text-[8px] flex items-center justify-center text-white font-bold">2</span>
@@ -393,7 +428,18 @@ function OfficerDashboard() {
                           <div className="space-y-6 flex-grow">
                             <div>
                               <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Description</h4>
-                              <p className="text-sm text-foreground/80 leading-relaxed">{selectedComplaint.description}</p>
+                              <p className="text-sm text-foreground/80 leading-relaxed mb-4">{selectedComplaint.description}</p>
+                              
+                              <div className="w-full h-48 rounded-xl overflow-hidden border border-black/10 dark:border-white/10 shadow-sm relative group/img">
+                                <img 
+                                  src={(selectedComplaint.image_url && !selectedComplaint.image_url.startsWith('blob:')) ? selectedComplaint.image_url : "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=600&q=80"} 
+                                  alt="Attached Evidence" 
+                                  className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
+                                  onError={(e) => {
+                                    e.currentTarget.src = "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=600&q=80";
+                                  }}
+                                />
+                              </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
@@ -415,8 +461,9 @@ function OfficerDashboard() {
                             <div>
                               <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Field Actions</h4>
                               <div className="grid grid-cols-2 gap-3">
+                                <input type="file" ref={fileInputRef} onChange={handleUploadEvidence} className="hidden" accept="image/*" />
                                 <button
-                                  onClick={() => showUploadProgress()}
+                                  onClick={() => fileInputRef.current?.click()}
                                   className="flex flex-col items-center justify-center gap-2 p-3 bg-white/50 dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 rounded-xl transition-all group"
                                 >
                                   <Camera size={20} className="text-emerald-500 dark:text-teal-400 group-hover:scale-110 transition-transform" />

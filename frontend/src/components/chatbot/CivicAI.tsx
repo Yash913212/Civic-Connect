@@ -19,7 +19,7 @@ const QUICK_ACTIONS = [
   { icon: MapPin, label: "File a complaint", action: "I want to file a civic complaint" },
   { icon: ClipboardList, label: "Check complaint status", action: "How do I check my complaint status?" },
   { icon: HelpCircle, label: "How does AI help?", action: "How does AI help with civic complaints?" },
-  { icon: Sparkles, label: "Platform features", action: "What can Civic Connect do?" },
+  { icon: Sparkles, label: "Platform features", action: "What can Nagara Netra do?" },
 ];
 
 const WELCOME_MESSAGE: Message = {

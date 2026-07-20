@@ -85,14 +85,14 @@ export default function Navbar() {
             : "bg-transparent py-6"
         }`}
       >
-        <div className="container mx-auto px-6 flex items-center justify-between">
+        <div className={`${pathname.includes('/dashboard') ? 'w-full px-4 sm:px-6 lg:px-8' : 'container mx-auto px-6'} flex items-center justify-between`}>
           {/* Logo */}
           <Link href="/home" className="flex items-center gap-3 group">
             <div className="relative h-10 w-10 rounded-md group-hover:scale-105 transition-transform duration-300 flex items-center justify-center overflow-hidden">
-              <img src="/logo.png" alt="Civic Connect Logo" className="object-contain w-full h-full" />
+              <img src="/logo.png" alt="Nagara Netra Logo" className="object-contain w-full h-full" />
             </div>
             <span className="text-xl font-bold font-sans text-slate-900 dark:text-white tracking-wider group-hover:text-sky-600 dark:group-hover:text-teal-400 transition-colors">
-              Civic Connect
+              Nagara Netra
             </span>
           </Link>
 
