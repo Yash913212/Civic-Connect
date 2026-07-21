@@ -9,9 +9,7 @@ import confetti from "canvas-confetti";
 import MapPicker from "./MapPicker";
 import DuplicateWarning from "./DuplicateWarning";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL
-  ? (process.env.NEXT_PUBLIC_API_URL.endsWith('/api') ? process.env.NEXT_PUBLIC_API_URL : `${process.env.NEXT_PUBLIC_API_URL}/api`)
-  : "http://localhost:8000/api";
+const API_BASE = '/api';
 
 interface LocationResult {
   lat: string;

@@ -1,6 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL
-  ? (process.env.NEXT_PUBLIC_API_URL.endsWith('/api') ? process.env.NEXT_PUBLIC_API_URL : `${process.env.NEXT_PUBLIC_API_URL}/api`)
-  : "http://localhost:8000/api";
+const API_BASE = '/api';
 
 function getAuthHeaders(): Record<string, string> {
   const token = typeof window !== 'undefined'

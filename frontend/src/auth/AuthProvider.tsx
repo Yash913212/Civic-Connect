@@ -23,11 +23,8 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const apiBase = process.env.NEXT_PUBLIC_API_URL
-    ? (process.env.NEXT_PUBLIC_API_URL.endsWith('/api') ? process.env.NEXT_PUBLIC_API_URL : `${process.env.NEXT_PUBLIC_API_URL}/api`)
-    : 'http://localhost:8000/api';
   const wsBase = process.env.NEXT_PUBLIC_WS_URL
-    || apiBase.replace(/^http/, 'ws').replace(/\/api\/?$/, '');
+    || 'wss://civic-connect-gzm1.onrender.com';
 
   useEffect(() => {
     const initAuth = async () => {

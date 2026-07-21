@@ -6,9 +6,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL
-  ? (process.env.NEXT_PUBLIC_API_URL.endsWith('/api') ? process.env.NEXT_PUBLIC_API_URL : `${process.env.NEXT_PUBLIC_API_URL}/api`)
-  : "http://localhost:8000/api";
+const API_BASE = '/api';
 
 const DEPT_LABELS: Record<string, string> = {
   roads: "Roads Dept", drainage: "Drainage Dept", garbage: "Sanitation",
