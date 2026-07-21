@@ -23,6 +23,23 @@ try:
 except Exception as e:
     logger.error("Database initialization failed: %s", e)
 
+uuid_migrations = [
+    ("complaints", "id"),
+    ("complaints", "user_id"),
+    ("complaints", "assigned_to"),
+    ("notifications", "complaint_id"),
+]
+
+for table, column in uuid_migrations:
+    try:
+        with engine.begin() as conn:
+            conn.execute(text(
+                f"ALTER TABLE {table} ALTER COLUMN {column} TYPE UUID USING {column}::uuid"
+            ))
+            logger.info(f"Converted {table}.{column} to UUID")
+    except Exception as e:
+        logger.debug(f"UUID migration skipped for {table}.{column}: {e}")
+
 migrations = [
     ("complaints", "image_url", "VARCHAR"),
     ("complaints", "latitude", "VARCHAR"),
