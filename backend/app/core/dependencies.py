@@ -9,6 +9,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from app.core.utils import compress_image
 import logging
+from uuid import UUID
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +59,12 @@ def get_optional_user(
     try:
         token = authorization.replace("Bearer ", "")
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id:
+        user_id_str = payload.get("sub")
+        if user_id_str:
+            try:
+                user_id = UUID(user_id_str)
+            except ValueError:
+                return None
             return db.query(User).filter(User.id == user_id).first()
     except JWTError:
         raise HTTPException(

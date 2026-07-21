@@ -5,6 +5,7 @@ from app.auth.schemas import UserRegister, UserLogin, TokenResponse, UserRespons
 from app.database.models import User, RoleEnum
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, needs_password_rehash
 from app.auth.dependencies import get_current_user
+from uuid import UUID
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -77,8 +78,12 @@ def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
         from jose import jwt, JWTError
         from app.core.config import settings
         payload = jwt.decode(request.refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
+        user_id_str = payload.get("sub")
+        if user_id_str is None:
+            raise credentials_exception
+        try:
+            user_id = UUID(user_id_str)
+        except ValueError:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
