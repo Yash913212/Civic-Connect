@@ -245,6 +245,35 @@ const DotMatrix: React.FC<DotMatrixProps> = ({
 };
 
 
+class WebGLErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback?: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.warn("WebGL context lost or failed to initialize, using CSS background fallback.", error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        this.props.fallback || (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 opacity-40 pointer-events-none" />
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const ShaderMaterial = ({
   source,
   uniforms,
@@ -257,17 +286,15 @@ const ShaderMaterial = ({
 }) => {
   const { size } = useThree();
   const ref = useRef<THREE.Mesh>(null);
-  let lastFrameTime = 0;
 
   useFrame(({ clock }) => {
     if (!ref.current) return;
-    const timestamp = clock.getElapsedTime();
-
-    lastFrameTime = timestamp;
+    const timestamp = clock.elapsedTime;
 
     const material: any = ref.current.material;
-    const timeLocation = material.uniforms.u_time;
-    timeLocation.value = timestamp;
+    if (material?.uniforms?.u_time) {
+      material.uniforms.u_time.value = timestamp;
+    }
   });
 
   const getUniforms = () => {
@@ -346,6 +373,12 @@ const ShaderMaterial = ({
     return materialObject;
   }, [size.width, size.height, source]);
 
+  useEffect(() => {
+    return () => {
+      material.dispose();
+    };
+  }, [material]);
+
   return (
     <mesh ref={ref as any}>
       <planeGeometry args={[2, 2]} />
@@ -355,10 +388,37 @@ const ShaderMaterial = ({
 };
 
 const Shader: React.FC<ShaderProps> = ({ source, uniforms, maxFps = 60 }) => {
+  const [hasWebGLError, setHasWebGLError] = useState(false);
+
+  if (hasWebGLError) {
+    return (
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 opacity-40 pointer-events-none" />
+    );
+  }
+
   return (
-    <Canvas className="absolute inset-0  h-full w-full">
-      <ShaderMaterial source={source} uniforms={uniforms} maxFps={maxFps} />
-    </Canvas>
+    <WebGLErrorBoundary fallback={<div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 opacity-40 pointer-events-none" />}>
+      <div className="absolute inset-0 h-full w-full">
+        <Canvas
+          gl={{
+            powerPreference: "low-power",
+            antialias: false,
+            preserveDrawingBuffer: false,
+            failIfMajorPerformanceCaveat: false,
+          }}
+          onCreated={({ gl }) => {
+            const canvasEl = gl.domElement;
+            const handleContextLost = (event: Event) => {
+              event.preventDefault();
+              setHasWebGLError(true);
+            };
+            canvasEl.addEventListener("webglcontextlost", handleContextLost, false);
+          }}
+        >
+          <ShaderMaterial source={source} uniforms={uniforms} maxFps={maxFps} />
+        </Canvas>
+      </div>
+    </WebGLErrorBoundary>
   );
 };
 
@@ -430,8 +490,8 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
         setIsOpen(false);
       }}
       className={`px-4 py-2 sm:px-3 text-xs sm:text-sm border rounded-full transition-all duration-300 w-full sm:w-auto ${!isSignUp
-          ? "border-teal-500 bg-teal-500/10 text-teal-400 font-bold shadow-[0_0_15px_rgba(6,182,212,0.2)]"
-          : "border-white/10 bg-white/5 text-gray-300 hover:border-white/30 hover:text-white"
+        ? "border-teal-500 bg-teal-500/10 text-teal-400 font-bold shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+        : "border-white/10 bg-white/5 text-gray-300 hover:border-white/30 hover:text-white"
         }`}
     >
       LogIn
@@ -452,8 +512,8 @@ function MiniNavbar({ isSignUp, setIsSignUp }: MiniNavbarProps) {
           setIsOpen(false);
         }}
         className={`relative z-10 px-4 py-2 sm:px-3 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 w-full sm:w-auto ${isSignUp
-            ? "text-black bg-gradient-to-br from-teal-400 to-teal-200 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
-            : "text-black bg-gradient-to-br from-gray-100 to-gray-300 hover:from-gray-200 hover:to-gray-400"
+          ? "text-black bg-gradient-to-br from-teal-400 to-teal-200 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+          : "text-black bg-gradient-to-br from-gray-100 to-gray-300 hover:from-gray-200 hover:to-gray-400"
           }`}
       >
         Signup
@@ -799,15 +859,15 @@ export const SignInPage = ({ className }: SignInPageProps) => {
           phone_number: phone,
           password
         });
-        
+
         // Auto-login after successful signup
         const response = await authService.login({ email, password });
         setAuthUser(response.user, response.access_token, response.refresh_token);
-        
+
         toast.dismiss(toastId);
         showSystemStatus("Identity Verified", "Account created securely");
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-        
+
         setReverseCanvasVisible(true);
         setTimeout(() => setInitialCanvasVisible(false), 50);
         setTimeout(() => setStep("success"), 2000);
@@ -846,7 +906,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
         const errorMsg = err.response.data.detail;
         setError(errorMsg);
         showSystemStatus("Security Alert", errorMsg, true);
-        
+
         // Auto switch to sign up if account not found
         if (errorMsg.includes("Account not found") && roleInfo[role].canSignup) {
           setTimeout(() => setIsSignUp(true), 1500);
@@ -876,47 +936,15 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     <div className={cn("flex w-[100%] flex-col min-h-screen bg-transparent relative overflow-hidden", className)}>
       <div className="absolute inset-0 z-0 pointer-events-none">
 
-        <AnimatePresence>
-          {initialCanvasVisible && (
-            <motion.div
-              key={`canvas-initial-${role}`}
-              initial={{ opacity: 0, scale: 1.05, filter: "blur(8px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, scale: 0.95, filter: "blur(8px)" }}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-0"
-            >
-              <CanvasRevealEffect
-                animationSpeed={3}
-                containerClassName="bg-transparent"
-                colors={roleInfo[role].color as any}
-                dotSize={6}
-                reverse={false}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {reverseCanvasVisible && (
-            <motion.div
-              key={`canvas-reverse-${role}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="absolute inset-0"
-            >
-              <CanvasRevealEffect
-                animationSpeed={4}
-                containerClassName="bg-transparent"
-                colors={roleInfo[role].color as any}
-                dotSize={6}
-                reverse={true}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="absolute inset-0">
+          <CanvasRevealEffect
+            animationSpeed={reverseCanvasVisible ? 4 : 3}
+            containerClassName="bg-transparent"
+            colors={roleInfo[role].color as any}
+            dotSize={6}
+            reverse={reverseCanvasVisible}
+          />
+        </div>
 
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--background)_0%,_transparent_100%)] opacity-0" />
         <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-background/50 to-transparent" />
@@ -1149,17 +1177,16 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         {!isSignUp && (
                           <div className="flex items-center justify-between pt-1">
                             <label className="flex items-center gap-2 cursor-pointer group">
-                              <input 
-                                type="checkbox" 
-                                className="hidden" 
+                              <input
+                                type="checkbox"
+                                className="hidden"
                                 checked={rememberMe}
                                 onChange={(e) => setRememberMe(e.target.checked)}
                               />
-                              <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                rememberMe 
-                                  ? 'bg-emerald-500 border-emerald-500' 
+                              <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${rememberMe
+                                  ? 'bg-emerald-500 border-emerald-500'
                                   : 'border-black/20 dark:border-white/20 bg-black/5 dark:bg-black/20 group-hover:border-black/40 dark:group-hover:border-white/40'
-                              }`}>
+                                }`}>
                                 {rememberMe && <Check size={12} className="text-white" strokeWidth={3} />}
                               </div>
                               <span className="text-xs text-slate-600 dark:text-white/60 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Remember me</span>

@@ -61,10 +61,12 @@ const CentralCore = () => {
   const pulseRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if (coreRef.current) {
-      coreRef.current.position.y = Math.sin(t * 1.5) * 0.1;
-    }
+    if (!coreRef.current) return;
+    const t = state.clock.elapsedTime;
+
+    // Smooth, complex rotation using multiple sine waves
+    coreRef.current.position.y = Math.sin(t * 1.5) * 0.1;
+
     if (ring1Ref.current) {
       ring1Ref.current.rotation.x = t * 0.5;
       ring1Ref.current.rotation.y = t * 0.3;
@@ -89,7 +91,7 @@ const CentralCore = () => {
       <Sphere args={[1.2, 64, 64]}>
         <meshStandardMaterial color="#020617" roughness={0.1} metalness={0.9} />
       </Sphere>
-      
+
       {/* Core Energy Glow */}
       <Sphere ref={pulseRef} args={[1.4, 32, 32]}>
         <meshBasicMaterial color="#3b82f6" transparent opacity={0.2} blending={THREE.AdditiveBlending} depthWrite={false} />
@@ -122,21 +124,21 @@ const CentralCore = () => {
 
 const DataPacket = ({ start, end, color }: { start: THREE.Vector3; end: THREE.Vector3; color: string }) => {
   const meshRef = useRef<THREE.Mesh>(null);
-  
+
   useFrame((state) => {
     if (!meshRef.current) return;
-    
+
     // Continuous flowing data packets (loops from 0 to 1)
     const speed = 1.5;
-    const t = (state.clock.getElapsedTime() * speed) % 1;
-    
+    const t = (state.clock.elapsedTime * speed) % 1;
+
     // Lerp from start (node) to end (core)
     meshRef.current.position.lerpVectors(start, end, t);
-    
+
     // Fade out as it reaches the center
     const material = meshRef.current.material as THREE.MeshBasicMaterial;
     material.opacity = Math.max(0, 1 - Math.pow(t, 2));
-    
+
     // Scale down slightly as it reaches center
     const scale = 1 - (t * 0.5);
     meshRef.current.scale.set(scale, scale, scale);
@@ -167,7 +169,7 @@ const EngineScene = () => {
     if (groupRef.current) {
       const targetX = (state.pointer.x * Math.PI) / 12;
       const targetY = (state.pointer.y * Math.PI) / 12;
-      
+
       groupRef.current.rotation.y += (targetX - groupRef.current.rotation.y) * 0.05;
       groupRef.current.rotation.x += (-targetY - groupRef.current.rotation.x) * 0.05;
     }
@@ -177,61 +179,60 @@ const EngineScene = () => {
     <group ref={groupRef} position={[0, -3.5, 0]}>
       <CameraAdjust />
       <CentralCore />
-      
+
       {modules.map((mod, i) => {
         const pos = getPosition(i, modules.length, 6.5);
         const isActive = activeNode === i;
         const isPast = i < activeNode || (activeNode === 0 && i === modules.length - 1); // Highlight path
         const Icon = mod.icon;
-        
+
         return (
           <group key={mod.id}>
             {/* Connecting line to core */}
             <mesh>
               <tubeGeometry args={[
-                new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), pos), 
-                20, 
-                0.01, 
-                8, 
+                new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), pos),
+                20,
+                0.01,
+                8,
                 false
               ]} />
-              <meshBasicMaterial 
-                color={isActive || isPast ? mod.color : "#ffffff"} 
-                transparent 
-                opacity={isActive ? 0.8 : (isPast ? 0.3 : 0.05)} 
-                blending={THREE.AdditiveBlending} 
+              <meshBasicMaterial
+                color={isActive || isPast ? mod.color : "#ffffff"}
+                transparent
+                opacity={isActive ? 0.8 : (isPast ? 0.3 : 0.05)}
+                blending={THREE.AdditiveBlending}
               />
             </mesh>
 
             {/* Firing Data Packets when active */}
             {isActive && (
-              <DataPacket start={pos} end={new THREE.Vector3(0,0,0)} color={mod.color} />
+              <DataPacket start={pos} end={new THREE.Vector3(0, 0, 0)} color={mod.color} />
             )}
 
             {/* Floating Glassmorphism Node UI */}
             <Float speed={2} rotationIntensity={0} floatIntensity={0.5}>
-              <Html 
-                position={pos} 
-                transform 
+              <Html
+                position={pos}
+                transform
                 center
                 distanceFactor={15}
                 zIndexRange={[100, 0]}
               >
-                <div 
-                  className={`relative flex flex-col items-center justify-center p-4 rounded-[1.5rem] border transition-all duration-700 w-52 md:w-56 cursor-pointer ${
-                    isActive 
-                      ? "bg-white/90 dark:bg-[#050810]/90 backdrop-blur-xl scale-110 shadow-xl dark:shadow-2xl" 
+                <div
+                  className={`relative flex flex-col items-center justify-center p-4 rounded-[1.5rem] border transition-all duration-700 w-52 md:w-56 cursor-pointer ${isActive
+                      ? "bg-white/90 dark:bg-[#050810]/90 backdrop-blur-xl scale-110 shadow-xl dark:shadow-2xl"
                       : "bg-white/40 dark:bg-[#050810]/40 backdrop-blur-sm border-black/5 dark:border-white/5 opacity-50 scale-90 hover:opacity-100 hover:scale-100"
-                  }`}
+                    }`}
                   style={{
                     borderColor: isActive ? mod.color : undefined,
                     boxShadow: isActive ? `0 0 40px ${mod.color}30` : undefined,
                   }}
                   onClick={() => setActiveNode(i)}
                 >
-                  <div 
+                  <div
                     className="w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors duration-500 border border-black/5 dark:border-white/10"
-                    style={{ 
+                    style={{
                       backgroundColor: isActive ? `${mod.color}20` : 'rgba(148, 163, 184, 0.1)',
                       color: isActive ? mod.color : 'currentColor',
                       boxShadow: isActive ? `0 0 20px ${mod.color}60` : undefined
@@ -242,11 +243,11 @@ const EngineScene = () => {
                   <h3 className="text-slate-900 dark:text-white font-bold text-center text-xs md:text-sm leading-tight tracking-wide">
                     {mod.label}
                   </h3>
-                  
+
                   {/* Active highlight border frame */}
                   <AnimatePresence>
                     {isActive && (
-                      <motion.div 
+                      <motion.div
                         layoutId="active-node-frame"
                         className="absolute -inset-[1px] rounded-[1.5rem] border pointer-events-none z-0"
                         style={{ borderColor: mod.color, opacity: 0.5 }}
@@ -269,8 +270,8 @@ const EngineScene = () => {
 
 export default function Solution() {
   return (
-    <section 
-      id="platform" 
+    <section
+      id="platform"
       className="relative w-full h-[120vh] min-h-[900px] flex flex-col items-center overflow-hidden bg-transparent font-sans"
     >
       {/* Background Ambience */}
@@ -287,7 +288,7 @@ export default function Solution() {
 
       {/* Overlay Typography Header */}
       <div className="relative z-20 mt-12 md:mt-16 px-6 max-w-4xl mx-auto text-center pointer-events-none">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -299,8 +300,8 @@ export default function Solution() {
             System Architecture
           </span>
         </motion.div>
-        
-        <motion.h2 
+
+        <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -309,8 +310,8 @@ export default function Solution() {
         >
           Autonomous <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-500 to-purple-500">Resolution Engine</span>
         </motion.h2>
-        
-        <motion.p 
+
+        <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

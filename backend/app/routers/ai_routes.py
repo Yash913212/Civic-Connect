@@ -8,9 +8,7 @@ from app.ai.predict import predict_issue
 from app.ai.captioning import generate_caption
 from app.ai.transcriber import transcribe_audio
 from app.ai.request_note import generate_request_note
-from app.core.dependencies import limiter
 from app.core.utils import compress_image
-from slowapi.util import get_remote_address
 import os
 import json
 import base64
@@ -177,7 +175,6 @@ class RequestNoteRequest(BaseModel):
 
 
 @router.post("/upload")
-@limiter.limit("5/minute")
 async def upload_image(request: Request, file: UploadFile = File(...)):
     import uuid
     contents = await file.read()
@@ -454,7 +451,6 @@ async def upload_image(request: Request, file: UploadFile = File(...)):
 
 
 @router.post("/ai/analyze")
-@limiter.limit("10/minute")
 async def analyze_image(
     request: Request,
     file: UploadFile = File(...),
@@ -502,7 +498,6 @@ async def analyze_image(
 
 @router.post("/analyze_text")
 @router.post("/ai/analyze_text")
-@limiter.limit("15/minute")
 def analyze_text(request: Request, body: TextAnalysisRequest):
     from app.ai.llm_client import call_llm_with_fallback
     try:

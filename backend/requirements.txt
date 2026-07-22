@@ -22,4 +22,3 @@ soundfile>=0.12
 librosa>=0.10
 einops
 accelerate
-slowapi

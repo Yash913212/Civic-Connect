@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useEffect, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -10,6 +10,35 @@ type Uniforms = {
     type: string;
   };
 };
+
+class WebGLErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback?: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.warn("WebGL context lost or failed to initialize, using CSS background fallback.", error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        this.props.fallback || (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 opacity-40 pointer-events-none" />
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const ShaderMaterial = ({
   source,
@@ -23,11 +52,12 @@ const ShaderMaterial = ({
 
   useFrame(({ clock }) => {
     if (!ref.current) return;
-    const timestamp = clock.getElapsedTime();
+    const timestamp = clock.elapsedTime;
 
     const material: any = ref.current.material;
-    const timeLocation = material.uniforms.u_time;
-    timeLocation.value = timestamp;
+    if (material?.uniforms?.u_time) {
+      material.uniforms.u_time.value = timestamp;
+    }
   });
 
   const getUniforms = () => {
@@ -79,7 +109,6 @@ const ShaderMaterial = ({
     return preparedUniforms;
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const material = useMemo(() => {
     const materialObject = new THREE.ShaderMaterial({
       vertexShader: `
@@ -104,8 +133,13 @@ const ShaderMaterial = ({
     });
 
     return materialObject;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [size.width, size.height, source]);
+
+  useEffect(() => {
+    return () => {
+      material.dispose();
+    };
+  }, [material]);
 
   return (
     <mesh ref={ref as any}>
@@ -122,9 +156,35 @@ export default function ShaderCanvas({
   source: string;
   uniforms: Record<string, { value: number[] | number[][] | number; type: string }>;
 }) {
+  const [hasWebGLError, setHasWebGLError] = useState(false);
+
+  if (hasWebGLError) {
+    return (
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 opacity-40 pointer-events-none" />
+    );
+  }
+
   return (
-    <Canvas className="absolute inset-0 h-full w-full">
-      <ShaderMaterial source={source} uniforms={uniforms} />
-    </Canvas>
+    <WebGLErrorBoundary fallback={<div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 opacity-40 pointer-events-none" />}>
+      <Canvas
+        className="absolute inset-0 h-full w-full"
+        gl={{
+          powerPreference: "low-power",
+          antialias: false,
+          preserveDrawingBuffer: false,
+          failIfMajorPerformanceCaveat: false,
+        }}
+        onCreated={({ gl }) => {
+          const canvasEl = gl.domElement;
+          const handleContextLost = (event: Event) => {
+            event.preventDefault();
+            setHasWebGLError(true);
+          };
+          canvasEl.addEventListener("webglcontextlost", handleContextLost, false);
+        }}
+      >
+        <ShaderMaterial source={source} uniforms={uniforms} />
+      </Canvas>
+    </WebGLErrorBoundary>
   );
 }

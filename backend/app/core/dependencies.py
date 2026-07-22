@@ -5,15 +5,11 @@ from jose import jwt, JWTError
 from app.core.config import settings
 from app.database.database import get_db
 from app.database.models import User
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 from app.core.utils import compress_image
 import logging
 from uuid import UUID
 
 logger = logging.getLogger(__name__)
-
-limiter = Limiter(key_func=get_remote_address)
 
 
 class ConnectionManager:

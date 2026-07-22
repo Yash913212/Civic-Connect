@@ -3,11 +3,9 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
-from app.core.dependencies import limiter, manager
+from app.core.dependencies import manager
 from app.core.config import settings
 from app.database.database import engine, Base
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 import os
 import logging
@@ -24,10 +22,16 @@ except Exception as e:
     logger.error("Database initialization failed: %s", e)
 
 uuid_migrations = [
+    ("users", "id"),
     ("complaints", "id"),
     ("complaints", "user_id"),
     ("complaints", "assigned_to"),
+    ("departments", "id"),
+    ("notifications", "id"),
+    ("notifications", "user_id"),
     ("notifications", "complaint_id"),
+    ("user_badges", "id"),
+    ("user_badges", "user_id"),
 ]
 
 for table, column in uuid_migrations:
@@ -97,8 +101,6 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="CivicConnect API", lifespan=lifespan)
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.middleware("http")
 async def limit_request_size(request, call_next):

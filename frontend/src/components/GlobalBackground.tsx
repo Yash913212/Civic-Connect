@@ -120,20 +120,6 @@ export default function GlobalBackground() {
         }}
       />
 
-      {/* Layer 4: Animated Grid Pattern (Dark Mode Only) */}
-      {!isLight && (
-        <div 
-          className="absolute inset-0 transition-opacity duration-1000 opacity-[0.15]"
-          style={{
-            backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-            backgroundPosition: "center center",
-            perspective: "1000px",
-            transform: "rotateX(60deg) scale(2)",
-            transformOrigin: "bottom center",
-          }}
-        />
-      )}
 
       {/* Elegant Aurora Animation for Light Mode */}
       {isLight && (
@@ -147,7 +133,25 @@ export default function GlobalBackground() {
       {/* Layer 5 & 6: Neural Network Animation (R3F Canvas - Dark Mode Only) */}
       {!isLight && (
         <div className="absolute inset-0 z-10 transition-opacity duration-1000 opacity-70">
-          <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
+          <Canvas
+            camera={{ position: [0, 0, 15], fov: 60 }}
+            gl={{
+              powerPreference: "low-power",
+              antialias: false,
+              preserveDrawingBuffer: false,
+              failIfMajorPerformanceCaveat: false,
+            }}
+            onCreated={({ gl }) => {
+              const canvasEl = gl.domElement;
+              canvasEl.addEventListener(
+                "webglcontextlost",
+                (event) => {
+                  event.preventDefault();
+                },
+                false
+              );
+            }}
+          >
             <NeuralNetwork />
           </Canvas>
         </div>
