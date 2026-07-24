@@ -471,25 +471,34 @@ async def analyze_image(
     with open(file_path, "wb") as f:
         f.write(compressed_contents)
 
+    print("Step 1: Translating...")
     translated_description = (
-        translate_to_english(description)
+        translate_to_english(description) 
         if description.strip()
-        else ""
+        else ""  
     )
-    result = predict_issue(
-          file_path,
-          description=translated_description
-    )
+    print("✓ Translation done")
 
+    print("Step 2: Predicting issue...")
+    result = predict_issue(
+        file_path,
+        description=translated_description
+    )
+    print("✓ Issue predicted")
+  
     result["citizen_description"] = description
     result["translated_description"] = translated_description
+
+    print("Step 3: Generating caption...")
     caption = generate_caption(file_path)
+    print("✓ Caption:", caption)
+
     result["ai_caption"] = caption
-    priority = predict_priority(
-         issue=result["issue"],
-         description=translated_description,
-         image_caption=caption
-    )
+
+    
+    print("Step 4: Setting priority...")
+    priority = "High"
+    print("✓ Priority:", priority)
 
     result["priority"] = priority
     result["image_url"] = f"/uploads/{unique_filename}"

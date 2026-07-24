@@ -118,6 +118,7 @@ export default function ComplaintForm() {
     if (!res.ok) throw new Error("Failed");
 
     const data = await res.json();
+    console.log("AI Response:", data);
 
     setRequestNote(data.request_note);
 
@@ -155,7 +156,7 @@ export default function ComplaintForm() {
           description: data.complaint || manualDescription,
           department: data.department || "General",
           priority: (data.priority || "low").toLowerCase(),
-          imageUrl: "",
+          imageUrl: data.image_url || "",
           issue: data.issue,
           modality: data.modality,
         });

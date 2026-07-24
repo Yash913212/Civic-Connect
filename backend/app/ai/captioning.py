@@ -35,17 +35,21 @@ def generate_caption(image_path):
                     ]
                 }
             ],
-            "max_tokens": 50
+            "max_tokens": 20
+
         }
         
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
         response_data = response.json()
         
-        if 'choices' in response_data and len(response_data['choices']) > 0:
-            caption = response_data['choices'][0]['message']['content'].strip()
-            return caption
-        else:
-            return "Could not generate description from API."
+        if "error" in response_data:
+            print("Caption API Error:", response_data["error"]["message"])
+            return ""
+ 
+        if "choices" in response_data and len(response_data["choices"]) > 0:
+            return response_data["choices"][0]["message"]["content"].strip()
+
+        return ""
             
     except Exception as e:
         return f"Could not analyze image: {e}"

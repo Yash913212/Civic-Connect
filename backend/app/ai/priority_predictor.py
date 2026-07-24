@@ -7,19 +7,22 @@ load_dotenv()
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 
+
 def predict_priority(issue, description="", image_caption=""):
     if not OPENROUTER_API_KEY:
         return "Low"
+    if not image_caption:
+        image_caption = issue
 
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json"
     }
 
-    prompt = f"""
-You are an experienced Municipal Corporation Officer.
 
-Analyze the civic complaint carefully.
+    prompt = f"""
+
+You are a senior Municipal Emergency Officer.
 
 Issue Type:
 {issue}
@@ -27,47 +30,45 @@ Issue Type:
 Citizen Description:
 {description if description else "Not provided"}
 
-Image Description:
+Image Caption:
 {image_caption}
 
-Classify the complaint priority using these rules.
+Evaluate the REAL severity.
 
-HIGH:
-- Immediate risk to public safety.
-- Road completely blocked.
-- Severe flooding or overflowing drainage.
-- Huge garbage accumulation spreading across the road.
-- Large water leakage affecting traffic or many people.
-- Open manhole or dangerous electrical issue.
-- Requires action within 24 hours.
+HIGH
+- Garbage occupies a large area
+- Garbage overflowing onto roads
+- Garbage attracting animals/insects
+- Public health hazard
+- Flooding
+- Large potholes
+- Road blockage
+- Dangerous electrical problems
+- Open manholes
 
-MEDIUM:
-- Issue affects public convenience.
-- Moderate garbage accumulation.
-- Moderate potholes.
-- Drainage partially blocked.
-- Water leakage but traffic is still moving.
-- Needs action within 2-5 days.
+MEDIUM
+- Moderate garbage pile
+- Moderate potholes
+- Partial drainage blockage
+- Water leakage affecting nearby residents
 
-LOW:
-- Small localized issue.
-- Small garbage pile.
-- Minor pothole.
-- Small drainage blockage.
-- Minor water leakage.
-- No immediate safety risk.
+LOW
+- Small isolated garbage
+- Minor maintenance issue
+- Small pothole
+- No public safety risk
 
 Important:
-Do NOT always choose High.
-Do NOT always choose Low.
-Judge based on the severity visible in the image and the citizen description.
+If the image description contains words like:
+large, huge, overflowing, multiple, widespread, road blocked, dangerous, hazard
 
-Return ONLY one word:
+then NEVER return Low.
+
+Return ONLY:
 High
 Medium
 Low
 """
-
     payload = {
         "model": "openai/gpt-4o-mini",
         "messages": [
@@ -76,7 +77,7 @@ Low
                 "content": prompt
             }
         ],
-        "max_tokens": 50
+        "max_tokens": 20
     }
 
     try:

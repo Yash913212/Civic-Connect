@@ -242,14 +242,15 @@ function CitizenComplaints() {
                     <div className="flex-1 flex flex-col sm:flex-row gap-4 items-start w-full">
                       <div className="shrink-0 w-full sm:w-36 h-48 sm:h-32 rounded-xl overflow-hidden border border-black/10 dark:border-white/10 shadow-sm relative group/img">
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10 pointer-events-none" />
-                        <img 
-                          src={(c.image_url && !c.image_url.startsWith('blob:')) ? c.image_url : "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=400&q=80"} 
-                          alt="Complaint Issue" 
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
-                          onError={(e) => {
-                            e.currentTarget.src = "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=400&q=80";
-                          }}
-                        />
+                        <img
+  src={
+    c.image_url
+      ? `http://localhost:8000${c.image_url}`
+      : "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=400&q=80"
+  }
+  alt={c.title}
+  className="w-full h-full object-cover"
+/>
                       </div>
                       <div className="flex-1 w-full flex flex-col h-full justify-between">
                         <div>
