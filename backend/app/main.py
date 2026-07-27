@@ -15,68 +15,69 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-try:
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database connected successfully.")
-except Exception as e:
-    logger.error("Database initialization failed: %s", e)
-
-uuid_migrations = [
-    ("users", "id"),
-    ("complaints", "id"),
-    ("complaints", "user_id"),
-    ("complaints", "assigned_to"),
-    ("departments", "id"),
-    ("notifications", "id"),
-    ("notifications", "user_id"),
-    ("notifications", "complaint_id"),
-    ("user_badges", "id"),
-    ("user_badges", "user_id"),
-]
-
-for table, column in uuid_migrations:
+def run_migrations():
     try:
-        with engine.begin() as conn:
-            conn.execute(text(
-                f"ALTER TABLE {table} ALTER COLUMN {column} TYPE UUID USING {column}::uuid"
-            ))
-            logger.info(f"Converted {table}.{column} to UUID")
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database connected successfully.")
     except Exception as e:
-        logger.debug(f"UUID migration skipped for {table}.{column}: {e}")
+        logger.error("Database initialization failed: %s", e)
 
-migrations = [
-    ("complaints", "image_url", "VARCHAR"),
-    ("complaints", "latitude", "VARCHAR"),
-    ("complaints", "longitude", "VARCHAR"),
-    ("complaints", "address", "VARCHAR"),
-    ("complaints", "user_id", "VARCHAR"),
-    ("complaints", "assigned_to", "VARCHAR"),
-    ("complaints", "ai_summary", "VARCHAR"),
-    ("complaints", "ai_request_letter", "VARCHAR"),
-    ("complaints", "verification_status", "VARCHAR DEFAULT 'PENDING'"),
-    ("users", "department", "VARCHAR"),
-    ("users", "points", "INTEGER DEFAULT 0"),
-    ("users", "level", "INTEGER DEFAULT 1"),
-    ("users", "streak_days", "INTEGER DEFAULT 0"),
-    ("users", "last_active_date", "TIMESTAMP"),
-    ("users", "complaints_submitted", "INTEGER DEFAULT 0"),
-    ("users", "complaints_verified", "INTEGER DEFAULT 0"),
-]
+    uuid_migrations = [
+        ("users", "id"),
+        ("complaints", "id"),
+        ("complaints", "user_id"),
+        ("complaints", "assigned_to"),
+        ("departments", "id"),
+        ("notifications", "id"),
+        ("notifications", "user_id"),
+        ("notifications", "complaint_id"),
+        ("user_badges", "id"),
+        ("user_badges", "user_id"),
+    ]
 
-for table, column, col_type in migrations:
-    try:
-        with engine.begin() as conn:
-            conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}"))
-            logger.info(f"Added column {column} to table {table}")
-    except Exception as e:
-        pass
+    for table, column in uuid_migrations:
+        try:
+            with engine.begin() as conn:
+                conn.execute(text(
+                    f"ALTER TABLE {table} ALTER COLUMN {column} TYPE UUID USING {column}::uuid"
+                ))
+                logger.info(f"Converted {table}.{column} to UUID")
+        except Exception as e:
+            logger.debug(f"UUID migration skipped for {table}.{column}: {e}")
 
-for table in ["notifications", "departments", "badges", "user_badges"]:
-    try:
-        Base.metadata.tables[table].create(bind=engine, checkfirst=True)
-        logger.info(f"Table {table} verified/created.")
-    except Exception as e:
-        logger.debug(f"Table creation skipped for {table}: {e}")
+    migrations = [
+        ("complaints", "image_url", "VARCHAR"),
+        ("complaints", "latitude", "VARCHAR"),
+        ("complaints", "longitude", "VARCHAR"),
+        ("complaints", "address", "VARCHAR"),
+        ("complaints", "user_id", "VARCHAR"),
+        ("complaints", "assigned_to", "VARCHAR"),
+        ("complaints", "ai_summary", "VARCHAR"),
+        ("complaints", "ai_request_letter", "VARCHAR"),
+        ("complaints", "verification_status", "VARCHAR DEFAULT 'PENDING'"),
+        ("users", "department", "VARCHAR"),
+        ("users", "points", "INTEGER DEFAULT 0"),
+        ("users", "level", "INTEGER DEFAULT 1"),
+        ("users", "streak_days", "INTEGER DEFAULT 0"),
+        ("users", "last_active_date", "TIMESTAMP"),
+        ("users", "complaints_submitted", "INTEGER DEFAULT 0"),
+        ("users", "complaints_verified", "INTEGER DEFAULT 0"),
+    ]
+
+    for table, column, col_type in migrations:
+        try:
+            with engine.begin() as conn:
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}"))
+                logger.info(f"Added column {column} to table {table}")
+        except Exception as e:
+            pass
+
+    for table in ["notifications", "departments", "badges", "user_badges"]:
+        try:
+            Base.metadata.tables[table].create(bind=engine, checkfirst=True)
+            logger.info(f"Table {table} verified/created.")
+        except Exception as e:
+            logger.debug(f"Table creation skipped for {table}: {e}")
 
 
 @asynccontextmanager
@@ -86,6 +87,7 @@ async def lifespan(app: FastAPI):
     from app.database.database import SessionLocal, IS_TESTING
 
     if not IS_TESTING:
+        run_migrations()
         start_sla_monitor()
 
     db = SessionLocal()

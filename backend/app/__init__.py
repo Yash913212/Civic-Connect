@@ -1,3 +1,2 @@
-from .main import app
+# CivicConnect App Package
 
-__all__ = ["app"]

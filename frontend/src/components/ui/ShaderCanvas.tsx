@@ -157,8 +157,13 @@ export default function ShaderCanvas({
   uniforms: Record<string, { value: number[] | number[][] | number; type: string }>;
 }) {
   const [hasWebGLError, setHasWebGLError] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  if (hasWebGLError) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || hasWebGLError) {
     return (
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 opacity-40 pointer-events-none" />
     );

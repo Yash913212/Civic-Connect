@@ -6,10 +6,13 @@ const nextConfig: NextConfig = {
     root: path.resolve(process.cwd(), ".."),
   },
   async rewrites() {
+    const backendUrl = (process.env.BACKEND_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+    const destinationPath = backendUrl.endsWith("/api") ? "/:path*" : "/api/:path*";
+    
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.BACKEND_URL || "http://127.0.0.1:8000"}/api/:path*`,
+        destination: `${backendUrl}${destinationPath}`,
       },
     ];
   },
