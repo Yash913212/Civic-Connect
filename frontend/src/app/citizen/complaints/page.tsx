@@ -245,7 +245,7 @@ function CitizenComplaints() {
                         <img
   src={
     c.image_url
-      ? `http://localhost:8000${c.image_url}`
+      ? c.image_url
       : "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=400&q=80"
   }
   alt={c.title}

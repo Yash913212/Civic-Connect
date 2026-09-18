@@ -1,56 +1,29 @@
-import os
-import requests
-from dotenv import load_dotenv
-
-load_dotenv()
-
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+from app.core.bedrock import generate_text
 
 
 def translate_to_english(text: str) -> str:
     if not text.strip():
         return ""
 
-    headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json",
-    }
+    prompt = f"""
+You are a professional translator.
 
-    payload = {
-        "model": "openai/gpt-4o-mini",
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    "You are a professional translator. "
-                    "Translate the user's complaint into natural English. "
-                    "Return ONLY the translated text. "
-                    "Do not explain anything."
-                )
-            },
-            {
-                "role": "user",
-                "content": text
-            }
-        ]
-    }
+Translate the following civic complaint into natural English.
+Return ONLY the translated text.
+Do not explain anything.
+
+Complaint:
+{text}
+"""
 
     try:
-        response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers=headers,
-            json=payload,
-            timeout=30,
-        )
+        result = generate_text(prompt)
 
-        response_data = response.json()
+        if result:
+            return result.strip()
 
-        if "choices" in response_data and len(response_data["choices"]) > 0:
-            return response_data["choices"][0]["message"]["content"].strip()
-
-        print("Translation API Error:", response_data)
         return text
 
     except Exception as e:
-        print("Translation Exception:", e)
+        print("Bedrock Translation Exception:", e)
         return text

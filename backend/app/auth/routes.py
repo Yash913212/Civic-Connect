@@ -5,7 +5,12 @@ from app.auth.schemas import UserRegister, UserLogin, TokenResponse, UserRespons
 from app.database.models import User, RoleEnum
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, needs_password_rehash
 from app.auth.dependencies import get_current_user
+from app.core.sns import publish_notification_to_user
 from uuid import UUID
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -54,7 +59,23 @@ def login(user_in: UserLogin, db: Session = Depends(get_db)):
 
     access_token = create_access_token(subject=user.id)
     refresh_token = create_refresh_token(subject=user.id)
-    
+
+# Send successful login notification to the user's registered email    
+    try:
+         publish_notification_to_user(
+             user_id=str(user.id),
+             email=user.email,
+             message=(
+                  "Successful Login\n\n"
+                  f"Hello {user.full_name},\n\n"
+                  "You have successfully logged in to your Nagara Netra account.\n\n"
+                  "If you did not perform this login, please secure your account."
+             ),
+             subject="Nagara Netra: Successful Login"
+         )
+    except Exception as e:
+        logger.warning("Login SNS notification failed: %s", e)
+
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,

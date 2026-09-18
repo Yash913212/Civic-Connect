@@ -7,9 +7,9 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-    OPENROUTER_API_KEY: str = ""
     MAX_UPLOAD_SIZE_MB: int = 10
     ALLOWED_ORIGINS: str = ""
+    SNS_TOPIC_ARN: str = "arn:aws:sns:us-east-1:763493443326:civicconnect-notifications"
 
     class Config:
         env_file = ".env"

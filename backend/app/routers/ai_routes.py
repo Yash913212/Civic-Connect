@@ -1,3 +1,5 @@
+from app.core.s3 import upload_file_to_s3
+from app.core.bedrock import generate_image_priority
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form, Request, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -13,6 +15,9 @@ import os
 import json
 import base64
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="")
 
@@ -157,297 +162,8 @@ async def chat_with_ai(body: ChatMessage):
         return {"response": "I encountered an error. Please try again.", "error": True}
 
 
-UPLOAD_DIR = "uploads"
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 
 
-class TextAnalysisRequest(BaseModel):
-    text: str
-
-
-class RequestNoteRequest(BaseModel):
-    issue: str
-    department: str
-    priority: str
-    location: str
-    citizen_description: str = ""
-    image_caption: str = ""
-
-
-@router.post("/upload")
-async def upload_image(request: Request, file: UploadFile = File(...)):
-    import uuid
-    contents = await file.read()
-    compressed_contents = compress_image(contents)
-
-    filename = os.path.basename(file.filename)
-    if not filename.lower().endswith(('.jpg', '.jpeg')):
-        filename = filename.rsplit('.', 1)[0] + '.jpg'
-        
-    unique_filename = f"{uuid.uuid4()}_{filename}"
-    filepath = os.path.join(UPLOAD_DIR, unique_filename)
-    
-    with open(filepath, "wb") as buffer:
-        buffer.write(compressed_contents)
-
-    try:
-        base64_image = base64.b64encode(compressed_contents).decode('utf-8')
-        mime_type = file.content_type or "image/jpeg"
-
-        headers = {
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "Content-Type": "application/json"
-        }
-
-        prompt = """
-        You are CivicConnect Vision AI.
-
-        Your ONLY purpose is to analyze uploaded complaint images for municipal and civic infrastructure issues.
-
-        You are NOT a general chatbot.
-
-        You are NOT allowed to answer unrelated questions.
-
-        You ONLY analyze images uploaded by users.
-
-        ==================================================
-
-        MISSION
-
-        Analyze civic infrastructure images and automatically identify public issues.
-
-        The goal is to help citizens report complaints accurately.
-
-        ==================================================
-
-        SUPPORTED ISSUE TYPES
-
-        ROAD INFRASTRUCTURE
-
-        - Potholes
-        - Broken Roads
-        - Road Cracks
-        - Road Erosion
-        - Damaged Pavements
-        - Missing Road Signs
-
-        DRAINAGE
-
-        - Blocked Drainage
-        - Open Drainage
-        - Overflowing Drainage
-        - Water Logging
-        - Sewage Overflow
-
-        STREET LIGHTS
-
-        - Broken Street Lights
-        - Damaged Poles
-        - Missing Street Lights
-        - Non Functional Lights
-
-        SANITATION
-
-        - Garbage Accumulation
-        - Overflowing Dustbins
-        - Illegal Waste Dumping
-        - Public Waste
-
-        WATER SUPPLY
-
-        - Water Leakage
-        - Broken Water Pipes
-        - Overflowing Water
-
-        ELECTRICITY
-
-        - Exposed Wires
-        - Damaged Electric Poles
-        - Transformer Problems
-
-        PUBLIC SAFETY
-
-        - Fallen Trees
-        - Open Manholes
-        - Broken Railings
-        - Dangerous Structures
-
-        TRAFFIC INFRASTRUCTURE
-
-        - Broken Traffic Signals
-        - Missing Traffic Signs
-        - Road Obstructions
-
-        ==================================================
-
-        ANALYSIS PROCESS
-
-        1. Detect visible issue.
-
-        2. Classify issue category.
-
-        3. Determine department.
-
-        4. Determine severity.
-
-        5. Determine priority.
-
-        6. Generate summary.
-
-        7. Estimate confidence score.
-
-        ==================================================
-
-        SEVERITY LEVELS
-
-        Critical
-
-        - Open Manholes
-        - Exposed Electric Wires
-        - Major Infrastructure Collapse
-
-        High
-
-        - Large Potholes
-        - Flooded Roads
-        - Major Drainage Failure
-
-        Medium
-
-        - Broken Street Lights
-        - Damaged Pavements
-
-        Low
-
-        - Minor Maintenance Problems
-
-        ==================================================
-
-        DEPARTMENT ROUTING
-
-        Road Issues
-        → Roads Department
-
-        Drainage Issues
-        → Drainage Department
-
-        Street Light Issues
-        → Electrical Department
-
-        Garbage Issues
-        → Sanitation Department
-
-        Water Supply Issues
-        → Water Department
-
-        Public Safety Issues
-        → Safety Department
-
-        Traffic Issues
-        → Traffic Department
-
-        ==================================================
-
-        IGNORE
-
-        - Human identities
-        - Faces
-        - Clothing
-        - Personal details
-        - Vehicles unless related to the issue
-
-        Focus only on public infrastructure problems.
-
-        ==================================================
-
-        OUTPUT FORMAT
-
-        Return ONLY valid JSON.
-
-        {
-          "issueDetected": "",
-          "category": "",
-          "department": "",
-          "severity": "",
-          "priority": "",
-          "confidence": "",
-          "summary": "",
-          "recommendedResolutionTime": ""
-        }
-
-        ==================================================
-
-        EXAMPLE
-
-        {
-          "issueDetected": "Pothole",
-          "category": "Road Infrastructure",
-          "department": "Roads Department",
-          "severity": "High",
-          "priority": "Urgent",
-          "confidence": "96%",
-          "summary": "Large pothole detected on roadway creating risk for vehicles and pedestrians.",
-          "recommendedResolutionTime": "48 Hours"
-        }
-        """
-
-        payload = {
-            "model": "openai/gpt-4o-mini",
-            "response_format": { "type": "json_object" },
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        { "type": "text", "text": prompt },
-                        { "type": "image_url", "image_url": { "url": f"data:{mime_type};base64,{base64_image}" } }
-                    ]
-                }
-            ]
-        }
-
-        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
-        response_data = response.json()
-        ai_result = response_data['choices'][0]['message']['content']
-
-        ai_result = ai_result.strip()
-        if ai_result.startswith("```json"):
-            ai_result = ai_result.split("```json")[1].split("```")[0].strip()
-        elif ai_result.startswith("```"):
-            ai_result = ai_result.split("```")[1].split("```")[0].strip()
-
-        analysis = json.loads(ai_result)
-
-        if str(analysis.get("isValid", "True")).lower() == "false":
-            os.remove(filepath)
-            raise HTTPException(status_code=400, detail=analysis.get("invalidReason", "Image does not contain a valid civic issue."))
-
-        for k, v in analysis.items():
-            if isinstance(v, (dict, list)):
-                analysis[k] = json.dumps(v)
-            else:
-                analysis[k] = str(v)
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"AI Analysis failed: {e}")
-        analysis = {
-            "isValid": "True",
-            "issueDetected": "Unknown Issue",
-            "category": "Unknown",
-            "department": "General",
-            "severity": "Low",
-            "priority": "Low",
-            "confidence": "0%",
-            "summary": "Could not analyze the image.",
-            "recommendedResolutionTime": "Unknown"
-        }
-
-    return {
-        "message": "Image Uploaded",
-        "filename": unique_filename,
-        "imageUrl": f"/uploads/{unique_filename}",
-        "analysis": analysis
-    }
 
 
 @router.post("/ai/analyze")
@@ -457,7 +173,7 @@ async def analyze_image(
     description: str = Form("")
 ):
     import uuid
-    print("===== /ai/analyze called =====")
+    logger.info("AI analysis started")
     contents = await file.read()
     compressed_contents = compress_image(contents)
 
@@ -470,40 +186,73 @@ async def analyze_image(
 
     with open(file_path, "wb") as f:
         f.write(compressed_contents)
+    s3_image_url = upload_file_to_s3(
+        file_path,
+        f"complaints/{unique_filename}",
+        file.content_type or "image/jpeg"
+    )
 
-    print("Step 1: Translating...")
+    logger.info("Image uploaded to S3")
+    logger.info("Translation started")
+    
     translated_description = (
         translate_to_english(description) 
         if description.strip()
         else ""  
     )
-    print("✓ Translation done")
-
-    print("Step 2: Predicting issue...")
+    logger.info("Translation completed")
+    logger.info("Issue prediction started")
     result = predict_issue(
         file_path,
         description=translated_description
     )
-    print("✓ Issue predicted")
+    logger.info("Issue prediction completed")
   
     result["citizen_description"] = description
     result["translated_description"] = translated_description
 
-    print("Step 3: Generating caption...")
+    logger.info("Image caption generation started")
+
     caption = generate_caption(file_path)
-    print("✓ Caption:", caption)
+    logger.info("Image caption generated")
 
     result["ai_caption"] = caption
 
     
-    print("Step 4: Setting priority...")
-    priority = "High"
-    print("✓ Priority:", priority)
+    logger.info(
+        "Priority prediction inputs - issue=%s, caption=%s",
+         result.get("issue", ""),
+         caption
+    )
+
+    priority_result = generate_image_priority(
+       file_path,
+       result.get("issue", ""),
+       translated_description
+    )
+
+    priority = priority_result["priority"]
+    result["severity"] = priority_result["severity"]
+    result["priority_reason"] = priority_result["reason"]
+
+    logger.info("Priority prediction completed: %s", priority)
+
 
     result["priority"] = priority
-    result["image_url"] = f"/uploads/{unique_filename}"
+    result["image_url"] = s3_image_url
+    logger.info("AI analysis completed successfully")
     return result
+class TextAnalysisRequest(BaseModel):
+    text: str
 
+
+class RequestNoteRequest(BaseModel):
+    issue: str
+    department: str
+    priority: str
+    location: str
+    citizen_description: str = ""
+    image_caption: str = ""
 
 @router.post("/analyze_text")
 @router.post("/ai/analyze_text")

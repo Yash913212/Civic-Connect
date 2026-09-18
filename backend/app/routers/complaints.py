@@ -9,6 +9,8 @@ from app.auth.dependencies import get_current_user
 from app.auth.dependencies import get_optional_user as get_user_from_auth
 from app.core.dependencies import manager
 from app.core.gamification import award_points
+from app.core.sns import publish_notification_to_user
+from app.core.s3 import generate_presigned_url
 import json
 import logging
 import re
@@ -54,7 +56,14 @@ class ComplaintUpdate(BaseModel):
     ai_request_letter: str | None = None
 
 
-def _create_notification(db: Session, user_id, title: str, message: str, ntype: NotificationType, complaint_id=None):
+def _create_notification(
+    db: Session,
+    user_id,
+    title: str,
+    message: str,
+    ntype: NotificationType,
+    complaint_id=None
+):
     notif = Notification(
         user_id=user_id,
         title=title,
@@ -62,9 +71,30 @@ def _create_notification(db: Session, user_id, title: str, message: str, ntype: 
         type=ntype,
         complaint_id=complaint_id,
     )
+
     db.add(notif)
     db.flush()
 
+    # Send external notification through Amazon SNS
+    # Send external notification to the specific user through Amazon SNS
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+
+        if user and user.email:
+            sns_message = (
+                f"{title}\n\n"
+                f"{message}"
+            )
+
+            publish_notification_to_user(
+                    user_id=str(user.id),
+                    email=user.email,
+                    message=sns_message,
+                    subject=title
+            )
+    
+    except Exception as e:
+         logger.warning(f"SNS notification failed: {e}")
 
 def _sanitize_html(text: str | None) -> str | None:
     if not text:
@@ -81,6 +111,11 @@ def _complaint_to_dict(c: DBComplaint, db: Session, officer_cache: dict[str, str
         else:
             officer = db.query(User).filter(User.id == c.assigned_to).first()
             assigned_name = officer.full_name if officer else None
+    image_url = c.image_url
+
+    if image_url and "amazonaws.com/" in image_url:
+        object_name = image_url.split("amazonaws.com/", 1)[1]
+        image_url = generate_presigned_url(object_name)
     return {
         "id": str(c.id),
         "title": _sanitize_html(c.title),
@@ -92,7 +127,7 @@ def _complaint_to_dict(c: DBComplaint, db: Session, officer_cache: dict[str, str
         "dept": c.department,
         "priority": c.priority,
         "status": c.status.value if hasattr(c.status, 'value') else c.status,
-        "image_url": c.image_url,
+        "image_url": image_url,
         "ai_summary": c.ai_summary,
         "ai_request_letter": c.ai_request_letter,
         "user_id": str(c.user_id) if c.user_id else None,
@@ -131,7 +166,7 @@ def create_complaint(
 
         if user:
             _create_notification(db, user.id,
-                "Complaint Submitted",
+                "Nagara Netra: Complaint Submitted",
                 f"Your complaint '{db_complaint.title}' has been submitted successfully.",
                 NotificationType.COMPLAINT_SUBMITTED, db_complaint.id)
             
@@ -272,13 +307,13 @@ def update_complaint_status(
 
     if complaint.user_id and complaint.user_id != current_user.id:
         _create_notification(db, complaint.user_id,
-            "Status Update",
+            "Nagara Netra: Status Update",
             f"Your complaint '{complaint.title}' is now '{new_status}'.",
             NotificationType.STATUS_UPDATE, complaint.id)
 
     if new_status == "Resolved" and complaint.user_id:
         _create_notification(db, complaint.user_id,
-            "Complaint Resolved",
+            "Nagara Netra: Complaint Resolved",
             f"Your complaint '{complaint.title}' has been resolved!",
             NotificationType.COMPLAINT_RESOLVED, complaint.id)
 
@@ -378,13 +413,13 @@ def assign_officer(
             complaint.status = ComplaintStatus.ASSIGNED.value
 
         _create_notification(db, officer.id,
-            "New Assignment",
+            "Nagara Netra: New Assignment",
             f"Complaint '{complaint.title}' has been assigned to you.",
             NotificationType.ASSIGNMENT, complaint.id)
 
         if complaint.user_id:
             _create_notification(db, complaint.user_id,
-                "Officer Assigned",
+                "Nagara Netra: Officer Assigned",
                 f"Officer {officer.full_name} has been assigned to your complaint '{complaint.title}'.",
                 NotificationType.ASSIGNMENT, complaint.id)
     else:
